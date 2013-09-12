@@ -1,0 +1,26 @@
+
+name := "lombrello"
+
+version := "0.1-SNAPSHOT"
+
+organization := "ch.usi.inf.l3"
+
+licenses := ("BSD 3-Clause", new java.net.URL("http://opensource.org/licenses/BSD-3-Clause")) :: Nil
+
+scalaOrganization := "org.scala-lang.macro-paradise"
+
+scalaVersion := "2.10.3-SNAPSHOT"
+
+resolvers += Resolver.sonatypeRepo("snapshots")
+
+scalaOrganization := "org.scala-lang.macro-paradise"
+
+libraryDependencies <+= (scalaVersion)("org.scala-lang.macro-paradise" % "scala-reflect" % _)
+
+libraryDependencies <+= (scalaVersion) ("org.scala-lang" % "scala-compiler" % _)
+
+//libraryDependencies += "org.scalatest" % "scalatest_2.11.0-M3" % "1.9.1b" % "test"
+
+//libraryDependencies += "junit" % "junit" % "4.10" % "test"
+
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")

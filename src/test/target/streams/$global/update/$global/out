@@ -1,0 +1,710 @@
+[0m[[0minfo[0m] [0mUpdating {file:/Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/}tests...[0m
+[0m[[0mdebug[0m] [0m:: resolving dependencies :: ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m	confs: [compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, sources, docs, pom, scala-tool][0m
+[0m[[0mdebug[0m] [0m	validate = true[0m
+[0m[[0mdebug[0m] [0m	refresh = false[0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'compile'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: sbt.ivyint.MergedDescriptors@5afb91d3[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m		tried /Users/amanj/.ivy2/local/org.scala-lang.macro-paradise/scala-library/2.11.0-SNAPSHOT/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	local: no ivy file found for org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/scala-library/2.11.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m	maven-metadata not available: http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/scala-library/2.11.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m		tried http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/scala-library/2.11.0-SNAPSHOT/scala-library-2.11.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/scala-library/2.11.0-SNAPSHOT/scala-library-2.11.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0m	public: no ivy file found for org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m[2.11.0-20130722.015147-224] org/scala-lang/macro-paradise#scala-library;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m		tried https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/macro-paradise/scala-library/2.11.0-SNAPSHOT/scala-library-2.11.0-20130722.015147-224.pom[0m
+[0m[[0mdebug[0m] [0m	sonatype-snapshots: found md file for org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m		=> https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/macro-paradise/scala-library/2.11.0-SNAPSHOT/scala-library-2.11.0-20130722.015147-224.pom (2.11.0-SNAPSHOT)[0m
+[0m[[0mdebug[0m] [0m	default-cache: revision in cache (not updated): org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT in sbt-chain[0m
+[0m[[0mdebug[0m] [0m	[2.11.0-SNAPSHOT] org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT [compile->default(compile)][0m
+[0m[[0minfo[0m] [0mResolving ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT {compile=[default(compile)]}[0m
+[0m[[0mdebug[0m] [0mdon't use cache for ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m	found ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT in inter-project[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT {compile=[default(compile)]}[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m		tried /Users/amanj/.ivy2/local/org.scala-lang.macro-paradise/scala-reflect/2.11.0-SNAPSHOT/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	local: no ivy file found for org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mno default cache defined: set to /Users/amanj/.ivy2/cache[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/scala-reflect/2.11.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m	maven-metadata not available: http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/scala-reflect/2.11.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m		tried http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/scala-reflect/2.11.0-SNAPSHOT/scala-reflect-2.11.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/scala-reflect/2.11.0-SNAPSHOT/scala-reflect-2.11.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0m	public: no ivy file found for org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m[2.11.0-20130722.015147-224] org/scala-lang/macro-paradise#scala-reflect;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m		tried https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/macro-paradise/scala-reflect/2.11.0-SNAPSHOT/scala-reflect-2.11.0-20130722.015147-224.pom[0m
+[0m[[0mdebug[0m] [0m	sonatype-snapshots: found md file for org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m		=> https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/macro-paradise/scala-reflect/2.11.0-SNAPSHOT/scala-reflect-2.11.0-20130722.015147-224.pom (2.11.0-SNAPSHOT)[0m
+[0m[[0mdebug[0m] [0m	default-cache: revision in cache (not updated): org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT in sbt-chain[0m
+[0m[[0mdebug[0m] [0m	[2.11.0-SNAPSHOT] org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang#scala-compiler;2.11.0-SNAPSHOT ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang#scala-compiler;2.11.0-SNAPSHOT {compile=[default(compile)]}[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang#scala-compiler;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang#scala-compiler;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m		tried /Users/amanj/.ivy2/local/org.scala-lang/scala-compiler/2.11.0-SNAPSHOT/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	local: no ivy file found for org.scala-lang#scala-compiler;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang#scala-compiler;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/scala-compiler/2.11.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m	maven-metadata not available: http://repo1.maven.org/maven2/org/scala-lang/scala-compiler/2.11.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m		tried http://repo1.maven.org/maven2/org/scala-lang/scala-compiler/2.11.0-SNAPSHOT/scala-compiler-2.11.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/scala-compiler/2.11.0-SNAPSHOT/scala-compiler-2.11.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0m	public: no ivy file found for org.scala-lang#scala-compiler;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang#scala-compiler;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m[2.11.0-20130912.012030-390] org/scala-lang#scala-compiler;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m		tried https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/scala-compiler/2.11.0-SNAPSHOT/scala-compiler-2.11.0-20130912.012030-390.pom[0m
+[0m[[0mdebug[0m] [0m	sonatype-snapshots: found md file for org.scala-lang#scala-compiler;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m		=> https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/scala-compiler/2.11.0-SNAPSHOT/scala-compiler-2.11.0-20130912.012030-390.pom (2.11.0-SNAPSHOT)[0m
+[0m[[0mdebug[0m] [0m	default-cache: revision in cache (not updated): org.scala-lang#scala-compiler;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang#scala-compiler;2.11.0-SNAPSHOT in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang#scala-library;2.11.0-SNAPSHOT ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang#scala-library;2.11.0-SNAPSHOT {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang#scala-library;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang#scala-library;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m		tried /Users/amanj/.ivy2/local/org.scala-lang/scala-library/2.11.0-SNAPSHOT/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	local: no ivy file found for org.scala-lang#scala-library;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang#scala-library;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/scala-library/2.11.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m	maven-metadata not available: http://repo1.maven.org/maven2/org/scala-lang/scala-library/2.11.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m		tried http://repo1.maven.org/maven2/org/scala-lang/scala-library/2.11.0-SNAPSHOT/scala-library-2.11.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/scala-library/2.11.0-SNAPSHOT/scala-library-2.11.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0m	public: no ivy file found for org.scala-lang#scala-library;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang#scala-library;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m[2.11.0-20130912.012030-391] org/scala-lang#scala-library;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m		tried https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/scala-library/2.11.0-SNAPSHOT/scala-library-2.11.0-20130912.012030-391.pom[0m
+[0m[[0mdebug[0m] [0m	sonatype-snapshots: found md file for org.scala-lang#scala-library;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m		=> https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/scala-library/2.11.0-SNAPSHOT/scala-library-2.11.0-20130912.012030-391.pom (2.11.0-SNAPSHOT)[0m
+[0m[[0mdebug[0m] [0m	default-cache: revision in cache (not updated): org.scala-lang#scala-library;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang#scala-library;2.11.0-SNAPSHOT in sbt-chain[0m
+[0m[[0mdebug[0m] [0m	[2.11.0-SNAPSHOT] org.scala-lang#scala-library;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [compile->master(*)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3[0m
+[0m[[0mdebug[0m] [0m	local: revision in cache: org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [compile->master(*)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1[0m
+[0m[[0mdebug[0m] [0m	local: revision in cache: org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang#scala-reflect;2.11.0-SNAPSHOT ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang#scala-reflect;2.11.0-SNAPSHOT {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang#scala-reflect;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang#scala-reflect;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m		tried /Users/amanj/.ivy2/local/org.scala-lang/scala-reflect/2.11.0-SNAPSHOT/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	local: no ivy file found for org.scala-lang#scala-reflect;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang#scala-reflect;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.11.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m	maven-metadata not available: http://repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.11.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m		tried http://repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.11.0-SNAPSHOT/scala-reflect-2.11.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.11.0-SNAPSHOT/scala-reflect-2.11.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0m	public: no ivy file found for org.scala-lang#scala-reflect;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang#scala-reflect;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m[2.11.0-20130912.012030-390] org/scala-lang#scala-reflect;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m		tried https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/scala-reflect/2.11.0-SNAPSHOT/scala-reflect-2.11.0-20130912.012030-390.pom[0m
+[0m[[0mdebug[0m] [0m	sonatype-snapshots: found md file for org.scala-lang#scala-reflect;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m		=> https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/scala-reflect/2.11.0-SNAPSHOT/scala-reflect-2.11.0-20130912.012030-390.pom (2.11.0-SNAPSHOT)[0m
+[0m[[0mdebug[0m] [0m	default-cache: revision in cache (not updated): org.scala-lang#scala-reflect;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang#scala-reflect;2.11.0-SNAPSHOT in sbt-chain[0m
+[0m[[0mdebug[0m] [0m	[2.11.0-SNAPSHOT] org.scala-lang#scala-reflect;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'runtime'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'test'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [test][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'provided'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [provided][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'optional'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [optional][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'compile-internal'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [compile-internal][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [optional][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [provided][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'runtime-internal'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [runtime-internal][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [optional][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'test-internal'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [test-internal][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [test][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#lombrello_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [optional][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [provided][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'plugin'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [plugin][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT [plugin->default(compile)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT {plugin=[default(compile)]}[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m		tried /Users/amanj/.ivy2/local/org.scala-lang.plugins/macro-paradise_2.11.0-SNAPSHOT/2.0.0-SNAPSHOT/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	local: no ivy file found for org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/plugins/macro-paradise_2.11.0-SNAPSHOT/2.0.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m	maven-metadata not available: http://repo1.maven.org/maven2/org/scala-lang/plugins/macro-paradise_2.11.0-SNAPSHOT/2.0.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m		tried http://repo1.maven.org/maven2/org/scala-lang/plugins/macro-paradise_2.11.0-SNAPSHOT/2.0.0-SNAPSHOT/macro-paradise_2.11.0-SNAPSHOT-2.0.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/plugins/macro-paradise_2.11.0-SNAPSHOT/2.0.0-SNAPSHOT/macro-paradise_2.11.0-SNAPSHOT-2.0.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0m	public: no ivy file found for org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m		tried https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/plugins/macro-paradise_2.11.0-SNAPSHOT/2.0.0-SNAPSHOT/macro-paradise_2.11.0-SNAPSHOT-2.0.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0m	sonatype-snapshots: found md file for org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m		=> https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/plugins/macro-paradise_2.11.0-SNAPSHOT/2.0.0-SNAPSHOT/macro-paradise_2.11.0-SNAPSHOT-2.0.0-SNAPSHOT.pom (2.0.0-SNAPSHOT)[0m
+[0m[[0mdebug[0m] [0m	default-cache: revision in cache (not updated): org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT [plugin->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT [plugin->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-M4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1 [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-M4 [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT->org.scala-lang#scala-compiler;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT->org.scala-lang#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT->org.scala-lang#scala-reflect;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT [plugin->master][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'sources'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [sources][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'docs'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [docs][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'pom'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [pom][0m
+[0m[[0mdebug[0m] [0mresolving dependencies for configuration 'scala-tool'[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT [scala-tool][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT [scala-tool->default][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT {scala-tool=[default, optional(default)]}[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m		tried /Users/amanj/.ivy2/local/org.scala-lang.macro-paradise/scala-compiler/2.11.0-SNAPSHOT/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	local: no ivy file found for org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/scala-compiler/2.11.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m	maven-metadata not available: http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/scala-compiler/2.11.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m		tried http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/scala-compiler/2.11.0-SNAPSHOT/scala-compiler-2.11.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/scala-compiler/2.11.0-SNAPSHOT/scala-compiler-2.11.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0m	public: no ivy file found for org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m[2.11.0-20130722.015147-223] org/scala-lang/macro-paradise#scala-compiler;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m		tried https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/macro-paradise/scala-compiler/2.11.0-SNAPSHOT/scala-compiler-2.11.0-20130722.015147-223.pom[0m
+[0m[[0mdebug[0m] [0m	sonatype-snapshots: found md file for org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m		=> https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/macro-paradise/scala-compiler/2.11.0-SNAPSHOT/scala-compiler-2.11.0-20130722.015147-223.pom (2.11.0-SNAPSHOT)[0m
+[0m[[0mdebug[0m] [0m	default-cache: revision in cache (not updated): org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT [scala-tool->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT [scala-tool->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->default][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->optional(default)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->master(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->runtime(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [runtime->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT [scala-tool->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT [scala-tool->optional(default)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT [optional->master(*)][0m
+[0m[[0minfo[0m] [0mResolving org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT {optional=[compile(*), master(*)]}[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m		tried /Users/amanj/.ivy2/local/org.scala-lang.macro-paradise/jline/2.11.0-SNAPSHOT/ivys/ivy.xml[0m
+[0m[[0mdebug[0m] [0m	local: no ivy file found for org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/jline/2.11.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m	maven-metadata not available: http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/jline/2.11.0-SNAPSHOT/maven-metadata.xml[0m
+[0m[[0mdebug[0m] [0m		tried http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/jline/2.11.0-SNAPSHOT/jline-2.11.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/org/scala-lang/macro-paradise/jline/2.11.0-SNAPSHOT/jline-2.11.0-SNAPSHOT.pom[0m
+[0m[[0mdebug[0m] [0m	public: no ivy file found for org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mdon't use cache for org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT: changing=true[0m
+[0m[[0mdebug[0m] [0m[2.11.0-20130722.015147-224] org/scala-lang/macro-paradise#jline;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m		tried https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/macro-paradise/jline/2.11.0-SNAPSHOT/jline-2.11.0-20130722.015147-224.pom[0m
+[0m[[0mdebug[0m] [0m	sonatype-snapshots: found md file for org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m		=> https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/macro-paradise/jline/2.11.0-SNAPSHOT/jline-2.11.0-20130722.015147-224.pom (2.11.0-SNAPSHOT)[0m
+[0m[[0mdebug[0m] [0m	default-cache: revision in cache (not updated): org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0m	found org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT->org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT [optional->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT->org.fusesource.jansi#jansi;1.4 [compile->master(*)][0m
+[0m[[0minfo[0m] [0mResolving org.fusesource.jansi#jansi;1.4 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.fusesource.jansi#jansi;1.4 {compile=[compile(*), master(*)], runtime=[runtime(*)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.fusesource.jansi#jansi;1.4[0m
+[0m[[0mdebug[0m] [0m	local: revision in cache: org.fusesource.jansi#jansi;1.4[0m
+[0m[[0mdebug[0m] [0m	found org.fusesource.jansi#jansi;1.4 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT->org.fusesource.jansi#jansi;1.4 [compile->compile(*)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [scala-tool->default][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [scala-tool->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [scala-tool->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [scala-tool->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT->org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT [scala-tool->optional(default)][0m
+[0m[[0mdebug[0m] [0m	resolved ivy file produced in /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/target/resolution-cache/ch.usi.inf.l3/tests_2.11.0-SNAPSHOT/0.1-SNAPSHOT/resolved.xml.xml[0m
+[0m[[0mdebug[0m] [0m:: downloading artifacts ::[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang.macro-paradise#scala-library;2.11.0-SNAPSHOT!scala-library.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang.macro-paradise#scala-reflect;2.11.0-SNAPSHOT!scala-reflect.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang#scala-compiler;2.11.0-SNAPSHOT!scala-compiler.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang#scala-library;2.11.0-SNAPSHOT!scala-library.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang.modules#scala-xml_2.11.0-M4;1.0-RC3!scala-xml_2.11.0-M4.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang.modules#scala-parser-combinators_2.11.0-M4;1.0-RC1!scala-parser-combinators_2.11.0-M4.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang#scala-reflect;2.11.0-SNAPSHOT!scala-reflect.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang.plugins#macro-paradise_2.11.0-SNAPSHOT;2.0.0-SNAPSHOT!macro-paradise_2.11.0-SNAPSHOT.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang.macro-paradise#scala-compiler;2.11.0-SNAPSHOT!scala-compiler.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang.macro-paradise#jline;2.11.0-SNAPSHOT!jline.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.fusesource.jansi#jansi;1.4!jansi.jar[0m
+[0m[[0mdebug[0m] [0m:: resolution report :: resolve 4636ms :: artifacts dl 14ms[0m
+[0m[[0mdebug[0m] [0m	report for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT compile produced in /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/target/resolution-cache/reports/ch.usi.inf.l3-tests_2.11.0-SNAPSHOT-compile.xml[0m
+[0m[[0mdebug[0m] [0m	report for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT runtime produced in /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/target/resolution-cache/reports/ch.usi.inf.l3-tests_2.11.0-SNAPSHOT-runtime.xml[0m
+[0m[[0mdebug[0m] [0m	report for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT test produced in /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/target/resolution-cache/reports/ch.usi.inf.l3-tests_2.11.0-SNAPSHOT-test.xml[0m
+[0m[[0mdebug[0m] [0m	report for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT provided produced in /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/target/resolution-cache/reports/ch.usi.inf.l3-tests_2.11.0-SNAPSHOT-provided.xml[0m
+[0m[[0mdebug[0m] [0m	report for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT optional produced in /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/target/resolution-cache/reports/ch.usi.inf.l3-tests_2.11.0-SNAPSHOT-optional.xml[0m
+[0m[[0mdebug[0m] [0m	report for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT compile-internal produced in /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/target/resolution-cache/reports/ch.usi.inf.l3-tests_2.11.0-SNAPSHOT-compile-internal.xml[0m
+[0m[[0mdebug[0m] [0m	report for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT runtime-internal produced in /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/target/resolution-cache/reports/ch.usi.inf.l3-tests_2.11.0-SNAPSHOT-runtime-internal.xml[0m
+[0m[[0mdebug[0m] [0m	report for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT test-internal produced in /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/target/resolution-cache/reports/ch.usi.inf.l3-tests_2.11.0-SNAPSHOT-test-internal.xml[0m
+[0m[[0mdebug[0m] [0m	report for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT plugin produced in /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/target/resolution-cache/reports/ch.usi.inf.l3-tests_2.11.0-SNAPSHOT-plugin.xml[0m
+[0m[[0mdebug[0m] [0m	report for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT sources produced in /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/target/resolution-cache/reports/ch.usi.inf.l3-tests_2.11.0-SNAPSHOT-sources.xml[0m
+[0m[[0mdebug[0m] [0m	report for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT docs produced in /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/target/resolution-cache/reports/ch.usi.inf.l3-tests_2.11.0-SNAPSHOT-docs.xml[0m
+[0m[[0mdebug[0m] [0m	report for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT pom produced in /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/target/resolution-cache/reports/ch.usi.inf.l3-tests_2.11.0-SNAPSHOT-pom.xml[0m
+[0m[[0mdebug[0m] [0m	report for ch.usi.inf.l3#tests_2.11.0-SNAPSHOT;0.1-SNAPSHOT scala-tool produced in /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/target/resolution-cache/reports/ch.usi.inf.l3-tests_2.11.0-SNAPSHOT-scala-tool.xml[0m
+[0m[[0mdebug[0m] [0m	resolve done (4636ms resolve - 14ms download)[0m
+[0m[[0minfo[0m] [0mDone updating.[0m

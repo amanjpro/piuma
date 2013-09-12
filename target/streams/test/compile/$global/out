@@ -1,0 +1,40 @@
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0mInitial source changes: [0m
+[0m[[0mdebug[0m] [0m	removed:Set()[0m
+[0m[[0mdebug[0m] [0m	added: Set(/Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/scala/tests/Test.scala, /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/scala/tests/plugins/TestPlugin.scala)[0m
+[0m[[0mdebug[0m] [0m	modified: Set()[0m
+[0m[[0mdebug[0m] [0mRemoved products: Set()[0m
+[0m[[0mdebug[0m] [0mModified external sources: Set()[0m
+[0m[[0mdebug[0m] [0mModified binary dependencies: Set()[0m
+[0m[[0mdebug[0m] [0mInitial directly invalidated sources: Set(/Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/scala/tests/Test.scala, /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/scala/tests/plugins/TestPlugin.scala)[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0mSources indirectly invalidated by:[0m
+[0m[[0mdebug[0m] [0m	product: Set()[0m
+[0m[[0mdebug[0m] [0m	binary dep: Set()[0m
+[0m[[0mdebug[0m] [0m	external source: Set()[0m
+[0m[[0mdebug[0m] [0mAll initially invalidated sources: Set(/Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/scala/tests/Test.scala, /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/scala/tests/plugins/TestPlugin.scala)[0m
+[0m[[0mdebug[0m] [0mRecompiling all 2 sources: invalidated sources (2) exceeded 50.0% of all sources[0m
+[0m[[0minfo[0m] [0mCompiling 2 Scala sources to /Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/target/scala-2.10/test-classes...[0m
+[0m[[0mdebug[0m] [0mGetting compiler-interface from component compiler for Scala 2.10.3-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mGetting compiler-interface from component compiler for Scala 2.10.3-SNAPSHOT[0m
+[0m[[0mdebug[0m] [0mRunning cached compiler 4b94da0e, interfacing (CompilerInterface) with Scala compiler version 2.10.3-20130715-215813-cca419076e[0m
+[0m[[0mdebug[0m] [0mCalling Scala compiler with arguments  (CompilerInterface):[0m
+[0m[[0mdebug[0m] [0m	-unchecked[0m
+[0m[[0mdebug[0m] [0m	-deprecation[0m
+[0m[[0mdebug[0m] [0m	-feature[0m
+[0m[[0mdebug[0m] [0m	-bootclasspath[0m
+[0m[[0mdebug[0m] [0m	/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/sunrsasign.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/JObjC.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/classes:/Users/amanj/.ivy2/cache/org.scala-lang.macro-paradise/scala-library/jars/scala-library-2.10.3-SNAPSHOT.jar[0m
+[0m[[0mdebug[0m] [0m	-classpath[0m
+[0m[[0mdebug[0m] [0m	/Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/target/scala-2.10/test-classes:/Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/target/scala-2.10/classes:/Users/amanj/.ivy2/cache/org.scala-lang.macro-paradise/scala-reflect/jars/scala-reflect-2.10.3-SNAPSHOT.jar:/Users/amanj/.ivy2/cache/org.scala-lang/scala-compiler/jars/scala-compiler-2.10.3-SNAPSHOT.jar:/Users/amanj/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.10.3-SNAPSHOT.jar[0m
+[0m[[31merror[0m] [0m/Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/scala/tests/plugins/TestPlugin.scala:33: not found: value quasiquoteCompat[0m
+[0m[[31merror[0m] [0m      case q"val $name = $v" =>[0m
+[0m[[31merror[0m] [0m           ^[0m
+[0m[[31merror[0m] [0m/Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/scala/tests/plugins/TestPlugin.scala:34: not found: value quasiquoteCompat[0m
+[0m[[31merror[0m] [0m        val b = q"class A(b: Int)"[0m
+[0m[[31merror[0m] [0m                ^[0m
+[0m[[31merror[0m] [0m/Users/amanj/Documents/PhD/MyWork/Programming/Lombrello/lombrello/src/test/scala/tests/plugins/TestPlugin.scala:35: not found: value vvv[0m
+[0m[[31merror[0m] [0m        vvv[0m
+[0m[[31merror[0m] [0m        ^[0m
+[0m[[31merror[0m] [0mthree errors found[0m
+[0m[[0mdebug[0m] [0mCompilation failed (CompilerInterface)[0m
+[0m[[31merror[0m] [0m(root/test:[31mcompile[0m) Compilation failed[0m

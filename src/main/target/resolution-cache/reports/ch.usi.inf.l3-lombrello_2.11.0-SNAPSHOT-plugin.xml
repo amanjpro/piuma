@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="ivy-report.xsl"?>
+<ivy-report version="1.0">
+	<info
+		organisation="ch.usi.inf.l3"
+		module="lombrello_2.11.0-SNAPSHOT"
+		revision="0.1-SNAPSHOT"
+		conf="plugin"
+		confs="compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, sources, docs, pom, scala-tool"
+		date="20130912163956"/>
+	<dependencies>
+		<module organisation="org.scala-lang.plugins" name="macro-paradise_2.11.0-SNAPSHOT">
+			<revision name="2.0.0-SNAPSHOT" status="integration" pubdate="20130912072553" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/scalamacros/paradise" downloaded="false" searched="true" default="false" conf="default(compile), default, compile, runtime, master" position="0">
+				<license name="BSD-like" url="http://www.scala-lang.org/downloads/license.html "/>
+				<metadata-artifact status="no" details="" size="2897" time="0" location="/Users/amanj/.ivy2/cache/org.scala-lang.plugins/macro-paradise_2.11.0-SNAPSHOT/ivy-2.0.0-SNAPSHOT.xml" searched="true" origin-is-local="false" origin-location="https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/plugins/macro-paradise_2.11.0-SNAPSHOT/2.0.0-SNAPSHOT/macro-paradise_2.11.0-SNAPSHOT-2.0.0-SNAPSHOT.pom"/>
+				<caller organisation="ch.usi.inf.l3" name="lombrello_2.11.0-SNAPSHOT" conf="plugin" rev="2.0.0-SNAPSHOT" rev-constraint-default="2.0.0-SNAPSHOT" rev-constraint-dynamic="2.0.0-SNAPSHOT" callerrev="0.1-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="macro-paradise_2.11.0-SNAPSHOT" type="jar" ext="jar" status="no" details="" size="288718" time="0" location="/Users/amanj/.ivy2/cache/org.scala-lang.plugins/macro-paradise_2.11.0-SNAPSHOT/jars/macro-paradise_2.11.0-SNAPSHOT-2.0.0-SNAPSHOT.jar">
+						<origin-location is-local="false" location="https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/plugins/macro-paradise_2.11.0-SNAPSHOT/2.0.0-SNAPSHOT/macro-paradise_2.11.0-SNAPSHOT-2.0.0-SNAPSHOT.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.scala-lang" name="scala-compiler">
+			<revision name="2.11.0-SNAPSHOT" status="integration" pubdate="20130912032107" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.scala-lang.org/" downloaded="false" searched="true" default="false" conf="compile, master(*), runtime, compile(*), runtime(*), master" position="1">
+				<license name="BSD-like" url="http://www.scala-lang.org/downloads/license.html    "/>
+				<metadata-artifact status="no" details="" size="3156" time="0" location="/Users/amanj/.ivy2/cache/org.scala-lang/scala-compiler/ivy-2.11.0-SNAPSHOT.xml" searched="true" origin-is-local="false" origin-location="https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/scala-compiler/2.11.0-SNAPSHOT/scala-compiler-2.11.0-20130912.012030-390.pom"/>
+				<caller organisation="org.scala-lang.plugins" name="macro-paradise_2.11.0-SNAPSHOT" conf="default, compile, runtime, master" rev="2.11.0-SNAPSHOT" rev-constraint-default="2.11.0-SNAPSHOT" rev-constraint-dynamic="2.11.0-SNAPSHOT" callerrev="2.0.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="scala-compiler" type="jar" ext="jar" status="no" details="" size="13381346" time="0" location="/Users/amanj/.ivy2/cache/org.scala-lang/scala-compiler/jars/scala-compiler-2.11.0-SNAPSHOT.jar">
+						<origin-location is-local="false" location="https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/scala-compiler/2.11.0-SNAPSHOT/scala-compiler-2.11.0-20130912.012030-390.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.scala-lang" name="scala-reflect">
+			<revision name="2.11.0-SNAPSHOT" status="integration" pubdate="20130912032147" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.scala-lang.org/" extra-info.apiURL="http://www.scala-lang.org/api/2.11.0-SNAPSHOT/" downloaded="false" searched="true" default="false" conf="compile, master(*), runtime, compile(*), runtime(*), master" position="5">
+				<license name="BSD-like" url="http://www.scala-lang.org/downloads/license.html    "/>
+				<metadata-artifact status="no" details="" size="2785" time="0" location="/Users/amanj/.ivy2/cache/org.scala-lang/scala-reflect/ivy-2.11.0-SNAPSHOT.xml" searched="true" origin-is-local="false" origin-location="https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/scala-reflect/2.11.0-SNAPSHOT/scala-reflect-2.11.0-20130912.012030-390.pom"/>
+				<caller organisation="org.scala-lang.plugins" name="macro-paradise_2.11.0-SNAPSHOT" conf="default, compile, runtime, master" rev="2.11.0-SNAPSHOT" rev-constraint-default="2.11.0-SNAPSHOT" rev-constraint-dynamic="2.11.0-SNAPSHOT" callerrev="2.0.0-SNAPSHOT"/>
+				<caller organisation="org.scala-lang" name="scala-compiler" conf="compile, runtime" rev="2.11.0-SNAPSHOT" rev-constraint-default="2.11.0-SNAPSHOT" rev-constraint-dynamic="2.11.0-SNAPSHOT" callerrev="2.11.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="scala-reflect" type="jar" ext="jar" status="no" details="" size="3580810" time="0" location="/Users/amanj/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.11.0-SNAPSHOT.jar">
+						<origin-location is-local="false" location="https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/scala-reflect/2.11.0-SNAPSHOT/scala-reflect-2.11.0-20130912.012030-390.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.scala-lang.modules" name="scala-parser-combinators_2.11.0-M4">
+			<revision name="1.0-RC1" status="release" pubdate="20130816015605" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.scala-lang.org/" downloaded="false" searched="false" default="false" conf="compile, master(*), runtime, compile(*), runtime(*), master" position="4">
+				<license name="BSD 3-Clause" url="https://github.com/scala/scala-parser-combinators/blob/master/LICENSE.md"/>
+				<metadata-artifact status="no" details="" size="2891" time="0" location="/Users/amanj/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.11.0-M4/ivy-1.0-RC1.xml" searched="false" origin-is-local="false" origin-location="http://repo1.maven.org/maven2/org/scala-lang/modules/scala-parser-combinators_2.11.0-M4/1.0-RC1/scala-parser-combinators_2.11.0-M4-1.0-RC1.pom"/>
+				<caller organisation="org.scala-lang" name="scala-compiler" conf="compile, runtime" rev="1.0-RC1" rev-constraint-default="1.0-RC1" rev-constraint-dynamic="1.0-RC1" callerrev="2.11.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="scala-parser-combinators_2.11.0-M4" type="jar" ext="jar" status="no" details="" size="419890" time="0" location="/Users/amanj/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.11.0-M4/jars/scala-parser-combinators_2.11.0-M4-1.0-RC1.jar">
+						<origin-location is-local="false" location="http://repo1.maven.org/maven2/org/scala-lang/modules/scala-parser-combinators_2.11.0-M4/1.0-RC1/scala-parser-combinators_2.11.0-M4-1.0-RC1.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.scala-lang.modules" name="scala-xml_2.11.0-M4">
+			<revision name="1.0-RC3" status="release" pubdate="20130826225238" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.scala-lang.org/" downloaded="false" searched="false" default="false" conf="compile, master(*), runtime, compile(*), runtime(*), master" position="3">
+				<license name="BSD 3-Clause" url="https://github.com/scala/scala-xml/blob/master/LICENSE.md"/>
+				<metadata-artifact status="no" details="" size="2831" time="0" location="/Users/amanj/.ivy2/cache/org.scala-lang.modules/scala-xml_2.11.0-M4/ivy-1.0-RC3.xml" searched="false" origin-is-local="false" origin-location="http://repo1.maven.org/maven2/org/scala-lang/modules/scala-xml_2.11.0-M4/1.0-RC3/scala-xml_2.11.0-M4-1.0-RC3.pom"/>
+				<caller organisation="org.scala-lang" name="scala-compiler" conf="compile, runtime" rev="1.0-RC3" rev-constraint-default="1.0-RC3" rev-constraint-dynamic="1.0-RC3" callerrev="2.11.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="scala-xml_2.11.0-M4" type="jar" ext="jar" status="no" details="" size="648588" time="0" location="/Users/amanj/.ivy2/cache/org.scala-lang.modules/scala-xml_2.11.0-M4/jars/scala-xml_2.11.0-M4-1.0-RC3.jar">
+						<origin-location is-local="false" location="http://repo1.maven.org/maven2/org/scala-lang/modules/scala-xml_2.11.0-M4/1.0-RC3/scala-xml_2.11.0-M4-1.0-RC3.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.scala-lang" name="scala-library">
+			<revision name="2.11.0-SNAPSHOT" status="integration" pubdate="20130912032127" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.scala-lang.org/" extra-info.apiURL="http://www.scala-lang.org/api/2.11.0-SNAPSHOT/" downloaded="false" searched="true" default="false" conf="compile, master(*), runtime, compile(*), runtime(*), master" position="2">
+				<license name="BSD-like" url="http://www.scala-lang.org/downloads/license.html          "/>
+				<metadata-artifact status="no" details="" size="2616" time="0" location="/Users/amanj/.ivy2/cache/org.scala-lang/scala-library/ivy-2.11.0-SNAPSHOT.xml" searched="true" origin-is-local="false" origin-location="https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/scala-library/2.11.0-SNAPSHOT/scala-library-2.11.0-20130912.012030-391.pom"/>
+				<caller organisation="org.scala-lang.plugins" name="macro-paradise_2.11.0-SNAPSHOT" conf="default, compile, runtime, master" rev="2.11.0-SNAPSHOT" rev-constraint-default="2.11.0-SNAPSHOT" rev-constraint-dynamic="2.11.0-SNAPSHOT" callerrev="2.0.0-SNAPSHOT"/>
+				<caller organisation="org.scala-lang" name="scala-reflect" conf="compile, runtime" rev="2.11.0-SNAPSHOT" rev-constraint-default="2.11.0-SNAPSHOT" rev-constraint-dynamic="2.11.0-SNAPSHOT" callerrev="2.11.0-SNAPSHOT"/>
+				<caller organisation="org.scala-lang.modules" name="scala-parser-combinators_2.11.0-M4" conf="compile, runtime" rev="2.11.0-M4" rev-constraint-default="2.11.0-M4" rev-constraint-dynamic="2.11.0-M4" callerrev="1.0-RC1"/>
+				<caller organisation="org.scala-lang.modules" name="scala-xml_2.11.0-M4" conf="compile, runtime" rev="2.11.0-M4" rev-constraint-default="2.11.0-M4" rev-constraint-dynamic="2.11.0-M4" callerrev="1.0-RC3"/>
+				<caller organisation="org.scala-lang" name="scala-compiler" conf="compile, runtime" rev="2.11.0-SNAPSHOT" rev-constraint-default="2.11.0-SNAPSHOT" rev-constraint-dynamic="2.11.0-SNAPSHOT" callerrev="2.11.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="scala-library" type="jar" ext="jar" status="no" details="" size="5814254" time="0" location="/Users/amanj/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.11.0-SNAPSHOT.jar">
+						<origin-location is-local="false" location="https://oss.sonatype.org/content/repositories/snapshots/org/scala-lang/scala-library/2.11.0-SNAPSHOT/scala-library-2.11.0-20130912.012030-391.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+			<revision name="2.11.0-M4" evicted="latest-revision" evicted-reason="" downloaded="false" searched="false" conf="compile, master(*), runtime, compile(*), runtime(*), master" position="-1">
+				<evicted-by rev="2.11.0-SNAPSHOT"/>
+				<caller organisation="org.scala-lang.modules" name="scala-parser-combinators_2.11.0-M4" conf="compile, runtime" rev="2.11.0-M4" rev-constraint-default="2.11.0-M4" rev-constraint-dynamic="2.11.0-M4" callerrev="1.0-RC1"/>
+				<caller organisation="org.scala-lang.modules" name="scala-xml_2.11.0-M4" conf="compile, runtime" rev="2.11.0-M4" rev-constraint-default="2.11.0-M4" rev-constraint-dynamic="2.11.0-M4" callerrev="1.0-RC3"/>
+				<artifacts>
+				</artifacts>
+			</revision>
+		</module>
+	</dependencies>
+</ivy-report>
