@@ -68,7 +68,6 @@ class TransformerDSLParser extends JavaTokenParsers {
 }
 
 object ParseTransformerDSL extends TransformerDSLParser {
-  
   def parse(str: String): Boolean = {
     val b = parseAll(dsl, str)
     println(b.toString)

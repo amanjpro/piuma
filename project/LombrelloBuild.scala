@@ -9,10 +9,9 @@ object LombrelloBuildSettings {
     version := "0.1-SNAPSHOT",
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
     scalaVersion := sversion,
-    scalaOrganization := "org.scala-lang.macro-paradise",
     resolvers += Resolver.sonatypeRepo("snapshots"),
     licenses := ("BSD 3-Clause", new java.net.URL("http://opensource.org/licenses/BSD-3-Clause")) :: Nil,
-    libraryDependencies ++= Seq("org.scala-lang.macro-paradise" % "scala-reflect" % sversion,
+    libraryDependencies ++= Seq("org.scala-lang" % "scala-reflect" % sversion,
         "org.scala-lang" % "scala-compiler" % sversion),
     addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise" % "2.0.0-SNAPSHOT" cross CrossVersion.full)
         )

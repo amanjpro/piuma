@@ -10,11 +10,16 @@ import scala.tools.nsc.transform.TypingTransformers
 import scala.tools.nsc.ast.parser.TreeBuilder
 import scala.reflect.runtime.universe._
 import scala.language.implicitConversions
+import scala.tools.nsc.reporters.Reporter
+import scala.tools.nsc.Settings
+import ch.usi.inf.l3.lombrello.transform.api.SymbolTreeMap
+import scala.tools.nsc.doc.model.TreeFactory
 
 abstract class TransformerPlugin(val global: Global) 
 	extends Plugin {
   
   import global._
+  
   
   val name: String;
   
@@ -22,4 +27,7 @@ abstract class TransformerPlugin(val global: Global)
   
   val components: List[TransformerPluginComponent];
   
+  val treeBank = new {
+    val global: TransformerPlugin.this.global.type = TransformerPlugin.this.global
+  } with SymbolTreeMap {}
 }

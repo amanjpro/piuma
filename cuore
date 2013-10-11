@@ -1,0 +1,128 @@
+#!/bin/sh
+exec scala -save -feature "$0" "$@"
+!#
+
+/*
+ * Copyright (c) <2013>, Amanj Sherwany <http://www.amanj.me>
+ * All rights reserved.
+ * A simple scala script, to automatically build the project and test it
+ */
+
+import sys.process._
+import scala.io._
+import java.io._
+import scala.language.postfixOps
+
+
+val sp = File.separator
+val scalaVersion = "2.10"
+val lombrelloVersion = "0.1-SNAPSHOT"
+val lombrelloName = s"lombrello_${scalaVersion}-${lombrelloVersion}.jar"
+val targetPath = s"target${sp}scala-${scalaVersion}"
+
+val lombrello = s"${targetPath}${sp}${lombrelloName}"
+val testPlugin = s"${targetPath}${sp}test-classes${sp}tests"
+val testPluginClasses = s"test${sp}testPlugin"
+
+def dumb(o: OutputStream) = {}
+def read(in: InputStream) = {
+  var lines = Source.fromInputStream(in).getLines().mkString("\n")
+  print(lines)
+}
+
+val pio = new ProcessIO(dumb, read, read)
+
+
+def testBase = {
+  build
+  s"cp ${lombrello} test${sp}lib${sp}lombrello.jar".run(pio).exitValue
+  s"cp -r ${testPlugin} test${sp}testPlugin${sp}tests".run(pio).exitValue
+  s"""jar cfm test${sp}test.jar test${sp}Manifest.txt
+    -C ${testPluginClasses}${sp} .""".run(pio).exitValue
+  val f = new File("test/bin")
+  if(!f.exists) f.mkdirs
+  s"scalac -d test/bin -Xplugin:test${sp}test.jar -cp test test${sp}tests${sp}Test.scala".run(pio).exitValue
+}
+
+def sbtClean = {
+  "sbt clean".run(pio).exitValue
+  "rm -r project/project".run(pio).exitValue
+  "rm -r project/target".run(pio).exitValue
+}
+def testClean = {
+  "rm test/lib/lombrello.jar".run(pio).exitValue
+  "rm test/test.jar".run(pio).exitValue
+  "rm -r test/testPlugin/tests".run(pio).exitValue
+  val fs = new File("test/bin")
+  for(f <- fs.list if f.endsWith(".class") {
+      new File(f).delete
+  }
+  
+  // For some reason this does not work!!
+  //"rm test/bin/*.class".run(pio).exitValue
+}
+
+def cleanAll = {
+  sbtClean
+  testClean
+}
+def build = {
+  "sbt package".run(pio).exitValue
+  "sbt test".run(pio).exitValue
+}
+
+def cleanBuild = {
+  cleanAll
+  build
+}
+
+def cleanTest = {
+  cleanAll
+  testBase
+}
+
+def test = {
+  testClean
+  testBase
+}
+
+def usage = {
+  println("""|Usage: cuore [build | cleanBuild | test | cleanTest | cleanAll |
+             | help]""".stripMargin)
+}
+
+def processOptions(opts: Array[String]) = {
+  if(opts.length != 1) {
+    usage
+    System.exit(1)
+  }
+  
+  val result = opts(0) match {
+    case "build" => 
+      build
+      0
+    case "cleanBuild" =>
+      cleanBuild
+      0
+    case "test" => 
+      test
+      0
+    case "cleanTest" =>
+      cleanTest
+      0
+    case "cleanAll" => 
+      cleanAll
+      0
+    case "help" => 
+      usage
+      0
+    case _ => 
+      usage
+      1
+  }
+  System.exit(result)
+}
+
+processOptions(args)
+
+

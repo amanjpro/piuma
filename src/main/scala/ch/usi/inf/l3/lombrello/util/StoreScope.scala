@@ -1,5 +1,7 @@
 package ch.usi.inf.l3.lombrello.util
 
-class StoreScope[T] {
-  private val env = Map.empty[Symbol, T]
+import ch.usi.inf.l3.lombrello.transform.dsl.TransformerPlugin
+
+abstract class StoreScope[T] extends Scope[T] { self: TransformerPlugin =>
+  private val env = Map.empty[SSymbol, T]
 }

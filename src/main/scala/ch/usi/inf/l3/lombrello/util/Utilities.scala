@@ -33,8 +33,5 @@ private[lombrello] object Utilities {
   val PHASE_CLOSELIM = "closelim" // 27
   val PHASE_DCE = "dce" // 28
   val PHASE_JVM = "jvm" // 29
-  val PHASE_TERMINAL = "terminal" // 30
-    
-    
-  
+  val PHASE_TERMINAL = "terminal" // 30 
 }
