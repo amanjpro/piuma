@@ -54,7 +54,7 @@ def testClean = {
   "rm test/test.jar".run(pio).exitValue
   "rm -r test/testPlugin/tests".run(pio).exitValue
   val fs = new File("test/bin")
-  for(f <- fs.list if f.endsWith(".class") {
+  for(f <- fs.list if f.endsWith(".class")) {
       new File(f).delete
   }
   
@@ -88,7 +88,11 @@ def test = {
 
 def usage = {
   println("""|Usage: cuore [build | cleanBuild | test | cleanTest | cleanAll |
-             | help]""".stripMargin)
+             | doc | help]""".stripMargin)
+}
+
+def doc = {
+  "sbt doc".run(pio).exitValue
 }
 
 def processOptions(opts: Array[String]) = {
@@ -112,6 +116,9 @@ def processOptions(opts: Array[String]) = {
       0
     case "cleanAll" => 
       cleanAll
+      0
+    case "doc" =>
+      doc
       0
     case "help" => 
       usage
