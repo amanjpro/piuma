@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) <2013>, Amanj Sherwany <http://www.amanj.me>
+ * All rights reserved.
+ * */
+
 package ch.usi.inf.l3.lombrello.transform.dsl.transformers
 
 import ch.usi.inf.l3.lombrello.transform.dsl.TransformerPluginComponent
@@ -306,13 +311,13 @@ trait RenameTransformerCake {
 
           val valid = if (vsym.hasGetter) {
             val gtr = vsym.getter(vsym.owner)
-            val getterExists = isNotAlreadyDefined(vsym, newName)
+            val getterExists = isAlreadyDefined(vsym, newSymbol(gtr, newName))
             val setterExists = if (vsym.isVar) {
               val strName = nme.getterToSetter(newName)
               val str = vsym.setter(vsym.owner)
-              isNotAlreadyDefined(vsym, strName)
+              isAlreadyDefined(vsym, newSymbol(str, strName))
             } else {
-              false
+              true
             }
 
             !getterExists && !setterExists
@@ -321,7 +326,7 @@ trait RenameTransformerCake {
           }
 
           val vname = nme.getterToLocal(newName)
-          val noDuplicate = isNotAlreadyDefined(vsym, vname)
+          val noDuplicate = !isAlreadyDefined(vsym, newSymbol(vsym, vname))
           valid && noDuplicate
         case x: ClassDef =>
           val csym = x.symbol
@@ -336,22 +341,22 @@ trait RenameTransformerCake {
 
               msym.name = mName
 
-              isNotAlreadyDefined(msym, mName)
+              !isAlreadyDefined(msym, newSymbol(msym, mName))
           }
-          validModule && isNotAlreadyDefined(csym, newName)
+          validModule && !isAlreadyDefined(csym, newSymbol(csym, newName))
         case x: ModuleDef =>
           val msym = x.symbol
           val msymClass = msym.moduleClass
 
           val validClass = msym.companionClass match {
             case NoSymbol => true
-            case csym => isNotAlreadyDefined(csym, newName.toTypeName)
+            case csym => ! isAlreadyDefined(csym, newSymbol(csym, newName.toTypeName))
           }
-          val validModule = isNotAlreadyDefined(msym, newName)
+          val validModule = !isAlreadyDefined(msym, newSymbol(msym, newName))
           validModule && validClass
         case DefDef(_, _, _, _, _, _) |
           TypeDef(_, _, _, _) | Bind(_, _) | PackageDef(_, _) =>
-          isNotAlreadyDefined(tree.symbol, newName)
+          !isAlreadyDefined(tree.symbol, newSymbol(tree.symbol, newName))
         case _ => false
       }
 
@@ -366,10 +371,13 @@ trait RenameTransformerCake {
       throw new AssertionError(newName + " is already defined in the scope")
     }
 
-    private def isNotAlreadyDefined(sym: Symbol, newName: Name): Boolean = {
-      !sym.owner.info.decls.exists(_.name == newName)
+    private def isAlreadyDefined(sym: Symbol, nsym: Symbol): Boolean = {
+      sym.owner.info.decls.exists(_ == nsym)
     }
 
+    private def newSymbol(sym: Symbol, name: Name): Symbol = {
+      sym.cloneSymbol(sym.owner).setName(name)
+    }
     private def renameSanityCheck(tree: Tree, newName: Name): Unit = {
 
       if (!canRename(tree, newName)) {

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) <2013>, Amanj Sherwany <http://www.amanj.me>
+ * All rights reserved.
+ * */
 import sbt._
 import Keys._
 

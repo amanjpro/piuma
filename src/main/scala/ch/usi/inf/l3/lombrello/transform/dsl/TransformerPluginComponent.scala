@@ -18,7 +18,8 @@ abstract class TransformerPluginComponent(val plugin: TransformerPlugin)
   with Transform
   with TypingTransformers
   with TreeDSL
-  with RenameTransformerCake {
+  with RenameTransformerCake 
+  with TreeGenTransformerCake {
 
   import plugin._
 
@@ -46,7 +47,8 @@ abstract class TransformerPluginComponent(val plugin: TransformerPlugin)
    */
   class TransformerComponent(val unit: CompilationUnit)
     extends TypingTransformer(unit)
-    with RenameTransformer {
+    with RenameTransformer 
+    with TreeGenTransformer {
 
     protected def typed(tree: Tree): Tree = localTyper.typed(tree)
 

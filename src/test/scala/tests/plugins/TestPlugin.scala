@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) <2013>, Amanj Sherwany <http://www.amanj.me>
+ * All rights reserved.
+ * */
+
 package tests.plugins
 
 import ch.usi.inf.l3.lombrello.transform.dsl._
@@ -25,10 +30,12 @@ class TestPluginComponent(plgn: TestPlugin) extends TransformerPluginComponent(p
     tree match {
       case x: ClassDef =>
         val newName = newTypeName("YESS")
-        if (canRename(x, newName))
-          rename(x, newName)
-        else
-          tree
+        val vtree = mkVar(x.symbol, "xmass ", definitions.IntTpe)
+        val strgtr = mkSetterAndGetter(vtree).get
+        val ntmplt = treeCopy.Template(x.impl, x.impl.parents, x.impl.self, vtree :: strgtr._1 :: strgtr._2 :: x.impl.body)
+        val nclazz = treeCopy.ClassDef(x, x.mods, x.name, x.tparams, ntmplt)
+        
+        typer.typed(nclazz)
       case x: ValDef if (x.name == newTermName("b")) =>
         val newName = newTermName("hello")
         if (canRename(tree, newName)) {
