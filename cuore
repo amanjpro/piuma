@@ -5,7 +5,7 @@ exec scala -save -feature "$0" "$@"
 /*
  * Copyright (c) <2013>, Amanj Sherwany <http://www.amanj.me>
  * All rights reserved.
- * A simple scala script, to automatically build the project and test it
+ * A simple Scala script, to automatically build the project and test it
  */
 
 import sys.process._
@@ -17,112 +17,224 @@ import scala.language.postfixOps
 val sp = File.separator
 val scalaVersion = "2.10"
 val lombrelloVersion = "0.1-SNAPSHOT"
-val lombrelloName = s"lombrello_${scalaVersion}-${lombrelloVersion}.jar"
 val targetPath = s"target${sp}scala-${scalaVersion}"
 
-val lombrello = s"${targetPath}${sp}${lombrelloName}"
-val testPlugin = s"${targetPath}${sp}test-classes${sp}tests"
-val testPluginClasses = s"test${sp}testPlugin"
+val mainProject = "lombrello"
+val plugins = List("scalsa", "simple")
+val tasks = List("compile", "package", "clean", "test")
+
+val lombrelloName = jarName(mainProject)
+val lombrello = s"${mainProject}${sp}${targetPath}${sp}${lombrelloName}"
+
+
+def jarName(name: String): String = s"${name}_${scalaVersion}-${lombrelloVersion}.jar"
+
+def targetName(name: String): String = s"${name}${sp}${targetPath}"
+
 
 def dumb(o: OutputStream) = {}
 def read(in: InputStream) = {
   var lines = Source.fromInputStream(in).getLines().mkString("\n")
-  print(lines)
+  println(lines)
 }
 
 val pio = new ProcessIO(dumb, read, read)
 
 
-def testBase = {
-  build
+def buildSBTProject(name: String) = {
+  s"sbt ${name}/compile".run(pio).exitValue
+}
+
+def packageSBTProject(name: String) = {
+  s"sbt ${name}/package".run(pio).exitValue
+}
+
+def cleanSBTProject(name: String) = {
+  s"sbt ${name}/clean".run(pio).exitValue
+}
+
+def testSBTProject(name: String) = {
+  s"sbt ${name}/test".run(pio).exitValue
+}
+
+def docSBTProject(name: String) = {
+  s"sbt ${name}/doc".run(pio).exitValue
+}
+
+def packagePlugin(plgn: String) = {
   s"cp ${lombrello} test${sp}lib${sp}lombrello.jar".run(pio).exitValue
-  s"cp -r ${testPlugin} test${sp}testPlugin${sp}tests".run(pio).exitValue
-  s"""jar cfm test${sp}test.jar test${sp}Manifest.txt
-    -C ${testPluginClasses}${sp} .""".run(pio).exitValue
-  val f = new File("test/bin")
-  if(!f.exists) f.mkdirs
-  s"scalac -d test/bin -Xplugin:test${sp}test.jar -cp test test${sp}tests${sp}Test.scala".run(pio).exitValue
-}
-
-def sbtClean = {
-  "sbt clean".run(pio).exitValue
-  "rm -r project/project".run(pio).exitValue
-  "rm -r project/target".run(pio).exitValue
-}
-def testClean = {
-  "rm test/lib/lombrello.jar".run(pio).exitValue
-  "rm test/test.jar".run(pio).exitValue
-  "rm -r test/testPlugin/tests".run(pio).exitValue
-  val fs = new File("test/bin")
-  for(f <- fs.list if f.endsWith(".class")) {
-      new File(f).delete
-  }
   
-  // For some reason this does not work!!
-  //"rm test/bin/*.class".run(pio).exitValue
+  val dest = s"test${sp}plugins${sp}${plgn}"
+  val src = s"${targetName(plgn)}${sp}classes" 
+  val destClasses = s"${dest}${sp}classes"
+  val xml = s"${sp}scalac-plugin.xml"
+  
+  val f = new File(s"test${sp}bin")
+  if(!f.exists) f.mkdirs
+  val f1 = new File(destClasses)
+  if(!f1.exists) f1.mkdirs
+
+  s"cp -r ${src} ${dest}".run(pio).exitValue
+  s"cp ${dest}${xml} ${destClasses}${xml}".run(pio).exitValue
+
+  s"""jar cfm test${sp}${plgn}.jar test${sp}Manifest.txt
+    -C ${destClasses}${sp} .""".run(pio).exitValue
 }
 
-def cleanAll = {
-  sbtClean
-  testClean
-}
-def build = {
-  "sbt package".run(pio).exitValue
-  "sbt test".run(pio).exitValue
+def testPlugin(plgn: String) = {
+  s"scalac -d test${sp}bin${sp}${plgn} -Xplugin:test${sp}${plgn}.jar -cp test " +
+      s"test${sp}tests${sp}${plgn}${sp}*.scala".run(pio).exitValue
 }
 
-def cleanBuild = {
-  cleanAll
-  build
+
+def cleanPlugin(plgn: String) = {
+  s"sbt ${plgn}/clean".run(pio).exitValue
+  s"rm -r test${sp}bin${sp}${plgn}".run(pio).exitValue
+  // s"rm -r test${sp}bin".run(pio).exitValue
+  s"rm -r test${sp}plugins${sp}${plgn}${sp}classes".run(pio).exitValue
+  s"rm test${sp}${plgn}.jar".run(pio).exitValue
 }
 
-def cleanTest = {
-  cleanAll
-  testBase
-}
 
-def test = {
-  testClean
-  testBase
-}
-
+// def sbtClean = {
+//   "sbt clean".run(pio).exitValue
+//   "rm -r project/project".run(pio).exitValue
+//   "rm -r project/target".run(pio).exitValue
+// }
+// def testClean = {
+//   "rm test/lib/lombrello.jar".run(pio).exitValue
+//   "rm test/test.jar".run(pio).exitValue
+//   "rm -r test/simplePlugin/tests".run(pio).exitValue
+//   val fs = new File("test/bin")
+//   for(f <- fs.list if f.endsWith(".class")) {
+//       new File(f).delete
+//   }
+//   
+//   // For some reason this does not work!!
+//   //"rm test/bin/*.class".run(pio).exitValue
+// }
+//
+// def cleanAll = {
+//   sbtClean
+//   testClean
+// }
+//
+//
+// def cleanBuild = {
+//   cleanAll
+//   build
+// }
+//
+// def cleanTest = {
+//   cleanAll
+//   testBase
+// }
+//
+// def test = {
+//   testClean
+//   testBase
+// }
+//
 def usage = {
   println("""|Usage: cuore [build | cleanBuild | test | cleanTest | cleanAll |
              | doc | help]""".stripMargin)
 }
 
-def doc = {
-  "sbt doc".run(pio).exitValue
-}
+
+
+/**
+ * In order to add a plugin, the following actions should be done:
+ * 
+ * 1- Add the project to the sbt build script
+ * 2- Add the name of the project to this script
+ * 3- Add the project folder to the root directory
+ * 4- Add the plugin descriptor to the test/plugins/PROJECT_NAME directory
+ * 5- Add tests (at least one) to test/tests/PROJECT_NAME
+ */
+def addNewPlugin(plgn: String) = {}
+
+
+
+// def doc = {
+//   "sbt doc".run(pio).exitValue
+// }
 
 def processOptions(opts: Array[String]) = {
-  if(opts.length != 1) {
+  if(opts.length > 2) {
     usage
     System.exit(1)
+  } else if(opts.length == 1 && opts(1) == "help") {
+    usage
+    System.exit(0)
+  } else if(opts.length == 0) {
+    cleanSBTProject(mainProject)
+    plugins.foreach(cleanPlugin)
+    buildSBTProject(mainProject)
+    plugins.foreach(buildSBTProject)
+    packageSBTProject(mainProject)
+    plugins.foreach(packagePlugin)
+    plugins.foreach(testPlugin)
+    System.exit(0)
   }
-  
-  val result = opts(0) match {
-    case "build" => 
-      build
+   
+
+  val result = opts match {
+    case Array("compile", "all") =>
+      buildSBTProject(mainProject)
+      plugins.foreach(buildSBTProject)
       0
-    case "cleanBuild" =>
-      cleanBuild
+    case Array("package", "all") =>
+      packageSBTProject(mainProject)
+      plugins.foreach(packagePlugin)
       0
-    case "test" => 
-      test
+    case Array("test", "all") =>
+      testSBTProject(mainProject)
+      plugins.foreach(testPlugin)
       0
-    case "cleanTest" =>
-      cleanTest
+    case Array("clean", "all") =>
+      cleanSBTProject(mainProject)
+      plugins.foreach(cleanPlugin)
+      s"rm test${sp}lib${sp}${mainProject}.jar".run(pio).exitValue
       0
-    case "cleanAll" => 
-      cleanAll
+    case Array("doc", "all") =>
+      docSBTProject(mainProject)
+      plugins.foreach(docSBTProject)
       0
-    case "doc" =>
-      doc
+
+
+    case Array("compile", `mainProject`) =>
+      buildSBTProject(mainProject)
       0
-    case "help" => 
-      usage
+    case Array("package", `mainProject`) =>
+      packageSBTProject(mainProject)
       0
+    case Array("test", `mainProject`) =>
+      testSBTProject(mainProject)
+      0
+    case Array("clean", `mainProject`) =>
+      cleanSBTProject(mainProject)
+      0
+    case Array("doc", `mainProject`) =>
+      docSBTProject(mainProject)
+      0
+      
+
+    case Array("compile", prjct) if (plugins.contains(prjct)) =>
+      buildSBTProject(prjct)
+      0
+    case Array("package", prjct) if (plugins.contains(prjct)) =>
+      packagePlugin(prjct)
+      0
+    case Array("test", prjct) if (plugins.contains(prjct)) =>
+      testPlugin(prjct)
+      0
+    case Array("clean", prjct) if (plugins.contains(prjct)) =>
+      cleanPlugin(prjct)
+      0
+    case Array("doc", prjct) if (plugins.contains(prjct)) =>
+      docSBTProject(prjct)
+      0
+    
     case _ => 
       usage
       1

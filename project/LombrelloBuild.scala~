@@ -30,7 +30,7 @@ object LombrelloBuild extends Build {
       run <<= run in Compile in main in simple in scalsa,
       name := "root"
     )
-   ) aggregate (main)
+   ) aggregate (simple, scalsa)
 
   lazy val main: Project = Project(
     "lombrello",

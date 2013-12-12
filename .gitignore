@@ -53,3 +53,8 @@ project/plugins/project/
 Icon?
 ehthumbs.db
 Thumbs.db
+
+
+# Vim generated files #
+#######################
+*~
