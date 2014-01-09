@@ -58,3 +58,5 @@ Thumbs.db
 # Vim generated files #
 #######################
 *~
+*.swp
+*.swo

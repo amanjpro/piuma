@@ -1,4 +1,4 @@
-package ch.usi.inf.l3.seal.runtime
+package ch.usi.inf.l3.kara.runtime
 
 
 
@@ -7,7 +7,7 @@ package ch.usi.inf.l3.seal.runtime
  * setters and getters of the variable that the instance of this class represents
  * is done through the (read and write) methods in this class. 
  */
-class SelfAdjustedVariable[T](private var f: T) {
+class KaraVariable[T] private (private var f: T) {
   /**
    * Self-adjusted writes
    */
@@ -17,10 +17,11 @@ class SelfAdjustedVariable[T](private var f: T) {
    * Self-adjusted reads
    */
   def read: T = f
+  
 }
 
-object SelfAdjustedVariable {
+object KaraVariable {
   def apply[T](v: T) = {
-    new SelfAdjustedVariable(v)
+    new KaraVariable(v)
   }
 }

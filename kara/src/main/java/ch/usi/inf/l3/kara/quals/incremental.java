@@ -1,4 +1,4 @@
-package ch.usi.inf.l3.seal.quals;
+package ch.usi.inf.l3.kara.quals;
 
 import java.lang.annotation.*;
 

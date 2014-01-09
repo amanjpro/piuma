@@ -27,7 +27,7 @@ object LombrelloBuild extends Build {
     "root",
     file("."),
     settings = buildSettings ++ Seq(
-      run <<= run in Compile in main in simple in scalsa,
+      run <<= run in Compile in main in simple in kara,
       name := "root"
     )
    ) aggregate (main)
@@ -46,11 +46,11 @@ object LombrelloBuild extends Build {
     )
   ) dependsOn (main)
   
-  lazy val scalsa: Project = Project(
-    "scalsa",
-    base = file("scalsa"),
+  lazy val kara: Project = Project(
+    "kara",
+    base = file("kara"),
     settings = buildSettings ++ Seq(
-      name := "scalsa"
+      name := "kara"
     )
   ) dependsOn (main)
 }

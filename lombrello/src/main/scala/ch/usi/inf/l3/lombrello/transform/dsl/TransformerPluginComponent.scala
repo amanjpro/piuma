@@ -35,7 +35,7 @@ abstract class TransformerPluginComponent(val plugin: TransformerPlugin)
 
   import global._
 
-  def transform(cmpl: TransformerComponent, tree: Tree): Tree
+  def transform(cmpl: TransformerComponent, tree: Tree): (Tree, Boolean)
 
   def newTransformer(unit: CompilationUnit): Transformer = new TransformerComponent(unit)
 
@@ -58,11 +58,11 @@ abstract class TransformerPluginComponent(val plugin: TransformerPlugin)
     protected def typed(tree: Tree): Tree = localTyper.typed(tree)
 
     final override def transform(tree: Tree): Tree = {
-      if (go_deeper) {
-        TransformerPluginComponent.this.transform(this, tree)
-        super.transform(tree)
+      val (nTree, cntnu) = TransformerPluginComponent.this.transform(this, tree)
+      if (cntnu) {
+        super.transform(nTree)
       } else {
-        TransformerPluginComponent.this.transform(this, tree)
+        nTree
       }
     }
   }
