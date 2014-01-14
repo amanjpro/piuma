@@ -29,7 +29,6 @@ class KaraTyper(val plgn: KaraPlugin) extends TransformerPluginComponent(plgn) {
                         |therefore you cannot self adjust: ${v}""".stripMargin)
         val karaType = TypeRef(NoPrefix, karaClass, List(v.symbol.info))
         val applyTree = Apply(TypeApply(Select(Ident(karaModule), applyName), List(v.tpt)), List(v.rhs))
-
         v.symbol.updateInfo(karaType)
         val applyTpt = AppliedTypeTree(Ident(karaClass), List(v.tpt))
         val resultTree = v.copy(tpt = applyTpt, rhs = applyTree).setSymbol(v.symbol)

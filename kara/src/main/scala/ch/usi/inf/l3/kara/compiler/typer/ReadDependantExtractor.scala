@@ -36,7 +36,9 @@ class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComp
    */
   private def findSymbol(name: Name, tpe: Type, paramSyms: List[Symbol]): Option[Symbol] = {
     val r = for (
-      p <- paramSyms if (p.name == name && p.tpe =:= tpe)
+        // I commented out this statement, because for generics types might change
+//      p <- paramSyms if (p.name == name && p.tpe =:= tpe)
+      p <- paramSyms if (p.name == name)
     ) yield {
       p
     }
@@ -53,8 +55,7 @@ class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComp
           if (goodSymbol(x.symbol)
             && x.symbol.owner == oldOwner) {
             x match {
-              case ident: Ident if list.contains(ident.symbol) => ident.symbol = list(ident.symbol)
-              case ident: Ident => ()
+              case ident: Ident => ident.symbol = list(ident.symbol)
               case _ =>
                 val ts = x.symbol
                 val ns = x.symbol.cloneSymbol(newOwner)
@@ -107,8 +108,8 @@ class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComp
             case _ => false
           })) + 1)
         (fst, snd) match {
-          case (Nil, rest) => Left(tree) 
-          case (xs, ys) => 
+          case (Nil, rest) => Left(tree)
+          case (xs, ys) =>
             val fst = Block(xs.dropRight(1), xs.last)
             val snd = Block(ys, expr)
             Right(fst, snd)
@@ -133,6 +134,10 @@ class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComp
       // defines inner methods and classes that are going to be used later?
       // For defs, you can pass them as method parameters, but what about
       // classes?
+      
+      // TODO Another thing that I should implement is, what if one of the new
+      // method's parameters mutated? I have to fix it.
+      
       val mthdSymbol = mthd.symbol
       val mthdOwner = mthd.symbol.owner
       traverseAndExtract(cmp, rhs) match {
@@ -141,15 +146,14 @@ class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComp
           var ownedIdents = List.empty[Tree]
           b2.foreach((x) =>
             if (x.isInstanceOf[Ident] && x.symbol.owner == mthdSymbol
-                && !ownedIdents.exists((y) => x.symbol == y.symbol)) 
+              && !ownedIdents.exists((y) => x.symbol == y.symbol))
               ownedIdents = x :: ownedIdents)
           val baseOwnedIdents = ownedIdents.foldLeft(List.empty[Tree])((z, y) =>
             mthd.exists((x) => x.isInstanceOf[ValDef] && x.symbol == y.symbol
-                && !b2.exists((k) => k.isInstanceOf[ValDef] && k.symbol == y.symbol)) match {
+              && !b2.exists((k) => k.isInstanceOf[ValDef] && k.symbol == y.symbol)) match {
               case true => y :: z
               case false => z
             })
-
 
           val newMthdSymbol = mthdOwner.newMethodSymbol(
             cmp.unit.freshTermName(mthdSymbol.name.toString),
@@ -157,28 +161,48 @@ class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComp
 
           val paramSyms = baseOwnedIdents.map(
             (x) => {
-              val temp = x.symbol.cloneSymbol(newMthdSymbol, x.symbol.flags)
-              temp.info = x.symbol.info
-              temp
+              newMthdSymbol.newSyntheticValueParam(x.symbol.info, x.symbol.name)
             })
 
+          val commonTparams = tparams.filter((t) => paramSyms.exists(t.symbol.tpe =:= _.info))
+
+          val newTargs = commonTparams.map((x) => TypeTree(x.symbol.tpe))
+          val newTparamSyms = commonTparams.map(
+            (x) => {
+              val nsym = newMthdSymbol.newTypeParameter(cmp.unit.freshTypeName("K"), newMthdSymbol.pos.focus, x.symbol.flags)
+              nsym.info = x.symbol.info
+              paramSyms.foreach((y) => {
+                y.substInfo(List(x.symbol), List(nsym))
+              })
+              nsym
+            })
           val newParams = paramSyms.map((x) => ValDef(x, EmptyTree))
-          val args = newParams.foldLeft(List.empty[Tree])((z, y) =>
-            Ident(baseOwnedIdents.find((x) => y.name == x.symbol.name).get.symbol) :: z).reverse
 
-          val mthdTpe = MethodType(paramSyms, mthdSymbol.tpe)
+          val args = newParams.foldLeft(List.empty[Tree])((z, y) => {
+            val id = Ident(baseOwnedIdents.find((x) => y.name == x.symbol.name).get.symbol) 
+            cmp.localTyper.typed(id) :: z
+          }).reverse
 
-          val newTparams = tparams.filter((t) => paramSyms.exists(t.symbol.info =:= _.info))
+          val newTparams = newTparamSyms.map((x) => TypeDef(x))
+
+          //            newTparams.foldLeft(List.empty[Tree])((z, y) =>
+          //            Ident(tparams.find((x) => y.symbol.info == x.symbol.tpe).get.symbol) :: z).reverse
+
+          val mthdTpe = newTparamSyms match {
+            case Nil => MethodType(paramSyms, mthd.tpt.tpe)
+            case _ => PolyType(newTparamSyms, MethodType(paramSyms, mthd.tpt.tpe))
+          }
           newMthdSymbol.setInfoAndEnter(mthdTpe)
-          val newTargs = newTparams.foldLeft(List.empty[Tree])((z, y) =>
-            Ident(tparams.find((x) => y.tpe == x.symbol.tpe).get.symbol) :: z).reverse
+          
 
-          changeParamSymbols(b2, mthdSymbol, paramSyms)
-          changeOwner(b2, mthdSymbol, newMthdSymbol)
-
+          
           val newMthdTree = DefDef(Modifiers(newMthdSymbol.flags),
             newMthdSymbol.name, newTparams, List(newParams), mthd.tpt, b2).setSymbol(newMthdSymbol)
 
+          changeParamSymbols(b2, mthdSymbol, paramSyms)
+          changeOwner(b2, mthdSymbol, newMthdSymbol)
+          
+        
           val typedMthdTree = cmp.localTyper.typed { newMthdTree }.asInstanceOf[DefDef]
 
           val toCall = mthdOwner.isClass match {
@@ -186,13 +210,15 @@ class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComp
             case false => Select(Ident(mthdOwner), newMthdSymbol)
           }
           val newApply = newTparams match {
-            case Nil => cmp.localTyper.typed { Apply(toCall, args) }
+            case Nil => Apply(toCall, args)
             case _ =>
-              cmp.localTyper.typed { Apply(TypeApply(toCall, newTargs), args) }
+              Apply(TypeApply(toCall, newTargs), args)
           }
-          val newBaseRhs = Block(b1.stats ++ List(b1.expr), newApply)
+          val newBaseRhs = cmp.localTyper.typed {Block(b1.stats ++ List(b1.expr), newApply)}
+          val untypedBase = treeCopy.DefDef(mthd, mthd.mods, mthd.name, mthd.tparams, mthd.vparamss, mthd.tpt, newBaseRhs)
+          
           val baseMthd = cmp.localTyper.typed{
-            mthd.copy(rhs = newBaseRhs).setSymbol(mthdSymbol)
+            untypedBase
           }.asInstanceOf[DefDef]
           (baseMthd, Some(typedMthdTree))
       }
@@ -201,25 +227,31 @@ class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComp
 
   }
   def doTransform(cmp: TransformerComponent, tree: Template): Template = {
+    def traverseDefDef(mthd: DefDef): List[DefDef] = {
+      val (fst, snd) = extractDefDef(cmp, mthd)
+      snd match {
+        case None => List(fst)
+        case Some(x) => fst :: traverseDefDef(x)
+      }
+    }
     val newBody = tree.body.foldLeft(List.empty[Tree])((z, y) =>
       y match {
-        case x: DefDef => 
-          val (original, extracted) = extractDefDef(cmp, x)
-          original :: extracted.toList ++ z
+        case x: DefDef =>
+          val traversed = traverseDefDef(x)
+          traversed ++ z
         case _ => y :: z
-      }
-    )
-    tree.copy(body = newBody)
+      })
+    treeCopy.Template(tree, tree.parents, tree.self, newBody)
   }
   def transform(cmp: TransformerComponent, tree: Tree): Either[Tree, Tree] = {
     tree match {
-      case clazz @ ClassDef(mods, name, tparamss, impl) =>
+      case clazz @ ClassDef(mods, name, tparams, impl) =>
         val newImpl = doTransform(cmp, impl)
-        val newClazz = clazz.copy(impl = newImpl).setSymbol(clazz.symbol)
+        val newClazz = treeCopy.ClassDef(clazz, mods, name, tparams, newImpl)
         Right(cmp.localTyper.typed { newClazz })
       case module @ ModuleDef(mods, name, impl) =>
         val newImpl = doTransform(cmp, impl)
-        val newModule = module.copy(impl = newImpl).setSymbol(module.symbol)
+        val newModule = treeCopy.ModuleDef(module, mods, name, newImpl)
         Right(cmp.localTyper.typed { newModule })
       case _ => Left(tree)
     }
