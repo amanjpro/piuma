@@ -35,10 +35,10 @@ abstract class TransformerPluginComponent(val plugin: TransformerPlugin)
 
   import global._
 
-  def transform(cmpl: TransformerComponent, tree: Tree): (Tree, Boolean)
+  def transform(cmpl: TransformerComponent, tree: Tree): Either[Tree, Tree]
 
   def newTransformer(unit: CompilationUnit): Transformer = new TransformerComponent(unit)
-
+  
   /**
    * The plugin framework should have a refactoring mode:
    *
@@ -58,11 +58,11 @@ abstract class TransformerPluginComponent(val plugin: TransformerPlugin)
     protected def typed(tree: Tree): Tree = localTyper.typed(tree)
 
     final override def transform(tree: Tree): Tree = {
-      val (nTree, cntnu) = TransformerPluginComponent.this.transform(this, tree)
-      if (cntnu) {
-        super.transform(nTree)
-      } else {
-        nTree
+      val cntnu = TransformerPluginComponent.this.transform(this, tree)
+      cntnu match {
+        case Left(nTree) =>
+        	super.transform(nTree)
+        case Right(nTree) => nTree
       }
     }
   }

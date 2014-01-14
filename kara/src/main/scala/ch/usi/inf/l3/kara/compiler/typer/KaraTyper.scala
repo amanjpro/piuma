@@ -21,7 +21,7 @@ class KaraTyper(val plgn: KaraPlugin) extends TransformerPluginComponent(plgn) {
 
   val karaAnnotation = getAnnotation(plgn.karaAnnotationName)
 
-  def transform(cmp: TransformerComponent, tree: Tree): (Tree, Boolean) = {
+  def transform(cmp: TransformerComponent, tree: Tree): Either[Tree, Tree] = {
     tree match {
       case v: ValDef if hasAnnotation(v, karaAnnotation) =>
                 assert(isVar(v) && (isFinal(v) || v.symbol.isLocal),
@@ -33,27 +33,32 @@ class KaraTyper(val plgn: KaraPlugin) extends TransformerPluginComponent(plgn) {
         v.symbol.updateInfo(karaType)
         val applyTpt = AppliedTypeTree(Ident(karaClass), List(v.tpt))
         val resultTree = v.copy(tpt = applyTpt, rhs = applyTree).setSymbol(v.symbol)
-        (cmp.localTyper.typed { resultTree }, false)
+        Right(cmp.localTyper.typed { resultTree })
       /*
        * The following case changes assignments to writes
        */
-      case Apply(Select(_, name), Nil) if(name == readName) => (tree, false)
+      case Apply(Select(_, name), Nil) if(name == readName) => Right(tree)
       case Assign(lhs, rhs) if (hasAnnotation(lhs, karaAnnotation)) =>
         val retypedLhs = cmp.localTyper.typed { resetLocalAttrs(lhs) }
-        val (newRhs, _) = transform(cmp, rhs)
+        val newRhs = transform(cmp, rhs) match {
+          case Left(x) => x
+          case Right(x) => x
+        }
         val resultTree = Apply(Select(retypedLhs, writeName), List(newRhs))
-        (cmp.localTyper.typed(resultTree), false)
+        Right(cmp.localTyper.typed(resultTree))
       case id : Ident if (hasAnnotation(id, karaAnnotation)) =>
         val retypedId = cmp.localTyper.typed { resetLocalAttrs(id) }
         val resultTree = Select(retypedId, readName)
-        (cmp.localTyper.typed { resultTree }, false)
+        Right(cmp.localTyper.typed { resultTree })
       case select @ Select(This(_), _) if (hasAnnotation(select, karaAnnotation)) =>
         val retypedSelect = cmp.localTyper.typed { resetLocalAttrs(select) }
         val resultTree = Select(retypedSelect, readName)
-        (cmp.localTyper.typed { resultTree }, false)
+        Right(cmp.localTyper.typed { resultTree })
       case x if hasAnnotation(x, karaAnnotation) =>
         throw new AssertionError(s"@incremental annotation can only appear on variables: ${x}")
-      case _ => (tree, true)
+      case _ => Left(tree)
     }
   }
+  
+  
 }
