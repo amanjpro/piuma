@@ -26,7 +26,7 @@ class TestPluginComponent(plgn: TestPlugin) extends TransformerPluginComponent(p
 
   import global._
 
-  def transform(cmp: TransformerComponent, tree: Tree) = {
+  def transform(cmp: TransformerComponent, tree: Tree): Either[Tree, Tree] = {
     import cmp._
     tree match {
       //      case a @ ValDef(_, _, _, _) => null
@@ -39,33 +39,33 @@ class TestPluginComponent(plgn: TestPlugin) extends TransformerPluginComponent(p
         val ntmplt = treeCopy.Template(x.impl, x.impl.parents, x.impl.self, vtree :: strgtr._1 :: strgtr._2 :: x.impl.body)
         val nclazz = treeCopy.ClassDef(x, x.mods, x.name, x.tparams, ntmplt)
 
-        typer.typed(nclazz)
+        Right(typer.typed(nclazz))
       case x: ValDef if (x.name == newTermName("b")) =>
         val newName = newTermName("hello")
         if (canRename(tree, newName)) {
           println("hello1")
-          rename(tree.asInstanceOf[ValDef], newName)
+          Right(rename(tree.asInstanceOf[ValDef], newName))
         } else {
-          tree
+          Right(tree)
         }
       case x: ValDef if (x.name == newTermName("c")) =>
         val newName = newTermName("local")
         if (canRename(tree, newName)) {
           println("hello1")
-          rename(tree.asInstanceOf[ValDef], newName)
+          Right(rename(tree.asInstanceOf[ValDef], newName))
         } else {
-          tree
+          Right(tree)
         }
 
       case x: ValDef if (x.name == newTermName("d")) =>
         val newName = newTermName("param")
         if (canRename(tree, newName)) {
           println("hello1")
-          rename(tree.asInstanceOf[ValDef], newName)
+          Right(rename(tree.asInstanceOf[ValDef], newName))
         } else {
-          tree
+          Right(tree)
         }
-      case x => x
+      case x => Right(x)
     }
   }
 }
@@ -83,8 +83,8 @@ class TestPluginComponent2(plgn: TestPlugin) extends TransformerPluginComponent(
     tree match {
       case x: ValDef =>
         println("HERE HERE " + x.symbol.attachments)
-        x
-      case x => x
+        Right(x)
+      case x => Right(x)
     }
   }
 }

@@ -12,11 +12,12 @@ trait SymbolsUtil { self: TransformerPlugin =>
   def hasAnnotation(x: Tree, anno: ClassSymbol): Boolean = hasAnnotation(x.symbol, anno)
   def hasSymbol(x: Tree): Boolean = goodSymbol(x.symbol)
   def isFinal(x: Tree): Boolean = isFinal(x.symbol)
-  
+  def isParam(x: Tree): Boolean = isParam(x.symbol)
   
   def isFinal(x: Symbol): Boolean = goodSymbol(x) && x.isFinal
   def isVar(x: Symbol): Boolean = goodSymbol(x) && x.isVar
   def isVal(x: Symbol): Boolean = goodSymbol(x) && x.isVal
   def hasAnnotation(x: Symbol, anno: ClassSymbol): Boolean = goodSymbol(x) && x.hasAnnotation(anno)
   def goodSymbol(x: Symbol): Boolean = x != null && x != NoSymbol
+  def isParam(x: Symbol): Boolean = goodSymbol(x) && x.isValueParameter
 }

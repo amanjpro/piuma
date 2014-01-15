@@ -6,11 +6,14 @@ import ch.usi.inf.l3.kara.quals._
 
 class Test {
   @incremental final var b = "Hello"
-  def m[T <: AnyRef](t: T) = {
+  def m[T <: AnyRef](t: T, d: String) = {
     @incremental var local = "Hell"
-    val c = local + " HEEE"
+    var c = local + " HEEE"
     local = local + " kkk"
-    local + t.toString + b
+    local = "3"
+    c = local
+    c = "hh"
+    local + c + t.toString + d + b
   }
   // def b: String = b_
   // def b_=(t: String): Unit = b_ = t

@@ -11,7 +11,7 @@ import scala.reflect.internal.Flags._
  * TODO: There exist numerous methods and functionalities that need to be put
  * in the Lombrello framework. Do it ASAP -- Amanj
  */
-class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComponent(plgn) {
+final class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComponent(plgn) {
   override val runsRightAfter = Some("kara-typer")
   val runsAfter = List[String]("kara-typer")
   override val runsBefore = List[String](plgn.utilities.PHASE_JVM)
@@ -20,73 +20,12 @@ class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComp
   import plugin._
 
   val karaClass = rootMirror.getClassByName(newTypeName(s"${plgn.karaClassName}"))
-  val karaModule = karaClass.companionModule
-  val applyName = newTermName("apply")
   val readName = newTermName("read")
-  val writeName = newTermName("write")
-
-  definitions.PredefModule
   val incAnno = getAnnotation(plgn.karaAnnotationName)
 
-  /*
-   * TODO: The following three functions are directly copied from Mina plugin,
-   * they are all odd/old and wordy, I should organize them better and put my 
-   * current knowledge of Scala compiler plugin writing and put them here.
-   * I also need to integrate it into Lombrello framework itself. -- Amanj
-   */
-  private def findSymbol(name: Name, tpe: Type, paramSyms: List[Symbol]): Option[Symbol] = {
-    val r = for (
-        // I commented out this statement, because for generics types might change
-//      p <- paramSyms if (p.name == name && p.tpe =:= tpe)
-      p <- paramSyms if (p.name == name)
-    ) yield {
-      p
-    }
-    r match {
-      case head :: Nil => Some(head)
-      case _ => None
-    }
-  }
-  private def changeOwner(tree: Tree, oldOwner: Symbol, newOwner: Symbol): Unit = {
-    var list: Map[Symbol, Symbol] = Map.empty
-    tree.foreach {
-      (x: Tree) =>
-        {
-          if (goodSymbol(x.symbol)
-            && x.symbol.owner == oldOwner) {
-            x match {
-              case ident: Ident => ident.symbol = list(ident.symbol)
-              case _ =>
-                val ts = x.symbol
-                val ns = x.symbol.cloneSymbol(newOwner)
-                x.symbol = ns
-                list = list + (ts -> ns)
-                changeOwner(x, ts, ns)
-            }
-          }
-        }
-    }
-  }
-
-  private def changeParamSymbols(tree: Tree, oldOwner: Symbol, paramSyms: List[Symbol]): Unit = {
-    tree.foreach {
-      (x: Tree) =>
-        {
-          if (x.symbol != null && x.symbol != NoSymbol
-            && x.symbol.owner == oldOwner) {
-            val ns = findSymbol(x.symbol.name, x.symbol.tpe, paramSyms)
-            x.symbol = ns match {
-              case Some(s) => s
-              case None => x.symbol
-            }
-          }
-        }
-    }
-  }
-
   /**
-   * This function takes care to safely extract a method whenever it sees a call
-   * to read method of KaraVariable.
+   * This function takes care of safely extracting a method whenever it sees a
+   * call to read method of KaraVariable.
    *
    * Currently it extracts methods upon calls to read method per statement,
    * i.e. a method like the following will be split into two methods not three:
@@ -98,7 +37,7 @@ class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComp
    *  }
    * }}}
    */
-  def traverseAndExtract(cmp: TransformerComponent, tree: Tree): Either[Tree, (Block, Block)] = {
+  private def traverseAndExtract(cmp: TransformerComponent, tree: Tree): Either[Tree, (Block, Block)] = {
     tree match {
       case Block(Nil, expr) => Left(tree)
       case Block(stmts, expr) =>
@@ -119,25 +58,30 @@ class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComp
     }
   }
 
-  def extractDefDef(cmp: TransformerComponent, mthd: DefDef): (DefDef, Option[DefDef]) = {
+  private def extractDefDef(cmp: TransformerComponent, mthd: DefDef): (DefDef, Option[DefDef]) = {
     val vparamss = mthd.vparamss
     val rhs = mthd.rhs
     val tparams = mthd.tparams
     if (rhs.exists((x) => goodSymbol(x.symbol) && x.symbol.name == readName)) {
-      // TODO you should extract out from where the read exists to the end 
-      // of the method
 
-      // challenges? the extraction should take care of all the variables 
-      // that is initialized earlier in this method and is used later after 
-      // the read
-      // It is easy to handle the cases variables, but what happens if the 
-      // defines inner methods and classes that are going to be used later?
-      // For defs, you can pass them as method parameters, but what about
-      // classes?
-      
-      // TODO Another thing that I should implement is, what if one of the new
-      // method's parameters mutated? I have to fix it.
-      
+      /* 
+       * Challenges? the extraction should take care of all the variables 
+       * that is initialized earlier in this method and is used later after 
+       * the read
+       * It is easy to handle the cases of variables, but what happens if it 
+       * defines inner methods and classes that are going to be used later?
+       * 1- For defs, you can pass them as method parameters
+       * 2- For classes, you can surround them with an inner def, that takes
+       * the exact same variables of the classe's constructor. The def should
+       * return a freshly created instance of the class. Then pass this def to 
+       * the newly created method.
+       * But neither of the previous two solutions work in practice, since when
+       * the Kara runtime calls some kara-generated method, it fails to provide
+       * these methods. 
+       * -- Amanj
+       **/
+
+ 
       val mthdSymbol = mthd.symbol
       val mthdOwner = mthd.symbol.owner
       traverseAndExtract(cmp, rhs) match {
@@ -179,30 +123,27 @@ class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComp
           val newParams = paramSyms.map((x) => ValDef(x, EmptyTree))
 
           val args = newParams.foldLeft(List.empty[Tree])((z, y) => {
-            val id = Ident(baseOwnedIdents.find((x) => y.name == x.symbol.name).get.symbol) 
+            val id = Ident(baseOwnedIdents.find((x) => y.name == x.symbol.name).get.symbol)
             cmp.localTyper.typed(id) :: z
           }).reverse
 
           val newTparams = newTparamSyms.map((x) => TypeDef(x))
-
-          //            newTparams.foldLeft(List.empty[Tree])((z, y) =>
-          //            Ident(tparams.find((x) => y.symbol.info == x.symbol.tpe).get.symbol) :: z).reverse
 
           val mthdTpe = newTparamSyms match {
             case Nil => MethodType(paramSyms, mthd.tpt.tpe)
             case _ => PolyType(newTparamSyms, MethodType(paramSyms, mthd.tpt.tpe))
           }
           newMthdSymbol.setInfoAndEnter(mthdTpe)
-          
 
+          
+          cmp.fixOwner(b2, mthdSymbol, newMthdSymbol, paramSyms)
           
           val newMthdTree = DefDef(Modifiers(newMthdSymbol.flags),
-            newMthdSymbol.name, newTparams, List(newParams), mthd.tpt, b2).setSymbol(newMthdSymbol)
+            newMthdSymbol.name, newTparams, List(newParams), mthd.tpt,
+            fixMutatingParams(cmp, b2)).setSymbol(newMthdSymbol)
 
-          changeParamSymbols(b2, mthdSymbol, paramSyms)
-          changeOwner(b2, mthdSymbol, newMthdSymbol)
-          
-        
+            
+
           val typedMthdTree = cmp.localTyper.typed { newMthdTree }.asInstanceOf[DefDef]
 
           val toCall = mthdOwner.isClass match {
@@ -214,10 +155,10 @@ class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComp
             case _ =>
               Apply(TypeApply(toCall, newTargs), args)
           }
-          val newBaseRhs = cmp.localTyper.typed {Block(b1.stats ++ List(b1.expr), newApply)}
+          val newBaseRhs = cmp.localTyper.typed { Block(b1.stats ++ List(b1.expr), newApply) }
           val untypedBase = treeCopy.DefDef(mthd, mthd.mods, mthd.name, mthd.tparams, mthd.vparamss, mthd.tpt, newBaseRhs)
-          
-          val baseMthd = cmp.localTyper.typed{
+
+          val baseMthd = cmp.localTyper.typed {
             untypedBase
           }.asInstanceOf[DefDef]
           (baseMthd, Some(typedMthdTree))
@@ -226,7 +167,41 @@ class ReadDependantExtractor(val plgn: KaraPlugin) extends TransformerPluginComp
       (mthd, None)
 
   }
-  def doTransform(cmp: TransformerComponent, tree: Template): Template = {
+
+  private def fixMutatingParams(cmp: TransformerComponent, tree: Block): Block = {
+    var aliases: Map[Symbol, Symbol] = Map.empty
+
+    def substituteMutation(x: Tree): Tree = {
+      x match {
+        case t if(aliases.contains(t.symbol)) =>
+          t.setSymbol(aliases(t.symbol))
+        case Assign(lhs, rhs) if (isParam(lhs.symbol)) =>
+          aliases.contains(lhs.symbol) match {
+            case true =>
+              Assign(Ident(aliases(lhs.symbol)), rhs)
+            case false =>
+              val newsym = lhs.symbol.owner.newVariable(
+                cmp.unit.freshTermName(lhs.symbol.name + ""),
+                lhs.symbol.owner.pos.focus, MUTABLE)
+              newsym.info = lhs.symbol.info
+              val newValDef = ValDef(newsym, rhs)
+              aliases = aliases + (lhs.symbol -> newsym)
+              newValDef
+          }
+        case t => 
+          t.substituteSymbols(aliases.keys.toList, aliases.values.toList)
+          t
+      }
+    }
+    val newStats = tree.stats.foldLeft(List.empty[Tree])((z, y) => {
+      z ++ List(substituteMutation(y))
+    })
+
+    val newExpr = substituteMutation(tree.expr)
+
+    Block(newStats, newExpr)
+  }
+  private def doTransform(cmp: TransformerComponent, tree: Template): Template = {
     def traverseDefDef(mthd: DefDef): List[DefDef] = {
       val (fst, snd) = extractDefDef(cmp, mthd)
       snd match {
