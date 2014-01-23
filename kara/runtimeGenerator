@@ -1,0 +1,86 @@
+#!/bin/sh
+exec scala -save -deprecation -feature "$0" "$@"
+!#
+
+
+
+import java.io._
+import java.util.Calendar
+
+val thisYear = (Calendar.getInstance.get(Calendar.YEAR))
+val copyRightYear = if(thisYear == 2013) "2013" else "2013-" + thisYear
+
+var toWrite = s"""
+// The following file is generated using a computer program.
+// The program is generator program is: runtimeGenerator
+
+package ch.usi.inf.l3.kara.runtime
+
+/*
+ * Copyright (c) <${copyRightYear}>, Amanj Sherwany <http://www.amanj.me>
+ * All rights reserved.
+ * */
+  
+
+/**
+ * A dumb class just to make it possible to access the KaraRuntime module
+ * in the compiler.
+ */
+class KaraRuntime {}
+
+object KaraRuntime {
+
+  private var map0: Map[String, Any] = Map.empty
+"""
+for(i <- 1 to 22) {
+  toWrite += s"  private var map${i}: Map[(String, List[Any]), Any] = Map.empty\n" 
+}
+
+
+toWrite += """
+
+
+  def runClosure[R](n: String, f: Function0[R]): R = {
+    val r = map0.get(n) match {
+      case None =>
+        val x = f()
+        map0 += (n -> x)
+        x
+      case Some(x) => x
+    }
+    r.asInstanceOf[R]
+  }
+
+
+"""
+
+for(i <- 1 to 22) {
+  val tparams = "[" + (0 until i).foldRight("")((x, y) => "T" + x + ", " + y) + "R]"
+  val args = "a0: T0" + (1 until i).foldLeft("")((x, y) => x + s", a${y}: T${y}")
+  val vals = "a0" + (1 until i).foldLeft("")((x, y) => x + ", a" + y)
+
+  val func = s"Function${i}${tparams}"
+  toWrite += s"""
+  
+  
+    def runClosure${tparams}(n: String, f: ${func}, ${args}): R = {
+      val l = List(${vals})
+      val r = map${i}.get((n, l)) match {
+        case None =>
+          val x = f(${vals})
+          map${i} += ((n, l) -> x)
+          x
+        case Some(x) => x
+      }
+      r.asInstanceOf[R] 
+    }
+  
+   
+  """ 
+}
+
+toWrite += "}"
+val sp = File.separator
+val printer = new PrintWriter(s"src${sp}main${sp}scala${sp}ch${sp}usi${sp}inf${sp}l3${sp}kara${sp}runtime${sp}KaraRuntime.scala")
+printer.println(toWrite)
+printer.close

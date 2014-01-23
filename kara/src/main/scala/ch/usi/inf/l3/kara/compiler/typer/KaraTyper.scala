@@ -24,8 +24,8 @@ class KaraTyper(val plgn: KaraPlugin) extends TransformerPluginComponent(plgn) {
   def transform(cmp: TransformerComponent, tree: Tree): Either[Tree, Tree] = {
     tree match {
       case v: ValDef if hasAnnotation(v, karaAnnotation) =>
-                assert(isVar(v) && (isFinal(v) || v.symbol.isLocal),
-                  s"""|Only variables with final qualifier is allowed to be @incremental,
+        assert(v.symbol.isLocal,
+                  s"""|Only local variables are allowed to be @incremental,
                         |therefore you cannot self adjust: ${v}""".stripMargin)
         val karaType = TypeRef(NoPrefix, karaClass, List(v.symbol.info))
         val applyTree = Apply(TypeApply(Select(Ident(karaModule), applyName), List(v.tpt)), List(v.rhs))

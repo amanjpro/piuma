@@ -5,9 +5,9 @@
 import ch.usi.inf.l3.kara.quals._
 
 class Test {
-  @incremental final var b = "Hello"
   def m[T <: AnyRef](t: T, d: String) = {
     @incremental var local = "Hell"
+    var b = local
     var c = local + " HEEE"
     local = local + " kkk"
     local = "3"
@@ -20,26 +20,3 @@ class Test {
 }
 
 
-// class Test {
-//   private b_: KaraVariable[String] = KaraVariable.apply("Hello")
-//
-//   def m(): String = {
-//     "hello"
-//   }
-//
-//   private def b(c: String) = {}
-// }
-
-
-//
-// class Test {
-//   @incremental var b_ :KaraVariable[String] = KaraVariable.apply("Hello")
-//   def m() = {
-//     // val c = b
-//     // c
-//     "hello"
-//   }
-//
-//   def b: String = Test.this.b_.read()
-//   def b_=(t: String): Unit = b_.write(t)  
-// }

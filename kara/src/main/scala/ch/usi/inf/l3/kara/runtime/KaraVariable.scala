@@ -7,7 +7,7 @@ package ch.usi.inf.l3.kara.runtime
  * setters and getters of the variable that the instance of this class represents
  * is done through the (read and write) methods in this class. 
  */
-class KaraVariable[T] private (private var f: T) {
+final class KaraVariable[T] private (private var f: T) {
   /**
    * Self-adjusted writes
    */
@@ -18,6 +18,16 @@ class KaraVariable[T] private (private var f: T) {
    */
   def read: T = f
   
+  override def toString: String = s"KaraVariable(${f.toString})"
+  
+  
+  override def equals(other: Any): Boolean = { 
+    other match {
+      case kv: KaraVariable[_] => this.f == kv.f
+      case _ => false
+    }
+  }
+  override def hashCode: Int = f.##
 }
 
 object KaraVariable {

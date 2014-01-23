@@ -1,0 +1,106 @@
+What is Kara:
+-------------
+
+Kara is a general purpose language, extends Scala with Self-Adjusting
+capabilities. Kara introduces a new annotation called (@incremental) to
+annotate variables. An @incremental variable is a variable that can be computed
+(and modified) incrementally.
+
+
+
+
+
+What is the meaning of Kara?
+----------------------------
+
+Kara, is a Kurdish word, means effective. I chose this name because in Kurdish
+Kara is also used with another Kurdish word to define the meaning of Catalyst.
+In chemistry a catalyst matter helps a chemical reaction happen faster, without
+affecting the result of the reaction.
+
+
+
+
+
+How Kara does work:
+---------------------
+
+Kara consists of two main parts, Kara compiler and Kara runtime
+libraries. The compiler first compiles Kara source to a corresponding Scala
+AST then the runtime libraries by the help of Scala runtime runs the program.
+
+
+
+
+Kara compiler:
+--------------
+
+The Kara compiler translates Kara programs to a valid Scala program over two phases:
+
+
+
+
+Phase One
+---------
+
+The KaraTyper, goes over the source code once, and performs the following mappings:
+
+1- Turn every occurrences of @incremental variable to KaraVariable[variable],
+i.e. change the type of variable from T to KaraVariable[T], and instantiate a
+KaraVariable[T] instead:
+
+@incremental final var b: List[Int] = List(3) ===> 
+    final var b: KaraVariable[List(Int)] = KaraVariable(List(3)) 
+      // KaraVariable object defines an apply method
+
+2- Turn every assignment to a self adjusted variable to a call to the `read` method:
+ var c = b ===> var c = b.read 
+ var d = b.head ===> var d = b.read.head
+ sort(b) ===> sort(b.read)
+
+3- Turn every re-assignment (modification) to a self adjusted variable to a
+call to the `write` method:
+
+ b = 4 :: b ===> b.write(4 :: b.read)
+
+
+
+
+Phase Two
+---------
+
+The ReadDependantExtractor is run in the follow up compilation phase, which
+basically extracts all the statements that come after a Kara read that is
+located in the same logical scope to a new method, for example:
+
+ var c = b.read                  var c = b.read
+ var d = c.head       =====>     b_read_dependant(c) 
+                             
+                             def b_read_dependant(v_in: List[Int]) = {
+                                 var d = v_in.head 
+                             } 
+
+
+**Currently** there exists some bad design in extracting inner-blocks.
+
+Kara Runtime:
+-------------
+
+I should get this better before I write anything
+
+
+
+
+
+
+
+Things That Needs to Be Done
+----------------------------
+
+1- Change the apply in ReadDependentExtractor to call the proper runClosure method instead ----- DONE
+2- Make ReadDependentExtractor recognize Blocks too ----- DONE
+3- Inner classes, types and defs need to be extracted from the outer def so they can be used later if needed (early-lambda lift)
+4- Write karac and kara and test some code ----- DONE
+5- Think about it, how does it work in a non-functional setting?
+
+

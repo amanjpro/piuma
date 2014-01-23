@@ -1,0 +1,6 @@
+#!/bin/sh
+
+KARA=lib/kara.jar
+
+
+scalac -Xplugin:${KARA} -cp ${KARA} ${1}

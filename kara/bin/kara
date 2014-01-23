@@ -1,0 +1,5 @@
+#!/bin/sh
+
+KARA=lib/kara.jar:.
+
+scala -cp ${KARA} ${@}

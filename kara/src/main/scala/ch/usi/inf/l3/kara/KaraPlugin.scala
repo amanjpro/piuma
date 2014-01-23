@@ -11,9 +11,10 @@ class KaraPlugin(override val global: TGlobal) extends TransformerPlugin(global)
   val rightBeforeFinder = utilities.PHASE_TYPER
   val name: String = "scalsa"
   override val description: String = """A compiler plugin to add self-adjusted variables to Scala!""";
-//                               ch.usi.inf.l3.kara.runtime.KaraVariable
+  //                               ch.usi.inf.l3.kara.runtime.KaraVariable
   val karaClassName = "ch.usi.inf.l3.kara.runtime.KaraVariable"
+  val karaRuntime = "ch.usi.inf.l3.kara.runtime.KaraRuntime"
   val karaAnnotationName = "ch.usi.inf.l3.kara.quals.incremental"
-  val pluginComponents: List[TransformerPluginComponent] = 
-    			List(new KaraTyper(this), new ReadDependantExtractor(this))
+  val pluginComponents: List[TransformerPluginComponent] =
+    List(new KaraTyper(this), new ReadDependantExtractor(this))
 }
