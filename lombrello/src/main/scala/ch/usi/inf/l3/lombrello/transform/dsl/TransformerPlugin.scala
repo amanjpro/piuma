@@ -31,11 +31,10 @@ abstract class TransformerPlugin(val global: Global)
 
   val utilities = Utilities
 
-  val rightBeforeFinder: String
+  val beforeFinder: String
 
   lazy val finder = new ClassFinderComponent(this) {
-    val runsAfter = List(rightBeforeFinder)
-    override val runsRightAfter = Some(rightBeforeFinder)
+    val runsAfter = List(beforeFinder)
   }
   val name: String;
 

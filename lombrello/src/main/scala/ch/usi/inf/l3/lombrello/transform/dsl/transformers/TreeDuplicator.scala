@@ -71,14 +71,21 @@ trait TreeDuplicatorCake {
             if (goodSymbol(x.symbol)
               && x.symbol.owner == oldOwner) {
               x match {
-                case ident: Ident => 
+                case ident: Ident =>
+                  assert(list.contains(ident.symbol), s"${ident.symbol} could not be found. ${ident.pos}")
                   ident.symbol = list(ident.symbol)
                 case _ =>
                   val ts = x.symbol
                   val ns = x.symbol.cloneSymbol(newOwner)
-                  x.symbol = ns
-                  list = list + (ts -> ns)
-                  changeOwner(x, ts, ns)
+                  try {
+                    x.symbol = ns
+                    list = list + (ts -> ns)
+                    changeOwner(x, ts, ns)
+                  } catch {
+                    case x: UnsupportedOperationException =>
+                      x.toString
+                  }
+
               }
             }
           }
@@ -93,9 +100,15 @@ trait TreeDuplicatorCake {
             if (goodSymbol(x.symbol)
               && x.symbol.owner == oldOwner) {
               val ns = findSymbol(x.symbol.name, x.symbol.tpe, paramSyms)
-              x.symbol = ns match {
-                case Some(s) => s
-                case None => x.symbol
+              ns match {
+                case Some(s) =>
+                  try {
+                    x.symbol = s
+                  } catch {
+                    case x: UnsupportedOperationException =>
+                      x.toString
+                  }
+                case None => ()
               }
             }
           }

@@ -10,7 +10,7 @@ import ch.usi.inf.l3.lombrello.transform.dsl._
 class TestPlugin(override val global: TGlobal) extends TransformerPlugin(global) {
 
   val name: String = "test"
-  val rightBeforeFinder = utilities.PHASE_PATMAT
+  val beforeFinder = utilities.PHASE_PATMAT
   override val description: String = """A compiler plugin!""";
 
   val pluginComponents: List[TransformerPluginComponent] = List(new TestPluginComponent(this),

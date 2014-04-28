@@ -1,6 +1,6 @@
 
 // The following file is generated using a computer program.
-// The program is generator program is: runtimeGenerator
+// The generator program is: runtimeGenerator
 
 package ch.usi.inf.l3.kara.runtime
 
@@ -16,6 +16,12 @@ package ch.usi.inf.l3.kara.runtime
  */
 class KaraRuntime {}
 
+
+/**
+ * Why are not we using an identity based HashMap?
+ * Because if we do so, then we can change a mutable variable's state without
+ * letting the cache notices, that way we get unexpected results.
+ */
 object KaraRuntime {
 
   private var map0: Map[String, Any] = Map.empty
