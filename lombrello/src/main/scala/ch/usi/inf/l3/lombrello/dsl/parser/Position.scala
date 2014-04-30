@@ -6,5 +6,8 @@ package ch.usi.inf.l3.lombrello.dsl.parser
  */
 import java.io.File
 
-
-case class Position(file: File, col: Int, row: Int)
+case class Position(file: File, col: Int, row: Int) {
+  override def toString: String = {
+    s"${file.getCanonicalPath}: ${row}"
+  }
+}

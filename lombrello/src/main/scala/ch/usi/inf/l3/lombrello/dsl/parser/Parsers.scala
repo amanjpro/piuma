@@ -20,16 +20,19 @@ trait Parsers { self: Compiler =>
 
 
   class Parser extends Phase[List[TokenList], self.Tree] {
-    def run(tokenss: List[TokenList]): self.Tree = {
+    val name: String = "parser"
+    val runsAfter: Option[String] = Some("lexer")
+
+    def run(tokenss: List[TokenList]): Tree = {
       // val trees = tokenss.map(parse(_))
       // Program(trees)
       null
     }
 
-    def parse(tokenList: TokenList): (self.Tree, TokenList) = {
+    def parse(tokenList: TokenList): (Tree, TokenList) = {
       tokenList match {
-        case tokens.ScalaBlock(verbatim, pos) :: xs => 
-          (ScalaBlock(verbatim, pos), xs)
+        // case tokens.ScalaBlock(verbatim, pos) :: xs => 
+          // (ScalaBlock(verbatim, pos), xs)
         case tokens.CommentBlock(verbatim, pos) :: xs =>
           (Comment(BlockComment, verbatim, pos), xs)
         case tokens.CommentLine(verbatim, pos) :: xs =>
@@ -39,9 +42,66 @@ trait Parsers { self: Compiler =>
         case _ => (NoTree, Nil)
       }
     }
+
+
+    // TODO: Implement
+    def parseIf(tokenList: TokenList): (If, TokenList) = {
+      val rest = parseOrReport(tokens.Punctuation(tokens.LParan), tokenList)
+      null
+    }
+
+    // TODO: Implement
+    def bodyParser(tokenList: TokenList): (Block, TokenList) = {
+      null
+    }
+
+
+    
+    def parseOrReport(expected: tokens.Token, 
+      tokenList: TokenList): TokenList = {
+      tokenList match {
+        case `expected` :: rest => rest
+        case x :: rest =>
+          report(expected, x)
+        case Nil =>
+          report(expected, tokens.EmptyToken) 
+          Nil
+      }
+    }
+
+    
+
+    
+
+    /**
+     * An expression is one of the following:
+     * <ul>
+     *  <li> Ident
+     *  <li> Select
+     *  <li> Literal
+     *  <li> Apply
+     *  <li> Binary Operation
+     *  <li> Unary Operation
+     *  <li> If
+     *  <li> Match
+     * </ul>
+     */
+    // TODO: Implement
+    def parseExpression(tokenList: TokenList): (Expression, TokenList) = {
+      null
+    }
+
+    // TODO: Implement
+    def report(expected: tokens.Token, found: tokens.Token): Nothing = {
+      throw new Exception("Here")
+    }
   }
 
   class Lexer extends Phase[List[File], List[TokenList]] {
+    val name: String = "lexer"
+
+    val runsAfter: Option[String] = None
+
     def run(files: List[File]): List[TokenList] = {
       files.map(lexify(_))
     } 
@@ -66,12 +126,12 @@ trait Parsers { self: Compiler =>
           val (rest, block, ncol, nrow) = 
               readCommentBlock(xs, "", col + 2, row)(pos)
           identify(read, prevPos) :: block :: lexify(rest, ncol, "")(file, nrow)
-        case '.' :: '.' :: '/' :: xs =>
-          val pos = Position(file, col, row)
-          val prevPos = pos.copy(col = col - read.length)
-          val (rest, block, ncol, nrow) = 
-              readScalaBlock(xs, "", col + 3, row)(pos)
-          identify(read, prevPos) :: block :: lexify(rest, ncol, "")(file, nrow)
+        // case '.' :: '.' :: '/' :: xs =>
+        //   val pos = Position(file, col, row)
+        //   val prevPos = pos.copy(col = col - read.length)
+        //   val (rest, block, ncol, nrow) = 
+        //       readScalaBlock(xs, "", col + 3, row)(pos)
+        // identify(read, prevPos) :: block :: lexify(rest, ncol, "")(file, nrow)
         case '/' :: '/' :: xs =>
           val pos = Position(file, col, row)
           val prevPos = pos.copy(col = col - read.length)
@@ -86,19 +146,19 @@ trait Parsers { self: Compiler =>
     }
 
 
-    private def readScalaBlock(chars: List[Char], read: String, col: Int,
-      row: Int)(implicit pos: Position): (List[Char], 
-        tokens.ScalaBlock, Int, Int) = {
-      chars match {
-        case Nil => (Nil, tokens.ScalaBlock(read, pos), col, row)
-        case '/' :: '.' :: '.' :: xs =>
-          (xs, tokens.ScalaBlock(read, pos), col + 3, row)
-        case ('\n' | '\r') :: xs =>
-          readScalaBlock(xs, read, 1, row + 1)
-        case x :: xs =>
-          readScalaBlock(xs, read + x, col + 1, row)
-      }
-    }
+    // private def readScalaBlock(chars: List[Char], read: String, col: Int,
+    //   row: Int)(implicit pos: Position): (List[Char], 
+    //     tokens.ScalaBlock, Int, Int) = {
+    //   chars match {
+    //     case Nil => (Nil, tokens.ScalaBlock(read, pos), col, row)
+    //     case '/' :: '.' :: '.' :: xs =>
+    //       (xs, tokens.ScalaBlock(read, pos), col + 3, row)
+    //     case ('\n' | '\r') :: xs =>
+    //       readScalaBlock(xs, read, 1, row + 1)
+    //     case x :: xs =>
+    //       readScalaBlock(xs, read + x, col + 1, row)
+    //   }
+    // }
 
     private def readCommentBlock(chars: List[Char], read: String, col: Int, 
       row: Int)(implicit pos: Position): (List[Char], tokens.CommentBlock, 
@@ -115,25 +175,28 @@ trait Parsers { self: Compiler =>
     }
     private def isSeparator(x: Char): Boolean = {
       // A list of the punctuations that can separate a word
-      val separators = " \n\r{}()[]=+-/*%<>!|&'\"_.;:\\,"
+      val separators = " \n\r{}()[]=+-/*%<>!|&'\"_.;:\\,@"
       separators.contains(x) 
     }
 
     private def identify(str: String, pos: Position): tokens.Token = {
       str match {
-        case "className" => tokens.Keyword(tokens.ClassName, pos)
-        case "pluginName" => tokens.Keyword(tokens.PluginName, pos)
         case "runsAfter" => tokens.Keyword(tokens.RunsAfter, pos)
         case "runsRightAfter" => tokens.Keyword(tokens.RunsRightAfter, pos)
         case "runsBefore" => tokens.Keyword(tokens.RunsBefore, pos)
         case "import" => tokens.Keyword(tokens.Import, pos)
         case "if" => tokens.Keyword(tokens.If, pos)
+        case "else" => tokens.Keyword(tokens.Else, pos)
         case "match" => tokens.Keyword(tokens.Match, pos)
+        case "package" => tokens.Keyword(tokens.Package, pos)
+        case "plugin" => tokens.Keyword(tokens.Plugin, pos)
+        case "phase" => tokens.Keyword(tokens.Phase, pos)
         case "transform" => tokens.Keyword(tokens.Transform, pos)
         case "check" => tokens.Keyword(tokens.Check, pos)
         case "def" => tokens.Keyword(tokens.Def, pos)
         case "case" => tokens.Keyword(tokens.Case, pos)
         case "tree" => tokens.Keyword(tokens.Tree, pos)
+        case "private" => tokens.Keyword(tokens.Private, pos)
         case "" => tokens.EmptyToken
         case _ => tokens.Id(str, pos)
       }
@@ -143,10 +206,10 @@ trait Parsers { self: Compiler =>
       char match {
         case '{' => tokens.Punctuation(tokens.LCurly, pos)
         case '}' => tokens.Punctuation(tokens.RCurly, pos)
-        case '[' => tokens.Punctuation(tokens.LBrace, pos)
-        case ']' => tokens.Punctuation(tokens.RBrace, pos)
-        case '(' => tokens.Punctuation(tokens.LBracket, pos)
-        case ')' => tokens.Punctuation(tokens.RBracket, pos)
+        case '[' => tokens.Punctuation(tokens.LBracket, pos)
+        case ']' => tokens.Punctuation(tokens.RBracket, pos)
+        case '(' => tokens.Punctuation(tokens.LParan, pos)
+        case ')' => tokens.Punctuation(tokens.RParan, pos)
         case '=' => tokens.Punctuation(tokens.Assign, pos)
         case '+' => tokens.Punctuation(tokens.Plus, pos)
         case '-' => tokens.Punctuation(tokens.Minus, pos)
@@ -166,6 +229,7 @@ trait Parsers { self: Compiler =>
         case ':' => tokens.Punctuation(tokens.Colon, pos)
         case '\\' => tokens.Punctuation(tokens.BackSlash, pos)
         case ',' => tokens.Punctuation(tokens.Coma, pos)
+        case '@' => tokens.Punctuation(tokens.At, pos)
       }
     }
 
@@ -180,8 +244,8 @@ trait Parsers { self: Compiler =>
     // brackets, braces and curly brackets
     case object LCurly extends Punctuations
     case object RCurly extends Punctuations
-    case object LBrace extends Punctuations
-    case object RBrace extends Punctuations
+    case object LParan extends Punctuations
+    case object RParan extends Punctuations
     case object LBracket extends Punctuations
     case object RBracket extends Punctuations
 
@@ -212,23 +276,27 @@ trait Parsers { self: Compiler =>
     case object Colon extends Punctuations
     case object BackSlash extends Punctuations
     case object Coma extends Punctuations
+    case object At extends Punctuations
 
     
     // Lombrello keywords
     sealed abstract class Keywords
-    case object ClassName extends Keywords
-    case object PluginName extends Keywords
     case object RunsAfter extends Keywords
     case object RunsRightAfter extends Keywords
     case object RunsBefore extends Keywords
     case object Import extends Keywords
     case object If extends Keywords
+    case object Else extends Keywords
     case object Match extends Keywords
+    case object Package extends Keywords
+    case object Plugin extends Keywords
+    case object Phase extends Keywords
     case object Transform extends Keywords
     case object Check extends Keywords
     case object Def extends Keywords
     case object Case extends Keywords
     case object Tree extends Keywords   
+    case object Private extends Keywords
 
     sealed abstract class Token {
       def position: Option[Position]
@@ -238,19 +306,61 @@ trait Parsers { self: Compiler =>
       val pos: Position
       def position: Option[Position] = Some(pos)
     }
-
-    case class Keyword(keyword: Keywords, pos: Position) extends PositionedToken
-    case class Punctuation(kind: Punctuations, 
-      pos: Position) extends PositionedToken
-    case class ScalaBlock(verbatim: String, 
-      pos: Position) extends PositionedToken 
+   // case class ScalaBlock(verbatim: String, 
+      // pos: Position) extends PositionedToken 
     case class CommentLine(verbatim: String, 
       pos: Position) extends PositionedToken
     case class CommentBlock(verbatim: String, 
       pos: Position) extends PositionedToken
     case class Id(name: String, pos: Position) extends PositionedToken
     case class Literal[T](value: T, pos: Position) extends PositionedToken
-    case object EmptyToken extends Token {
+
+    class Keyword(val keyword: Keywords, val pos: Position) 
+      extends PositionedToken {
+
+      override def hashCode: Int = keyword.hashCode
+      override def equals(that: Any): Boolean = {
+        that match {
+          case null => false
+          case `keyword` => true
+          case _ => false
+        }
+      }
+    }
+    object Keyword {
+      def unapply(keyword: Keyword): Keywords = {
+        keyword.keyword
+      }
+      def apply(kind: Keywords): Keyword = {
+        new Keyword(kind, Position(new File(""), 0, 0))
+      }
+      def apply(keyword: Keywords, pos: Position): Keyword = {
+        new Keyword(keyword, pos)
+      }
+    }
+    class Punctuation(val kind: Punctuations, 
+      val pos: Position) extends PositionedToken {
+      override def hashCode: Int = kind.hashCode
+      override def equals(that: Any): Boolean = {
+        that match {
+          case null => false
+          case `kind` => true
+          case _ => false
+        }
+      }
+    }
+    object Punctuation {
+      def unapply(punc: Punctuation): Punctuations = {
+        punc.kind
+      }
+      def apply(kind: Punctuations): Punctuation = {
+        new Punctuation(kind, Position(new File(""), 0, 0))
+      }
+      def apply(kind: Punctuations, pos: Position): Punctuation = {
+        new Punctuation(kind, pos)
+      }
+    }
+       case object EmptyToken extends Token {
       def position = None
     }
   }
