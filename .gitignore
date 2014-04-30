@@ -2,6 +2,9 @@
 *.log
 
 
+# Lombrello specific
+test/plugins/*/classes
+
 # sbt specific
 dist/*
 target/
@@ -15,6 +18,10 @@ project/plugins/project/
 .metadata/*
 .metadata
 .cache
+.settings
+.settings/*
+.project
+.classpath
 
 # Compiled source #
 ###################
