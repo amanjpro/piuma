@@ -31,23 +31,29 @@ trait Trees {
 
 
   // Definitions
-  case class DefDef(name: Ident, params: List[DefDef], tpe: TypeTree, 
-        rhs: Expression, pos: Position) extends PositionedTree 
+  case class DefDef(isPrivate: Boolean, name: Ident, tparams: List[TParamDef],
+        params: List[DefDef], tpe: Ident, rhs: Expression, 
+        pos: Position) extends PositionedTree 
   case class PackageDef(pid: SelectOrIdent, trees: List[Tree], 
         pos: Position) extends PositionedTree
   case class PluginDef(name: Ident, phases: List[Ident], body: List[Tree], 
         pos: Position) extends PositionedTree
-  case class PhaseDef(name: Ident, pluginName: String, transform: Block,
-        body: List[Tree], pos: Position) extends PositionedTree
+  case class PhaseDef(kind: PhaseKind, name: Ident, pluginName: String, 
+        perform: Expression, body: List[Tree], 
+        pos: Position) extends PositionedTree
+  case class TParamDef(name: Ident, ubound: Ident, lbound: Ident, pos: Position)
+        extends PositionedTree
 
 
+  // Expressions
+  sealed trait Expression extends PositionedTree
 
   // Block
   // case class ScalaBlock(block: String, pos: Position) extends PositionedTree
   case class Block(stats: List[Tree], expr: Tree, 
-    pos: Position) extends PositionedTree   
-  // Expressions
-  sealed trait Expression extends PositionedTree
+    pos: Position) extends Expression   
+
+  // Function abstraction and application
   case class Function(params: List[DefDef], rhs: Expression, pos: Position)
       extends Expression
   case class Apply(method: SelectOrIdent, args: List[Expression], 
@@ -68,11 +74,11 @@ trait Trees {
       extends Expression 
 
   // TODO: Do a better thing for pattern field in CaseDef
-  case class CaseDef(pattern: Tree, rhs: Block, 
+  case class CaseDef(pattern: Tree, rhs: Expression, 
     pos: Position) extends PositionedTree 
 
-  case class If(cond: Expression, thenp: Block, elsep: Block, pos: Position)
-      extends Expression 
+  case class If(cond: Expression, thenp: Expression, elsep: Expression, 
+    pos: Position) extends Expression 
   
 
 
@@ -87,7 +93,6 @@ trait Trees {
   case class Import(id: SelectOrIdent, pos: Position) extends PositionedTree
   case class Assign(lhs: SelectOrIdent, rhs: Expression, 
     pos: Position) extends PositionedTree
-  case class TypeTree(id: SelectOrIdent, pos: Position) extends PositionedTree
   case class PropertyTree(property: PropertyType, value: String, pos: Position) 
       extends PositionedTree
 
@@ -122,4 +127,8 @@ trait Trees {
   sealed trait CommentMod
   case object LineComment extends CommentMod
   case object BlockComment extends CommentMod
+
+  sealed trait PhaseKind
+  case object CheckerPhase extends PhaseKind
+  case object TransformerPhase extends PhaseKind
 }
