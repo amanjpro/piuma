@@ -37,21 +37,65 @@ trait Parsers { self: Compiler =>
           (Comment(BlockComment, verbatim, pos), xs)
         case tokens.CommentLine(verbatim, pos) :: xs =>
           (Comment(LineComment, verbatim, pos), xs)
-        
+        case tokens.Keyword(tokens.If) :: xs =>
+          parseIf(tokenList)
+        case (tokens.Keyword(tokens.Def) | 
+              tokens.Keyword(tokens.Private)) :: xs =>
+          parseDef(tokenList)
         case Nil => (NoTree, Nil)
         case _ => (NoTree, Nil)
       }
     }
 
 
+    def parseDef(tokenList: TokenList): (DefDef, TokenList) = {
+      val (isPrivate, rest1) = parseModifier(tokenList)
+      val rest2 = parseOrReport(tokens.Keyword(tokens.Def), rest1)
+      val (name, rest3) = parseId(rest2)
+      val (tparams, rest4) = parseGenerics(rest3)
+      val (params, rest5) = parseParams(rest4)
+      val rest6 = parseOrReport(tokens.Punctuation(tokens.Colon), rest5)
+      val (tpe, rest7) = parseId(rest6)
+      val rest8 = parseOrReport(tokens.Punctuation(tokens.Assign), rest7)
+      val (rhs, rest9) = parseExpression(rest8)
+      val defdef = DefDef(isPrivate, name, tparams, params, tpe, 
+        rhs, posOfHead(tokenList))
+      (defdef, rest9)
+    }
+
     // TODO: Implement
-    def parseIf(tokenList: TokenList): (If, TokenList) = {
-      val rest = parseOrReport(tokens.Punctuation(tokens.LParan), tokenList)
+    def parseId(tokenList: TokenList): (Ident, TokenList) = {
       null
     }
 
     // TODO: Implement
-    def bodyParser(tokenList: TokenList): (Block, TokenList) = {
+    def parseParams(tokenList: TokenList): (List[DefDef], TokenList) = {
+      null
+    }
+    // TODO: Implement
+    def parseGenerics(tokenList: TokenList): (List[TParamDef], TokenList) = {
+      null
+    }
+    def parseModifier(tokenList: TokenList): (Boolean, TokenList) = {
+      tokenList match {
+        case tokens.Keyword(tokens.Private) :: xs =>
+          (true, xs)
+        case xs => (false, xs)
+      }
+    }
+    def parseIf(tokenList: TokenList): (If, TokenList) = {
+      val rest1 = parseOrReport(tokens.Keyword(tokens.If), tokenList)
+      val rest2 = parseOrReport(tokens.Punctuation(tokens.LParan), rest1)
+      val (cond, rest3) = parseExpression(rest2)
+      val rest4 = parseOrReport(tokens.Punctuation(tokens.RParan), rest3)
+      val (thenp, rest5) = parseExpression(rest4)
+      val rest6 = parseOrReport(tokens.Keyword(tokens.Else), rest5)
+      val (elsep, rest7) = parseExpression(rest6)
+      (If(cond, thenp, elsep, posOfHead(tokenList)), rest7)
+    }
+
+    // TODO: Implement
+    def parseBlock(tokenList: TokenList): (Block, TokenList) = {
       null
     }
 
@@ -84,6 +128,8 @@ trait Parsers { self: Compiler =>
      *  <li> Unary Operation
      *  <li> If
      *  <li> Match
+     *  <li> Block
+     *  <li> Fun
      * </ul>
      */
     // TODO: Implement
@@ -94,6 +140,14 @@ trait Parsers { self: Compiler =>
     // TODO: Implement
     def report(expected: tokens.Token, found: tokens.Token): Nothing = {
       throw new Exception("Here")
+    }
+
+    def posOfHead(tokens: TokenList): Position = {
+      val dummy = Position(new File(""), 0, 0)
+      tokens match {
+        case Nil => dummy
+        case x :: xs => x.position.getOrElse(dummy)
+      }
     }
   }
 
@@ -328,8 +382,8 @@ trait Parsers { self: Compiler =>
       }
     }
     object Keyword {
-      def unapply(keyword: Keyword): Keywords = {
-        keyword.keyword
+      def unapply(keyword: Keyword): Option[Keywords] = {
+        Some(keyword.keyword)
       }
       def apply(kind: Keywords): Keyword = {
         new Keyword(kind, Position(new File(""), 0, 0))
@@ -350,8 +404,8 @@ trait Parsers { self: Compiler =>
       }
     }
     object Punctuation {
-      def unapply(punc: Punctuation): Punctuations = {
-        punc.kind
+      def unapply(punc: Punctuation): Option[Punctuations] = {
+        Some(punc.kind)
       }
       def apply(kind: Punctuations): Punctuation = {
         new Punctuation(kind, Position(new File(""), 0, 0))
