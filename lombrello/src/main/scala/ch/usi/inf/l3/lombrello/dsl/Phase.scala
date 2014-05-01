@@ -5,8 +5,15 @@ package ch.usi.inf.l3.lombrello.dsl
  * @date 29 Apr 2014
  */
 
-abstract class Phase[K, T] {
+
+abstract class Phase {
+  type InputType
+  type OutputType
+  type ReifiedInput = Manifest[InputType]
+
   val name: String
   val runsAfter: Option[String]
-  def run(input: K): T
+  def run(input: InputType): OutputType
 }
+
+
