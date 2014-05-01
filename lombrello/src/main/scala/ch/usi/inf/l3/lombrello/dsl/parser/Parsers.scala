@@ -171,9 +171,12 @@ trait Parsers { self: Compiler =>
         read: String = "")(implicit file: File, row: Int): TokenList = {
       chars match {
         case Nil => Nil
+
+        // TODO recognize String, char and literals
         case ('\n' | '\r') :: xs => 
           val pos = Position(file, col - read.length, row)
-          identify(read, pos) :: lexify(xs)(file, row + 1)
+          identify(read, pos) :: tokens.Punctuation(tokens.NL) :: 
+              lexify(xs)(file, row + 1)
         case '/' :: '*' :: xs =>
           val pos = Position(file, col, row)
           val prevPos = pos.copy(col = col - read.length)
@@ -251,6 +254,9 @@ trait Parsers { self: Compiler =>
         case "case" => tokens.Keyword(tokens.Case, pos)
         case "tree" => tokens.Keyword(tokens.Tree, pos)
         case "private" => tokens.Keyword(tokens.Private, pos)
+        case "true" => tokens.Literal(true, pos)
+        case "false" => tokens.Literal(false, pos)
+        //TODO detect numbers too
         case "" => tokens.EmptyToken
         case _ => tokens.Id(str, pos)
       }
@@ -331,6 +337,7 @@ trait Parsers { self: Compiler =>
     case object BackSlash extends Punctuations
     case object Coma extends Punctuations
     case object At extends Punctuations
+    case object NL extends Punctuations
 
     
     // Lombrello keywords
