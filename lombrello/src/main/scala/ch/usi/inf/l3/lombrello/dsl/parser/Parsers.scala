@@ -27,11 +27,13 @@ trait Parsers { self: Compiler =>
     throw new Exception("Here")
   }
 
-  class Parser extends Phase[List[TokenList], self.Tree] {
+  class Parser extends Phase {
+    type InputType = List[TokenList]
+    type OutputType = self.Tree
     val name: String = "parser"
     val runsAfter: Option[String] = Some("lexer")
 
-    def run(tokenss: List[TokenList]): Tree = {
+    def run(tokenss: InputType): OutputType = {
       // val trees = tokenss.map(parse(_))
       // Program(trees)
       null
@@ -155,12 +157,14 @@ trait Parsers { self: Compiler =>
     }
   }
 
-  class Lexer extends Phase[List[File], List[TokenList]] {
+  class Lexer extends Phase {
+    type InputType = List[File]
+    type OutputType = List[TokenList]
     val name: String = "lexer"
 
     val runsAfter: Option[String] = None
 
-    def run(files: List[File]): List[TokenList] = {
+    def run(files: InputType): OutputType = {
       files.map(lexify(_))
     } 
 
