@@ -18,6 +18,14 @@ trait Parsers { self: Compiler =>
 
   type TokenList = List[tokens.Token]
 
+  // TODO: Implement
+  def report(expected: tokens.Token, found: tokens.Token): Nothing = {
+    throw new Exception("Here")
+  }
+  // TODO: Implement
+  def report(found: tokens.Token): Nothing = {
+    throw new Exception("Here")
+  }
 
   class Parser extends Phase[List[TokenList], self.Tree] {
     val name: String = "parser"
@@ -137,10 +145,6 @@ trait Parsers { self: Compiler =>
       null
     }
 
-    // TODO: Implement
-    def report(expected: tokens.Token, found: tokens.Token): Nothing = {
-      throw new Exception("Here")
-    }
 
     def posOfHead(tokens: TokenList): Position = {
       val dummy = Position(new File(""), 0, 0)
@@ -171,11 +175,43 @@ trait Parsers { self: Compiler =>
         read: String = "")(implicit file: File, row: Int): TokenList = {
       chars match {
         case Nil => Nil
-
-        // TODO recognize String, char and literals
+        case '\'' :: x :: '\'' :: xs =>
+          val pos = Position(file, col - read.length, row)
+          val posChar = pos.copy(col = col)
+          identify(read, pos) :: tokens.Literal[Char](x, posChar) :: 
+              lexify(xs)(file, col + 3)
+        case '\'' :: xs =>
+          val pos = Position(file, col - read.length, row)
+          report(tokens.Punctuation(tokens.Quote))
+          identify(read, pos) :: lexify(xs)(file, col + 1)
+        case '\"' :: xs =>
+          val pos = Position(file, col - read.length, row)
+          val posStr = pos.copy(col = col)
+          val (rest, strLit, nrow, ncol) = 
+            readStringLiteral(xs, "", col + 1, row)(pos)
+          identify(read, pos) :: strLit :: lexify(rest, ncol, "")(file, nrow)
+        case x :: xs if isIntegral(read + x) =>
+          lexify(xs, col + 1, read + x)(file, row)
+        case '.' :: xs if isIntegral(read) =>
+          lexify(xs, col + 1, read + '.')(file, row)
+        case 'e' :: '-' :: xs if isDecimal(read) =>
+          lexify(xs, col + 2, read + "e-")(file, row)
+        case 'e' :: '+' :: xs if isDecimal(read) =>
+          lexify(xs, col + 2, read + "e+")(file, row)
+        case 'e' :: xs if isDecimal(read) =>
+          lexify(xs, col + 1, read + "e")(file, row)
+        case x :: xs if isDecimal(read + x) =>
+          lexify(xs, col + 1, read + x)(file, row)
+        case  xs if isIntegral(read) =>
+          val pos = Position(file, col - read.length, row)
+          tokens.Literal(read.toInt, pos) :: lexify(xs, col, "")(file, row)
+        case  xs if isDecimal(read) =>
+          val pos = Position(file, col - read.length, row)
+          tokens.Literal(read.toDouble, pos) :: lexify(xs, col, "")(file, row)
         case ('\n' | '\r') :: xs => 
           val pos = Position(file, col - read.length, row)
-          identify(read, pos) :: tokens.Punctuation(tokens.NL) :: 
+          val posNL = pos.copy(col = col)
+          identify(read, pos) :: tokens.Punctuation(tokens.NL, posNL) :: 
               lexify(xs)(file, row + 1)
         case '/' :: '*' :: xs =>
           val pos = Position(file, col, row)
@@ -217,6 +253,27 @@ trait Parsers { self: Compiler =>
     //   }
     // }
 
+
+    private def readStringLiteral(chars: List[Char], read: String, col: Int,
+      row: Int)(implicit pos: Position): (List[Char], tokens.Literal[String],
+          Int, Int) = {
+      chars match {
+        case Nil =>
+          report(tokens.Punctuation(tokens.DoubleQuote), 
+            tokens.Punctuation(tokens.NL))
+          (Nil, tokens.Literal[String](read, pos), col, row)
+        case '\\' :: '"' :: xs =>
+          readStringLiteral(xs, read + "\\\"", col + 2, row)
+        case '\n' :: xs =>
+          report(tokens.Punctuation(tokens.NL))
+          (xs, tokens.Literal[String](read, pos), col + 1, row)
+        case '"' :: xs =>
+          (xs, tokens.Literal[String](read, pos), col + 1, row)
+        case x :: xs =>
+          readStringLiteral(xs, read + x, col + 1, row)
+      }
+    }
+
     private def readCommentBlock(chars: List[Char], read: String, col: Int, 
       row: Int)(implicit pos: Position): (List[Char], tokens.CommentBlock, 
           Int, Int) = {
@@ -234,6 +291,27 @@ trait Parsers { self: Compiler =>
       // A list of the punctuations that can separate a word
       val separators = " \n\r{}()[]=+-/*%<>!|&'\"_.;:\\,@"
       separators.contains(x) 
+    }
+
+
+    private def isIntegral(str: String): Boolean = {
+      str match {
+        case "" => false
+        case s => s.foldLeft(true)((z, y) => z && y.isDigit)
+      }
+    }
+
+    private def isDecimal(str: String): Boolean = {
+      str match {
+        case "" => false
+        case xs =>
+          try { 
+            xs.toDouble
+            true
+          } catch { 
+            case e: NumberFormatException => false
+          }
+      }
     }
 
     private def identify(str: String, pos: Position): tokens.Token = {
