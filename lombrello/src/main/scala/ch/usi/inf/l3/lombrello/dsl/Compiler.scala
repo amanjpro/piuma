@@ -25,7 +25,7 @@ class Compiler extends Trees
   // FIXME:
   // Only these two fields are mutable in this compiler
   // If you could easily remove it, then do
-  var currentPhase = lexer
+  var currentPhase: Phase = lexer
   var errorCounter = 0
 
   lazy val phases: List[Phase] = orderPhases(List{
@@ -81,10 +81,10 @@ class Compiler extends Trees
         case x :: xs =>
           m match {
             case rr: x.ReifiedInput =>
+              currentPhase = x
               val r = x.run(result.asInstanceOf[x.InputType])
-              run(phases, rr)
+              run(xs, rr)
             case _ =>
-              
               val ftime = System.currentTimeMillis
               println(s"Incompatible compiler phases: ${x.name}, " +
                 s"and ${x.runsAfter.getOrElse("lexer")}")
