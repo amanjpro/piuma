@@ -93,6 +93,7 @@ Thumbs.db
 *.mtc
 *.mtc1
 *.out
+*.fls
 *.synctex.gz
 *.pdf
 *.fdb_latexmk
