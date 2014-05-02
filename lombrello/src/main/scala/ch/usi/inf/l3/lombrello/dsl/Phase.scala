@@ -9,11 +9,9 @@ package ch.usi.inf.l3.lombrello.dsl
 abstract class Phase {
   type InputType
   type OutputType
-  type ReifiedInput = Manifest[InputType]
 
   val name: String
   val runsAfter: Option[String]
   def run(input: InputType): OutputType
 }
-
 

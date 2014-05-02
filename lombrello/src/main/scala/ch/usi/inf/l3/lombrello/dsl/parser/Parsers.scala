@@ -203,6 +203,8 @@ trait Parsers { self: Compiler =>
         case x :: tokens.Punctuation(tokens.NL) :: y :: xs =>
           x :: y :: normalize(xs)
         case tokens.Punctuation(tokens.NL) :: xs => normalize(xs)
+        case x :: xs =>
+          x :: normalize(xs)
       }
     }
 

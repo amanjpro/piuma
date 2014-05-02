@@ -91,36 +91,38 @@ class Compiler extends Trees
 
 
     // TODO: Make this tailrec
-    private def run[T](phases: List[Phase], result: T)
-        (implicit m: scala.reflect.Manifest[T]): Int = {
+    private def run[T](phases: List[Phase], result: T): Int = {
       phases match {
         case x :: xs =>
-          m match {
-            case rr: x.ReifiedInput =>
-              currentPhase = x
-              val r = x.run(result.asInstanceOf[x.InputType])
-              run(xs, rr)
-            case _ =>
+          try {
+            val rr = result.asInstanceOf[x.InputType]
+            currentPhase = x
+            val r = x.run(rr)
+            run(xs, r)
+          } catch {
+            case ex : ClassCastException =>
               val ftime = System.currentTimeMillis
               println(s"Incompatible compiler phases: ${x.name}, " +
                 s"and ${x.runsAfter.getOrElse("lexer")}")
               println(s"[fail] Total time: ${(ftime - stime) / 1000.0} s")
               FAIL
           }
-        case Nil if errorCounter == 0 =>
-          val ftime = System.currentTimeMillis
-          println(s"[success] Total time: ${(ftime - stime) / 1000.0} s")
-          SUCCESS
         case Nil =>
           val ftime = System.currentTimeMillis
           errorCounter match {
+            case 0 =>
+              println("No error found")
+              println(s"[success] Total time: ${(ftime - stime) / 1000.0} s")
+              SUCCESS
             case 1 =>
               println("1 error found")
+              println(s"[fail] Total time: ${(ftime - stime) / 1000.0} s")
+              FAIL
             case _ =>
-              println("${errorCounter} errors found")
+              println(s"${errorCounter} errors found")
+              println(s"[fail] Total time: ${(ftime - stime) / 1000.0} s")
+              FAIL
           }
-          println(s"[fail] Total time: ${(ftime - stime) / 1000.0} s")
-          FAIL
       }
     }
   }
