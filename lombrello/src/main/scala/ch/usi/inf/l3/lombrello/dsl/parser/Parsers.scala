@@ -11,6 +11,7 @@ import java.io.File
 import scala.io.Source
 import ch.usi.inf.l3.lombrello
 import lombrello.dsl._
+import scala.annotation.tailrec
 
 trait Parsers { self: Compiler =>
 
@@ -31,7 +32,7 @@ trait Parsers { self: Compiler =>
     type InputType = List[TokenList]
     type OutputType = self.Tree
     val name: String = "parser"
-    val runsAfter: Option[String] = Some("lexer")
+    val runsAfter: Option[String] = Some("normalizer")
 
     def run(tokenss: InputType): OutputType = {
       // val trees = tokenss.map(parse(_))
@@ -39,7 +40,7 @@ trait Parsers { self: Compiler =>
       null
     }
 
-    def parse(tokenList: TokenList): (Tree, TokenList) = {
+    private def parse(tokenList: TokenList): (Tree, TokenList) = {
       tokenList match {
         // case tokens.ScalaBlock(verbatim, pos) :: xs => 
           // (ScalaBlock(verbatim, pos), xs)
@@ -47,6 +48,9 @@ trait Parsers { self: Compiler =>
           (Comment(BlockComment, verbatim, pos), xs)
         case tokens.CommentLine(verbatim, pos) :: xs =>
           (Comment(LineComment, verbatim, pos), xs)
+        case tokens.Keyword(tokens.Package) :: xs =>
+          parsePackage(tokenList)
+        // FIXME: Broken or not implemented
         case tokens.Keyword(tokens.If) :: xs =>
           parseIf(tokenList)
         case (tokens.Keyword(tokens.Def) | 
@@ -58,7 +62,14 @@ trait Parsers { self: Compiler =>
     }
 
 
-    def parseDef(tokenList: TokenList): (DefDef, TokenList) = {
+    private def parsePackage(tokenList: TokenList): (PackageDef, TokenList) = {
+      val rest1 = parseOrReport(tokens.Keyword(tokens.Package), tokenList)
+      val (pid, rest2) = parseSelectOrIdent(rest1)
+      // TODO: Implement this
+      (PackageDef(pid, Nil, posOfHead(tokenList)), rest2)
+    }
+    
+    private def parseDef(tokenList: TokenList): (DefDef, TokenList) = {
       val (isPrivate, rest1) = parseModifier(tokenList)
       val rest2 = parseOrReport(tokens.Keyword(tokens.Def), rest1)
       val (name, rest3) = parseId(rest2)
@@ -74,26 +85,35 @@ trait Parsers { self: Compiler =>
     }
 
     // TODO: Implement
-    def parseId(tokenList: TokenList): (Ident, TokenList) = {
+    private def parseId(tokenList: TokenList): (Ident, TokenList) = {
       null
     }
 
     // TODO: Implement
-    def parseParams(tokenList: TokenList): (List[DefDef], TokenList) = {
+    private def parseParams(tokenList: TokenList): (List[DefDef], TokenList) = {
       null
     }
+
     // TODO: Implement
-    def parseGenerics(tokenList: TokenList): (List[TParamDef], TokenList) = {
+    private def parseGenerics(tokenList: TokenList): 
+        (List[TParamDef], TokenList) = {
       null
     }
-    def parseModifier(tokenList: TokenList): (Boolean, TokenList) = {
+
+    private def parseModifier(tokenList: TokenList): (Boolean, TokenList) = {
       tokenList match {
         case tokens.Keyword(tokens.Private) :: xs =>
           (true, xs)
         case xs => (false, xs)
       }
     }
-    def parseIf(tokenList: TokenList): (If, TokenList) = {
+
+    private def parseSelectOrIdent(tokenList: TokenList): 
+      (SelectOrIdent, TokenList) = {
+      // TODO: Implement
+      null
+    }
+    private def parseIf(tokenList: TokenList): (If, TokenList) = {
       val rest1 = parseOrReport(tokens.Keyword(tokens.If), tokenList)
       val rest2 = parseOrReport(tokens.Punctuation(tokens.LParan), rest1)
       val (cond, rest3) = parseExpression(rest2)
@@ -105,13 +125,13 @@ trait Parsers { self: Compiler =>
     }
 
     // TODO: Implement
-    def parseBlock(tokenList: TokenList): (Block, TokenList) = {
+    private def parseBlock(tokenList: TokenList): (Block, TokenList) = {
       null
     }
 
 
     
-    def parseOrReport(expected: tokens.Token, 
+    private def parseOrReport(expected: tokens.Token, 
       tokenList: TokenList): TokenList = {
       tokenList match {
         case `expected` :: rest => rest
@@ -143,18 +163,98 @@ trait Parsers { self: Compiler =>
      * </ul>
      */
     // TODO: Implement
-    def parseExpression(tokenList: TokenList): (Expression, TokenList) = {
+    private def parseExpression(tokenList: TokenList): (Expression, TokenList) = {
       null
     }
 
 
-    def posOfHead(tokens: TokenList): Position = {
+    private def posOfHead(tokens: TokenList): Position = {
       val dummy = Position(new File(""), 0, 0)
       tokens match {
         case Nil => dummy
         case x :: xs => x.position.getOrElse(dummy)
       }
     }
+  }
+
+
+  class Normalizer extends Phase {
+    type InputType = List[TokenList]
+    type OutputType = List[TokenList]
+    val name = "normalizer"
+
+    val runsAfter: Option[String] = Some("lexer")
+
+    def run(tokenList: InputType): OutputType = {
+      val removedExtraNL = tokenList.map(removeExtraNL(_))
+      removedExtraNL.map(normalize(_))
+    }
+
+    private def removeExtraNL(tokenList: TokenList): TokenList = {
+      tokenList match {
+        case Nil => Nil
+        case tokens.Punctuation(tokens.NL) :: tokens.Punctuation(tokens.NL) :: xs => 
+          removeExtraNL(tokens.Punctuation(tokens.NL) :: xs)
+        case x :: xs => x :: removeExtraNL(xs)
+      }
+    }
+
+    private def normalize(tokenList: TokenList): TokenList = {
+      tokenList match {
+        case Nil => Nil
+        case tokens.EmptyToken :: xs => normalize(xs)
+        case x :: tokens.Punctuation(tokens.NL) :: y :: xs 
+            if canEnd(x) && canStart(y) =>
+          x :: tokens.Punctuation(tokens.Semi) :: normalize(xs)
+        case x :: tokens.Punctuation(tokens.NL) :: y :: xs =>
+          x :: y :: normalize(xs)
+        case tokens.Punctuation(tokens.NL) :: xs => normalize(xs)
+      }
+    }
+
+
+    private def canEnd(token: tokens.Token): Boolean = {
+      token match {
+        case tokens.Keyword(key) =>
+          key match {
+            case tokens.Tree | tokens.This => true
+            case _ => false
+          }
+        case tokens.Punctuation(punc) =>
+          punc match {
+            case tokens.RCurly | tokens.RParan | tokens.RBracket |
+                tokens.Quote | tokens.DoubleQuote | tokens.Underscore =>
+              true
+            case _ => false
+          }
+        case _ => true
+      }
+    }
+
+    private def canStart(token: tokens.Token): Boolean = {
+      token match {
+        case tokens.Keyword(key) =>
+          key match {
+            case tokens.RunsAfter | tokens.RunsRightAfter |
+                tokens.RunsBefore | tokens.Import | tokens.If |
+                tokens.Else | tokens.Case | tokens.Match | tokens.Package |
+                tokens.Plugin | tokens.New | tokens.Phase | tokens.Transform |
+                tokens.Check | tokens.Def | tokens.Private | tokens.Super |
+                tokens.This | tokens.Throw => true
+            case _ => false
+          }
+        case tokens.Punctuation(punc) =>
+          punc match {
+            case tokens.LCurly | tokens.LParan | tokens.LBracket |
+                tokens.Quote | tokens.DoubleQuote | tokens.Minus |
+                tokens.Not | tokens.At =>
+              true
+            case _ => false
+          }
+        case _ => true
+      }
+    }
+
   }
 
   class Lexer extends Phase {
@@ -175,6 +275,7 @@ trait Parsers { self: Compiler =>
       lexify(chars)(file, 1)
     }
 
+    // TODO: Make this tail recursive
     private def lexify(chars: List[Char], col: Int = 1, 
         read: String = "")(implicit file: File, row: Int): TokenList = {
       chars match {
@@ -258,9 +359,9 @@ trait Parsers { self: Compiler =>
     // }
 
 
-    private def readStringLiteral(chars: List[Char], read: String, col: Int,
-      row: Int)(implicit pos: Position): (List[Char], tokens.Literal[String],
-          Int, Int) = {
+    @tailrec private def readStringLiteral(chars: List[Char], read: String, 
+      col: Int, row: Int)(implicit pos: Position): 
+          (List[Char], tokens.Literal[String], Int, Int) = {
       chars match {
         case Nil =>
           report(tokens.Punctuation(tokens.DoubleQuote), 
@@ -278,9 +379,9 @@ trait Parsers { self: Compiler =>
       }
     }
 
-    private def readCommentBlock(chars: List[Char], read: String, col: Int, 
-      row: Int)(implicit pos: Position): (List[Char], tokens.CommentBlock, 
-          Int, Int) = {
+    @tailrec private def readCommentBlock(chars: List[Char], read: String, 
+      col: Int, row: Int)(implicit pos: Position): 
+        (List[Char], tokens.CommentBlock, Int, Int) = {
       chars match {
         case Nil => (Nil, tokens.CommentBlock(read, pos), col, row)
         case '*' :: '/' :: xs =>
@@ -291,6 +392,7 @@ trait Parsers { self: Compiler =>
           readCommentBlock(xs, read + x, col + 1, row)
       }
     }
+
     private def isSeparator(x: Char): Boolean = {
       // A list of the punctuations that can separate a word
       val separators = " \n\r{}()[]=+-/*%<>!|&'\"_.;:\\,@"
@@ -336,9 +438,12 @@ trait Parsers { self: Compiler =>
         case "case" => tokens.Keyword(tokens.Case, pos)
         case "tree" => tokens.Keyword(tokens.Tree, pos)
         case "private" => tokens.Keyword(tokens.Private, pos)
+        case "super" => tokens.Keyword(tokens.Super, pos)
+        case "this" => tokens.Keyword(tokens.This, pos)
+        case "throw" => tokens.Keyword(tokens.Throw, pos)
+        case "new" => tokens.Keyword(tokens.New, pos)
         case "true" => tokens.Literal(true, pos)
         case "false" => tokens.Literal(false, pos)
-        //TODO detect numbers too
         case "" => tokens.EmptyToken
         case _ => tokens.Id(str, pos)
       }
@@ -369,7 +474,7 @@ trait Parsers { self: Compiler =>
         case '.' => tokens.Punctuation(tokens.Dot, pos)
         case ';' => tokens.Punctuation(tokens.Semi, pos)
         case ':' => tokens.Punctuation(tokens.Colon, pos)
-        case '\\' => tokens.Punctuation(tokens.BackSlash, pos)
+        // case '\\' => tokens.Punctuation(tokens.BackSlash, pos)
         case ',' => tokens.Punctuation(tokens.Coma, pos)
         case '@' => tokens.Punctuation(tokens.At, pos)
       }
@@ -416,7 +521,7 @@ trait Parsers { self: Compiler =>
     case object Dot extends Punctuations
     case object Semi extends Punctuations
     case object Colon extends Punctuations
-    case object BackSlash extends Punctuations
+    // case object BackSlash extends Punctuations
     case object Coma extends Punctuations
     case object At extends Punctuations
     case object NL extends Punctuations
@@ -440,6 +545,10 @@ trait Parsers { self: Compiler =>
     case object Case extends Keywords
     case object Tree extends Keywords   
     case object Private extends Keywords
+    case object Super extends Keywords
+    case object This extends Keywords
+    case object Throw extends Keywords
+    case object New extends Keywords
 
     sealed abstract class Token {
       def position: Option[Position]
