@@ -8,6 +8,7 @@ package ch.usi.inf.l3.lombrello.dsl
  */
 
 import java.io.File
+import scala.annotation.tailrec
 import parser._
 import reporter._
 
