@@ -223,7 +223,7 @@ trait Parsers { self: Compiler =>
         case tokens.Punctuation(punc) =>
           punc match {
             case tokens.RCurly | tokens.RParan | tokens.RBracket |
-                tokens.Quote | tokens.DoubleQuote | tokens.Underscore =>
+                tokens.Underscore =>
               true
             case _ => false
           }
@@ -237,16 +237,15 @@ trait Parsers { self: Compiler =>
           key match {
             case tokens.RunsAfter | tokens.RunsRightAfter |
                 tokens.RunsBefore | tokens.Import | tokens.If |
-                tokens.Else | tokens.Case | tokens.Match | tokens.Package |
-                tokens.Plugin | tokens.New | tokens.Phase | tokens.Transform |
-                tokens.Check | tokens.Def | tokens.Private | tokens.Super |
+                tokens.Package | tokens.Plugin | tokens.New | 
+                tokens.Phase | tokens.Transform | tokens.Check | 
+                tokens.Def | tokens.Private | tokens.Super |
                 tokens.This | tokens.Throw => true
             case _ => false
           }
         case tokens.Punctuation(punc) =>
           punc match {
-            case tokens.LCurly | tokens.LParan | tokens.LBracket |
-                tokens.Quote | tokens.DoubleQuote | tokens.Minus |
+            case tokens.LCurly | tokens.LParan | tokens.Minus |
                 tokens.Not | tokens.At =>
               true
             case _ => false
