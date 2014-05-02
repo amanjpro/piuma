@@ -109,20 +109,17 @@ class Compiler extends Trees
           }
         case Nil =>
           val ftime = System.currentTimeMillis
-          errorCounter match {
+          val (s1, s2, r) = errorCounter match {
             case 0 =>
-              println("No error found")
-              println(s"[success] Total time: ${(ftime - stime) / 1000.0} s")
-              SUCCESS
+              ("No error", "success", SUCCESS)
             case 1 =>
-              println("1 error found")
-              println(s"[fail] Total time: ${(ftime - stime) / 1000.0} s")
-              FAIL
+              ("1 error", "fail", FAIL)
             case _ =>
-              println(s"${errorCounter} errors found")
-              println(s"[fail] Total time: ${(ftime - stime) / 1000.0} s")
-              FAIL
+              (s"${errorCounter} errors", "fail", FAIL)
           }
+          println(s"${s1} found")
+          println(s"[${s2}] Total time: ${(ftime - stime) / 1000.0} s")
+          r
       }
     }
   }
