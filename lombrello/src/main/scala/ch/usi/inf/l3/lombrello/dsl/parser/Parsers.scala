@@ -15,18 +15,8 @@ import scala.annotation.tailrec
 
 trait Parsers { self: Compiler =>
 
-  val tokens = new Tokens {}
 
   type TokenList = List[tokens.Token]
-
-  // TODO: Implement
-  def report(expected: tokens.Token, found: tokens.Token): Nothing = {
-    throw new Exception("Here")
-  }
-  // TODO: Implement
-  def report(found: tokens.Token): Nothing = {
-    throw new Exception("Here")
-  }
 
   class Parser extends Phase {
     type InputType = List[TokenList]
@@ -48,9 +38,9 @@ trait Parsers { self: Compiler =>
           (Comment(BlockComment, verbatim, pos), xs)
         case tokens.CommentLine(verbatim, pos) :: xs =>
           (Comment(LineComment, verbatim, pos), xs)
+        // FIXME: Broken or not implemented
         case tokens.Keyword(tokens.Package) :: xs =>
           parsePackage(tokenList)
-        // FIXME: Broken or not implemented
         case tokens.Keyword(tokens.If) :: xs =>
           parseIf(tokenList)
         case (tokens.Keyword(tokens.Def) | 
@@ -136,9 +126,13 @@ trait Parsers { self: Compiler =>
       tokenList match {
         case `expected` :: rest => rest
         case x :: rest =>
-          report(expected, x)
+          reporter.report(expected, x, BAD_TOKEN)
+          // FIXME: 
+          // We simply return the whole list here, is it a correct
+          // error recovery appraoch?
+          tokenList
         case Nil =>
-          report(expected, tokens.EmptyToken) 
+          reporter.report(expected, tokens.EmptyToken, BAD_TOKEN) 
           Nil
       }
     }
@@ -286,7 +280,7 @@ trait Parsers { self: Compiler =>
               lexify(xs)(file, col + 3)
         case '\'' :: xs =>
           val pos = Position(file, col - read.length, row)
-          report(tokens.Punctuation(tokens.Quote))
+          reporter.report(tokens.Punctuation(tokens.Quote), BAD_TOKEN)
           identify(read, pos) :: lexify(xs)(file, col + 1)
         case '\"' :: xs =>
           val pos = Position(file, col - read.length, row)
@@ -363,13 +357,13 @@ trait Parsers { self: Compiler =>
           (List[Char], tokens.Literal[String], Int, Int) = {
       chars match {
         case Nil =>
-          report(tokens.Punctuation(tokens.DoubleQuote), 
-            tokens.Punctuation(tokens.NL))
+          reporter.report(tokens.Punctuation(tokens.DoubleQuote), 
+            tokens.Punctuation(tokens.NL), BAD_TOKEN)
           (Nil, tokens.Literal[String](read, pos), col, row)
         case '\\' :: '"' :: xs =>
           readStringLiteral(xs, read + "\\\"", col + 2, row)
         case '\n' :: xs =>
-          report(tokens.Punctuation(tokens.NL))
+          reporter.report(tokens.Punctuation(tokens.NL), BAD_TOKEN)
           (xs, tokens.Literal[String](read, pos), col + 1, row)
         case '"' :: xs =>
           (xs, tokens.Literal[String](read, pos), col + 1, row)

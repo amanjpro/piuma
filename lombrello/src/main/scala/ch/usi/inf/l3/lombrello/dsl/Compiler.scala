@@ -9,14 +9,20 @@ package ch.usi.inf.l3.lombrello.dsl
 
 import java.io.File
 import parser._
+import reporter._
 
 
 
 class Compiler extends Trees
-  with Parsers {
+  with Parsers 
+  with Reporters {
 
   val SUCCESS = 0
   val FAIL = 1
+
+
+  val tokens = new Tokens {}
+  val reporter = new Report
 
   lazy val lexer = new Lexer
   lazy val normalizer = new Normalizer
