@@ -470,6 +470,7 @@ trait Parsers { self: Compiler =>
         // case '\\' => tokens.Punctuation(tokens.BackSlash, pos)
         case ',' => tokens.Punctuation(tokens.Coma, pos)
         case '@' => tokens.Punctuation(tokens.At, pos)
+        case ' ' => tokens.EmptyToken
       }
     }
 
