@@ -40,11 +40,12 @@ class Compiler extends Trees
     parser
   ))
 
+  // TODO: make this tailrec
   private def findNext(phases: List[Phase], phaseName: String): 
       (Option[Phase], List[Phase]) = {
     phases match {
       case Nil => (None, Nil)
-      case x :: xs if(phaseName == x.runsAfter) =>
+      case x :: xs if x.runsAfter != None && phaseName == x.runsAfter.get =>
         (Some(x), xs)
       case x :: xs =>
         val (r, rest) = findNext(xs, phaseName)
@@ -68,6 +69,7 @@ class Compiler extends Trees
           }
       }
     }
+
     lexer :: order(lexer, phases)
   }
 
