@@ -19,6 +19,7 @@ class Compiler extends Trees
   val FAIL = 1
 
   lazy val lexer = new Lexer
+  lazy val normalizer = new Normalizer
   lazy val parser = new Parser
 
 
@@ -28,9 +29,10 @@ class Compiler extends Trees
   var currentPhase: Phase = lexer
   var errorCounter = 0
 
-  lazy val phases: List[Phase] = orderPhases(List{
+  lazy val phases: List[Phase] = orderPhases(List(
+    normalizer,
     parser
-  })
+  ))
 
   private def findNext(phases: List[Phase], phaseName: String): 
       (Option[Phase], List[Phase]) = {
@@ -43,6 +45,8 @@ class Compiler extends Trees
         (r, x :: rest)
     }
   }
+
+  // TODO: make this tailrec
   def orderPhases(phases: List[Phase]): List[Phase] = {
     def order(ph: Phase, phaseList: List[Phase]): List[Phase] = {
       phaseList match {
@@ -60,6 +64,8 @@ class Compiler extends Trees
     }
     lexer :: order(lexer, phases)
   }
+
+
   private def compile1(files: List[File]): Int = {
     val stime = System.currentTimeMillis
     new Runner(files, stime).run()
@@ -75,7 +81,9 @@ class Compiler extends Trees
       run(phases, files)  
     }
 
-    def run[T](phases: List[Phase], result: T)
+
+    // TODO: Make this tailrec
+    private def run[T](phases: List[Phase], result: T)
         (implicit m: scala.reflect.Manifest[T]): Int = {
       phases match {
         case x :: xs =>
