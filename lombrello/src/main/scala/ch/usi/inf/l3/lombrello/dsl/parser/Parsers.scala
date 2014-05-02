@@ -38,27 +38,76 @@ trait Parsers { self: Compiler =>
           (Comment(BlockComment, verbatim, pos), xs)
         case tokens.CommentLine(verbatim, pos) :: xs =>
           (Comment(LineComment, verbatim, pos), xs)
-        // FIXME: Broken or not implemented
         case tokens.Keyword(tokens.Package) :: xs =>
-          parsePackage(tokenList)
+          (parsePackage(tokenList), Nil)
+        case Nil => (NoTree, Nil)
+        case xs =>
+          val pos = posOfHead(xs)
+          val pid = Ident(Names.EMPTY_PACKAGE, pos)
+          val trees = parseTrees(xs)
+          (PackageDef(pid, trees, pos), Nil)
+      }
+    }
+    
+
+
+
+    private def parsePackage(tokenList: TokenList): PackageDef = {
+      val rest1 = parseOrReport(tokens.Keyword(tokens.Package), tokenList)
+      // TODO: make sure you do not allow wildcards here
+      val (pid, rest2) = parseSelectOrIdent(rest1)
+      val rest3 = parseOrReport(tokens.Punctuation(tokens.Semi), rest2)
+      val trees = parseTrees(rest3)
+      PackageDef(pid, trees, posOfHead(tokenList))
+    }
+    
+    private def parseTrees(tokenList: TokenList): List[Tree] = {
+      tokenList match {
+        // case tokens.ScalaBlock(verbatim, pos) :: xs => 
+          // (ScalaBlock(verbatim, pos), xs)
+        case tokens.CommentBlock(verbatim, pos) :: xs =>
+          Comment(BlockComment, verbatim, pos) :: parseTrees(xs)
+        case tokens.CommentLine(verbatim, pos) :: xs =>
+          Comment(LineComment, verbatim, pos) :: parseTrees(xs)
+        // case tokens.Keyword(tokens.Package) :: xs =>
+          // parsePackage(tokenList)
+        case tokens.Keyword(tokens.Import) :: xs =>
+          val (tree, rest) = parseImport(tokenList)
+          tree :: parseTrees(rest)
+        case tokens.Keyword(tokens.Plugin) :: xs =>
+          val (tree, rest) = parsePlugin(tokenList)
+          tree :: parseTrees(rest)
+        // FIXME: Broken or not implemented
         case tokens.Keyword(tokens.If) :: xs =>
-          parseIf(tokenList)
+          val (tree, rest) = parseIf(tokenList)
+          tree :: parseTrees(rest)
         case (tokens.Keyword(tokens.Def) | 
               tokens.Keyword(tokens.Private)) :: xs =>
-          parseDef(tokenList)
-        case Nil => (NoTree, Nil)
-        case _ => (NoTree, Nil)
+          val (tree, rest) = parseDef(tokenList)
+          tree :: parseTrees(rest)
+        case Nil => Nil
+        case x :: xs => 
+          // TODO: another naiive error recovery, test it then decide if it is good
+          // or not
+          Nil
       }
     }
 
-
-    private def parsePackage(tokenList: TokenList): (PackageDef, TokenList) = {
-      val rest1 = parseOrReport(tokens.Keyword(tokens.Package), tokenList)
-      val (pid, rest2) = parseSelectOrIdent(rest1)
-      // TODO: Implement this
-      (PackageDef(pid, Nil, posOfHead(tokenList)), rest2)
+    private def parseImport(tokenList: TokenList): (Import, TokenList) = {
+      val rest1 = parseOrReport(tokens.Keyword(tokens.Import), tokenList)
+      val (qual, rest2) = parseSelectOrIdent(rest1)
+      val rest3 = parseOrReport(tokens.Punctuation(tokens.Semi), rest2)
+      (Import(qual, posOfHead(tokenList)), rest3)
     }
-    
+
+    // TODO Finish this
+    private def parsePlugin(tokenList: TokenList): (PluginDef, TokenList) = {
+      val rest1 = parseOrReport(tokens.Keyword(tokens.Plugin), tokenList)
+      val (name, rest2) = parseId(rest1)
+      null
+    }
+
+
     private def parseDef(tokenList: TokenList): (DefDef, TokenList) = {
       val (isPrivate, rest1) = parseModifier(tokenList)
       val rest2 = parseOrReport(tokens.Keyword(tokens.Def), rest1)
@@ -172,6 +221,7 @@ trait Parsers { self: Compiler =>
   }
 
 
+  // TODO: Eliminate this pass, and burry it in Lexer
   class Normalizer extends Phase {
     type InputType = List[TokenList]
     type OutputType = List[TokenList]
