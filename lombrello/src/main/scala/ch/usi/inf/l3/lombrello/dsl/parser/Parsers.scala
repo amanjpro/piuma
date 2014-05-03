@@ -320,11 +320,18 @@ trait Parsers { self: Compiler =>
       lexify(chars)(file, 1)
     }
 
+    
+
+
     // TODO: Make this tail recursive
     private def lexify(chars: List[Char], col: Int = 1, 
         read: String = "")(implicit file: File, row: Int): TokenList = {
       chars match {
         case Nil => Nil
+        case x :: y :: xs if isComposedSymbol(x, y) =>
+          val pos = Position(file, col -read.length, row)
+          val posSym = pos.copy(col = col)
+          identify(read, pos) :: identify(x, y, posSym) :: lexify(xs)(file, col + 2)
         case '\'' :: x :: '\'' :: xs =>
           val pos = Position(file, col - read.length, row)
           val posChar = pos.copy(col = col)
@@ -332,7 +339,7 @@ trait Parsers { self: Compiler =>
               lexify(xs)(file, col + 3)
         case '\'' :: xs =>
           val pos = Position(file, col - read.length, row)
-          reporter.report(tokens.Punctuation(tokens.Quote), BAD_TOKEN)
+          reporter.report("'", pos, BAD_TOKEN)
           identify(read, pos) :: lexify(xs)(file, col + 1)
         case '\"' :: xs =>
           val pos = Position(file, col - read.length, row)
@@ -409,14 +416,13 @@ trait Parsers { self: Compiler =>
           (List[Char], tokens.Literal[String], Int, Int) = {
       chars match {
         case Nil =>
-          reporter.report(tokens.Punctuation(tokens.DoubleQuote), 
-            tokens.Punctuation(tokens.NL), BAD_TOKEN)
+          reporter.report("\"", LINE_FEED, pos.copy(col = col), BAD_TOKEN)
           (Nil, tokens.Literal[String](read, pos), col, row)
         case '\\' :: '"' :: xs =>
           readStringLiteral(xs, read + "\\\"", col + 2, row)
         case '\n' :: xs =>
-          reporter.report(tokens.Punctuation(tokens.NL), BAD_TOKEN)
-          (xs, tokens.Literal[String](read, pos), col + 1, row)
+          reporter.report("\"", LINE_FEED, pos.copy(col = col + 1), BAD_TOKEN)
+          (xs, tokens.Literal[String](read, pos), 1, row + 1)
         case '"' :: xs =>
           (xs, tokens.Literal[String](read, pos), col + 1, row)
         case x :: xs =>
@@ -465,6 +471,34 @@ trait Parsers { self: Compiler =>
       }
     }
 
+    private def isComposedSymbol(c1: Char, c2: Char): Boolean = {
+      (c1, c2) match {
+        case ('=', '=') => true
+        case ('!', '=') => true
+        case ('<', '=') => true
+        case ('>', '=') => true
+        case ('|', '|') => true
+        case ('&', '&') => true
+        case ('<', ':') => true
+        case (':', '>') => true
+        case _ => false
+      }
+    }
+
+    private def identify(c1: Char, c2: Char, pos: Position): tokens.Token = {
+      (c1, c2) match {
+        case ('=', '=') => tokens.Punctuation(tokens.Eq, pos)
+        case ('!', '=') => tokens.Punctuation(tokens.Ne, pos)
+        case ('<', '=') => tokens.Punctuation(tokens.Le, pos)
+        case ('>', '=') => tokens.Punctuation(tokens.Ge, pos)
+        case ('|', '|') => tokens.Punctuation(tokens.Or, pos)
+        case ('&', '&') => tokens.Punctuation(tokens.And, pos)
+        case ('<', ':') => tokens.Punctuation(tokens.SubType, pos)
+        case (':', '>') => tokens.Punctuation(tokens.SuperType, pos)
+        case _ => tokens.EmptyToken
+      }
+    }
+
     private def identify(str: String, pos: Position): tokens.Token = {
       str match {
         case "runsAfter" => tokens.Keyword(tokens.RunsAfter, pos)
@@ -486,9 +520,15 @@ trait Parsers { self: Compiler =>
         case "super" => tokens.Keyword(tokens.Super, pos)
         case "this" => tokens.Keyword(tokens.This, pos)
         case "throw" => tokens.Keyword(tokens.Throw, pos)
+        case "try" => tokens.Keyword(tokens.Try, pos)
+        case "catch" => tokens.Keyword(tokens.Catch, pos)
+        case "finally" => tokens.Keyword(tokens.Finally, pos)
         case "new" => tokens.Keyword(tokens.New, pos)
         case "true" => tokens.Literal(true, pos)
         case "false" => tokens.Literal(false, pos)
+        case x if Names.isScala(x) =>
+          reporter.report(x, pos, SCALA_KEYWORD)
+          tokens.EmptyToken
         case "" => tokens.EmptyToken
         case _ => tokens.Id(str, pos)
       }
@@ -512,9 +552,6 @@ trait Parsers { self: Compiler =>
         case '>' => tokens.Punctuation(tokens.GT, pos)
         case '!' => tokens.Punctuation(tokens.Not, pos)
         case '|' => tokens.Punctuation(tokens.Pipe, pos)
-        case '&' => tokens.Punctuation(tokens.Amp, pos)
-        case '\'' => tokens.Punctuation(tokens.Quote, pos)
-        case '"' => tokens.Punctuation(tokens.DoubleQuote, pos)
         case '_' => tokens.Punctuation(tokens.Underscore, pos)
         case '.' => tokens.Punctuation(tokens.Dot, pos)
         case ';' => tokens.Punctuation(tokens.Semi, pos)
@@ -527,7 +564,7 @@ trait Parsers { self: Compiler =>
     }
 
     private def readFile(file: File): List[Char] = {
-      Source.fromFile(file).getLines.mkString.toList
+      Source.fromFile(file).getLines.mkString("\n").toList
     }
   }
 
@@ -555,12 +592,18 @@ trait Parsers { self: Compiler =>
     case object LT extends Punctuations
     case object GT extends Punctuations
     case object Not extends Punctuations
-    case object Pipe extends Punctuations
-    case object Amp extends Punctuations
 
-    // quotations
-    case object Quote extends Punctuations
-    case object DoubleQuote extends Punctuations
+
+    // composed symbols
+    case object Le extends Punctuations
+    case object Ge extends Punctuations
+    case object Eq extends Punctuations
+    case object Ne extends Punctuations
+    case object SubType extends Punctuations
+    case object SuperType extends Punctuations
+    case object And extends Punctuations
+    case object Or extends Punctuations
+
 
     // other symbols
     case object Underscore extends Punctuations
@@ -571,6 +614,7 @@ trait Parsers { self: Compiler =>
     case object Coma extends Punctuations
     case object At extends Punctuations
     case object NL extends Punctuations
+    case object Pipe extends Punctuations
 
     
     // Lombrello keywords
@@ -594,6 +638,9 @@ trait Parsers { self: Compiler =>
     case object Super extends Keywords
     case object This extends Keywords
     case object Throw extends Keywords
+    case object Try extends Keywords
+    case object Catch extends Keywords
+    case object Finally extends Keywords
     case object New extends Keywords
 
     sealed abstract class Token {
