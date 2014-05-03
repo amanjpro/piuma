@@ -114,8 +114,10 @@ class Compiler extends Trees
             case 0 =>
               ("No error", "success", SUCCESS)
             case 1 =>
+              reporter.printErrors
               ("1 error", "fail", FAIL)
             case _ =>
+              reporter.printErrors
               (s"${errorCounter} errors", "fail", FAIL)
           }
           println(s"${s1} found")

@@ -9,25 +9,47 @@ package ch.usi.inf.l3.lombrello.dsl.reporter
 
 import ch.usi.inf.l3.lombrello
 import lombrello.dsl._
+import lombrello.dsl.parser._
 
 trait Reporters {self: Compiler =>
 
   val BAD_TOKEN = "Unexpected token is found"
 
+  val SCALA_KEYWORD = "Bad usage of Scala keywords"
+
+  val LINE_FEED = "end of line"
 
   class Report {
-    var errorBank: List[String] = Nil
+    private var errorBank: List[String] = Nil
+
+    def printErrors(): Unit = {
+      errorBank.reverse.foreach(println)
+    }
 
     def report(expected: tokens.Token, found: tokens.Token, msg: String): Unit = {
-      (s"[error] ${found.position.getOrElse("")}: ${msg}\n" +
+      errorBank = (s"[error] ${found.position.getOrElse("")}: ${msg}\n" +
       s"     found: ${found}\n" +
       s"  expected: ${expected}\n") :: errorBank
       self.errorCounter = self.errorCounter + 1
     }
 
     def report(found: tokens.Token, msg: String): Unit = {
-      (s"[error] ${found.position.getOrElse("")}: ${msg}\n" +
+      errorBank = (s"[error] ${found.position.getOrElse("")}: ${msg}\n" +
       s"     found: ${found}\n") :: errorBank
+      self.errorCounter = self.errorCounter + 1
+    }
+
+
+    def report(found: String, pos: Position, msg: String): Unit = {
+      errorBank = (s"[error] ${pos}: ${msg}\n" +
+      s"     found: ${found}\n") :: errorBank
+      self.errorCounter = self.errorCounter + 1
+    }
+    
+    def report(expected: String, found: String, pos: Position, msg: String): Unit = {
+      errorBank = (s"[error] ${pos}: ${msg}\n" +
+      s"     found: ${found}\n" +
+      s"  expected: ${expected}\n") :: errorBank
       self.errorCounter = self.errorCounter + 1
     }
   }
