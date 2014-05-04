@@ -26,30 +26,47 @@ trait Reporters {self: Compiler =>
       errorBank.reverse.foreach(println)
     }
 
+    private def rest(token: tokens.Token): String = {
+      token.position match {
+        case Some(pos) =>
+          rest(pos)
+        case _ => ""
+      }
+    }
+
+    private def rest(pos: Position): String = {
+      s"  ${pos.line}\n" +
+      s"  ${" " * (pos.col - 1)}^\n" 
+    }
+
     def report(expected: tokens.Token, found: tokens.Token, msg: String): Unit = {
       errorBank = (s"[error] ${found.position.getOrElse("")}: ${msg}\n" +
       s"     found: ${found}\n" +
-      s"  expected: ${expected}\n") :: errorBank
+      s"  expected: ${expected}\n" +
+      rest(found)) :: errorBank
       self.errorCounter = self.errorCounter + 1
     }
 
     def report(found: tokens.Token, msg: String): Unit = {
       errorBank = (s"[error] ${found.position.getOrElse("")}: ${msg}\n" +
-      s"     found: ${found}\n") :: errorBank
+      s"     found: ${found}\n" +
+      rest(found)) :: errorBank
       self.errorCounter = self.errorCounter + 1
     }
 
 
     def report(found: String, pos: Position, msg: String): Unit = {
       errorBank = (s"[error] ${pos}: ${msg}\n" +
-      s"     found: ${found}\n") :: errorBank
+      s"     found: ${found}\n" +
+      rest(pos)) :: errorBank
       self.errorCounter = self.errorCounter + 1
     }
     
     def report(expected: String, found: String, pos: Position, msg: String): Unit = {
       errorBank = (s"[error] ${pos}: ${msg}\n" +
       s"     found: ${found}\n" +
-      s"  expected: ${expected}\n") :: errorBank
+      s"  expected: ${expected}\n" + 
+      rest(pos)) :: errorBank
       self.errorCounter = self.errorCounter + 1
     }
   }

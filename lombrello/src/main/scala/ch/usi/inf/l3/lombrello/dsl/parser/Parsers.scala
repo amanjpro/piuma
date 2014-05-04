@@ -7,10 +7,9 @@ package ch.usi.inf.l3.lombrello.dsl.parser
  * @date 29 Apr 2014
  */
 
-import java.io.File
-import scala.io.Source
 import ch.usi.inf.l3.lombrello
 import lombrello.dsl._
+import lombrello.dsl.source.SourceFile
 import scala.annotation.tailrec
 
 trait Parsers { self: Compiler =>
@@ -212,7 +211,7 @@ trait Parsers { self: Compiler =>
 
 
     private def posOfHead(tokens: TokenList): Position = {
-      val dummy = Position(new File(""), 0, 0)
+      val dummy = Position()
       tokens match {
         case Nil => dummy
         case x :: xs => x.position.getOrElse(dummy)
@@ -303,7 +302,7 @@ trait Parsers { self: Compiler =>
   }
 
   class Lexer extends Phase {
-    type InputType = List[File]
+    type InputType = List[SourceFile]
     type OutputType = List[TokenList]
     val name: String = "lexer"
 
@@ -315,8 +314,8 @@ trait Parsers { self: Compiler =>
 
 
 
-    private def lexify(file: File): TokenList = {
-      val chars = readFile(file)
+    private def lexify(file: SourceFile): TokenList = {
+      val chars = file.content
       lexify(chars)(file, 1)
     }
 
@@ -325,7 +324,7 @@ trait Parsers { self: Compiler =>
 
     // TODO: Make this tail recursive
     private def lexify(chars: List[Char], col: Int = 1, 
-        read: String = "")(implicit file: File, row: Int): TokenList = {
+        read: String = "")(implicit file: SourceFile, row: Int): TokenList = {
       chars match {
         case Nil => Nil
         case x :: y :: xs if isComposedSymbol(x, y) =>
@@ -563,9 +562,6 @@ trait Parsers { self: Compiler =>
       }
     }
 
-    private def readFile(file: File): List[Char] = {
-      Source.fromFile(file).getLines.mkString("\n").toList
-    }
   }
 
   trait Tokens {
@@ -677,7 +673,7 @@ trait Parsers { self: Compiler =>
         Some(keyword.keyword)
       }
       def apply(kind: Keywords): Keyword = {
-        new Keyword(kind, Position(new File(""), 0, 0))
+        new Keyword(kind, Position())
       }
       def apply(keyword: Keywords, pos: Position): Keyword = {
         new Keyword(keyword, pos)
@@ -699,7 +695,7 @@ trait Parsers { self: Compiler =>
         Some(punc.kind)
       }
       def apply(kind: Punctuations): Punctuation = {
-        new Punctuation(kind, Position(new File(""), 0, 0))
+        new Punctuation(kind, Position())
       }
       def apply(kind: Punctuations, pos: Position): Punctuation = {
         new Punctuation(kind, pos)

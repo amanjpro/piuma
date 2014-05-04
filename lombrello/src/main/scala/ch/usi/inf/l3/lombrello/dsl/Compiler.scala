@@ -7,10 +7,11 @@ package ch.usi.inf.l3.lombrello.dsl
  * @date 29 Apr 2014
  */
 
-import java.io.File
+
 import scala.annotation.tailrec
 import parser._
 import reporter._
+import source._
 
 
 
@@ -75,16 +76,16 @@ class Compiler extends Trees
   }
 
 
-  private def compile1(files: List[File]): Int = {
+  private def compile1(files: List[SourceFile]): Int = {
     val stime = System.currentTimeMillis
     new Runner(files, stime).run()
   }
 
   def compile(files: List[String]): Int = {
-    compile1(files.map(new File(_)))
+    compile1(files.map(new SourceFile(_)))
   }
 
-  private class Runner(files: List[File], stime: Long) {
+  private class Runner(files: List[SourceFile], stime: Long) {
 
     def run(): Int = {
       run(phases, files)  
