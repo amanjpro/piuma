@@ -5,6 +5,9 @@ package ch.usi.inf.l3.lombrello.dsl.parser
  * @date 29 Apr 2014
  */
 
+import ch.usi.inf.l3.lombrello.dsl
+import dsl.source.Position
+
 trait Trees {
   
   sealed trait Tree {

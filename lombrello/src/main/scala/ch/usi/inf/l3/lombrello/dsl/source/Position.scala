@@ -1,11 +1,10 @@
-package ch.usi.inf.l3.lombrello.dsl.parser
+package ch.usi.inf.l3.lombrello.dsl.source
 
 /**
  * @author Amanj Sherwany
  * @date 29 Apr 2014
  */
 import ch.usi.inf.l3.lombrello
-import lombrello.dsl.source.SourceFile
 
 final class Position(private val file: SourceFile, val col: Int, val row: Int) {
   override def toString: String = {

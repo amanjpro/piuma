@@ -10,6 +10,7 @@ package ch.usi.inf.l3.lombrello.dsl.reporter
 import ch.usi.inf.l3.lombrello
 import lombrello.dsl._
 import lombrello.dsl.parser._
+import lombrello.dsl.source._
 
 trait Reporters {self: Compiler =>
 

@@ -9,7 +9,7 @@ package ch.usi.inf.l3.lombrello.dsl.parser
 
 import ch.usi.inf.l3.lombrello
 import lombrello.dsl._
-import lombrello.dsl.source.SourceFile
+import lombrello.dsl.source._
 import scala.annotation.tailrec
 
 trait Parsers { self: Compiler =>
