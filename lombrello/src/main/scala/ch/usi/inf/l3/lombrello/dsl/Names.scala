@@ -13,7 +13,7 @@ object Names {
                             "for", "forSome", "implicit", "lazy", "null",
                             "object", "override", "protected", "return",
                             "sealed", "trait", "type", "val", "var", 
-                            "while", "with", "yield")
+                            "while", "with", "yield", "implicitly")
                           
 
 
