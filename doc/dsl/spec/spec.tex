@@ -11,7 +11,7 @@
 \renewcommand\c[1]{\text{#1}}
 
 \begin{document}
-\title{The Specification of Lingua\\
+\title{The Specification of \dsl\\
   \large{A DSL for writing Scala compiler extensions}}
 \author{Amanj Sherwany}
   
@@ -20,64 +20,69 @@
 \maketitle
 \section{Keywords}
 
-\dsl defines the following keywords: \textbf{package, import, plugin, phase,
-runsAfter, runsRightAfter, runsBefore, transform, check, if, else, match,
-case, def, tree, private}
+\raggedright
+\dsl defines the following keywords: \textbf{runsAfter, runsRightAfter, runsBefore,
+  import, if, else, match, package, plugin, phase, transform, check, def, case,
+  tree, private, super, this, try, catch, finally, throw, new, true, false}
 
+\section{Reserved Words}
+
+All Scala keywords are reserved words here, but not all of them are used. The
+following lists all the reserved words that cannot be used in \dsl:
+\textbf{abstract, class, do, extends, for, forSome, implicitly, lazy, null,
+  object, override, protected, return, sealed, trait, try, type, val, var,
+  while, with, yield}
+  
+
+\newpage
 
 \section{The Context-Free Grammar (CFG) of \dsl}
 % ~\c{\overline{Import}}~\c{Plugin$($\overline{Phase}$)$} \\
 \begin{align*}
+  \displaybreak
   \textbf{Program} & ::= \c{(Package $\bnf \epsilon$)}~\c{$\overline{Import}$}~
-      \c{Plugin`('$\overline{ID}$`)'}~\c{$\overline{Phase}$}\\
-  \textbf{Package} & ::= \c{package Select} \\
-  \textbf{Import} & ::= \c{import Select (.$\_ \bnf \epsilon$)} \\
-  \textbf{Plugin} & ::= \c{plugin ID (\{ $\overline{Def}~\} \bnf \epsilon$ )} \\
+      \c{Plugin}~\c{$\overline{Phase}$}\\
+  \textbf{Package} & ::= \c{package Qual} \\
+  \textbf{Import} & ::= \c{import Qual (.$\_ \bnf \epsilon$)} \\
+  \textbf{Plugin} & ::= \c{plugin ID($\overline{ID}$) (\{ $\overline{Def}~\} 
+      \bnf \epsilon$ )} \\
   \textbf{Phase} & ::= \c{phase ID`('String`)' 
     \{ Preambles (Transform $\bnf$ Check)~$\overline{Def}$ \}} \\
   \textbf{Preambles} & ::= \c{After Before} \\
-  \textbf{After} & ::= \c{(runsAfter $\bnf$ runsRightAfter) = String} \\
-  \textbf{Before} & ::= \c{runsBefore = String} \\
-  \textbf{Transform} & ::= \c{transform Block} \\
-  \textbf{Check} & ::= \c{check Blcok} \\
-  \textbf{Type} & ::= \c{Qual} \bnf \c{`('$\overline{Type}$`)'} \bnf 
-    \c{Qual[$\overline{Qual}$]} \\
+  \textbf{After} & ::= \c{runsAfter = List($\overline{String}$); $\bnf$
+    runsRightAfter = String;} \\
+  \textbf{Before} & ::= \c{runsBefore = List($\overline{String}$);} \\
+  \textbf{Transform} & ::= \c{transform Expression} \\
+  \textbf{Check} & ::= \c{check Expression} \\
   \textbf{Expression} & ::= \c{Expression $\bnf$ ID$\bnf$ Select} \\
      & \bnf \c{ Match $\bnf$ IfElse $\bnf$ Fun $\bnf$ Apply $\bnf$ Literal} \\
-     & \bnf \c{Unary $\bnf$ Binary $\bnf$ `('Expression`)'} \\
+     & \bnf \c{Unary $\bnf$ Binary $\bnf$ Block $\bnf$ Try
+       $\bnf$ `('Expression`)'} \\
    \textbf{Def} & ::= \c{(private $\bnf \epsilon$) def (ID TParams Params $\bnf$
     `('$\overline{ID}$`)') : Type = Expression} \\
-  \textbf{Statement} & ::= \c{Def $\bnf$ Expression} \\
+  \textbf{Statement} & ::= \c{Def $\bnf$ Expression;} \\
   \textbf{Select} & ::= \c{Expression.Expression} \\
-  \textbf{Qual} & ::= \c{Expression.ID} \bnf (\c{Select.} \bnf 
-     \epsilon)~\c{ID} \bnf \c{Expression} \\
+  \textbf{Type} & ::= \c{Qual} \bnf \c{`('$\overline{Type}$`)'} \bnf 
+    \c{Qual[$\overline{Qual}$]} \bnf \c{`('$\overline{Type}$`)' $=>$ Type} \\
+  \textbf{Qual} & ::= \c{Qual.ID} \bnf \c{ID} \\
   \textbf{Match} & ::= \c{Expression match \{ $\overline{Case}$ \}} \\
+  \textbf{Try} & :: = \c{try Block catch \{}~\overline{Case} \c{ \} }
+      (\c{finally Expression} \bnf \epsilon) \\
   \textbf{Case} & ::= \c{WRITE IT} \\
   \textbf{IfElse} & ::= \c{if`('Epxression`)' Expression else Expression} \\
   \textbf{Fun} & ::= \c{`('Params`)' $=>$ Expression} \\
   \textbf{Apply} & ::= \c{(ID $\bnf$ Select) `('$\overline{Expression}$`)'} \\
   \textbf{Unary} & ::= \c{Uop Expression} \\
   \textbf{Binary} & ::= \c{Expression Bop Expression} \\
-  \textbf{Block} & ::= \c{\{ $\overline{Statment}$ Expression \}} \\
+  \textbf{Block} & ::= \c{\{ $\overline{Statment}$ Expression; \}} \\
   \textbf{Params} & ::= \c{ID: Type} \\
   \textbf{TParams} & ::= [\overline{\c{ID}~(<: \bnf :>)~\c{ID}}] \\
   \textbf{Bop} & ::= - \bnf + \bnf * \bnf / \bnf < \bnf <= \bnf > \bnf => \\
       & \bnf \% \bnf == \bnf \&\& \bnf \texttt{||} \bnf != \\
   \textbf{Uop} & ::= - \bnf ! \\
-  \textbf{ID} & ::= [a-zA-Z\_]\overline{[0-9a-zA-Z\_]}
+  \textbf{ID} & ::= [a-zA-Z\_]\overline{[0-9a-zA-Z\_]} \\
 \end{align*}
 
 
-
-
-%
-%
-% Params := ID: ID
-%
-% Generics := [(ID ((<: | :>) ID))*]
-
-
-
-% Op := - | + | * | / | < | <= | > | => | % | == | && | || | != | !
 
 \end{document}
