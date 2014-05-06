@@ -40,8 +40,8 @@ following lists all the reserved words that cannot be used in \dsl:
 % ~\c{\overline{Import}}~\c{Plugin$($\overline{Phase}$)$} \\
 \begin{align*}
   \displaybreak
-  \textbf{Program} & ::= \c{(Package $\bnf \epsilon$)}~\c{$\overline{Import}$}~
-      \c{Plugin}~\c{$\overline{Phase}$}\\
+  \textbf{Program} & ::= \overline{\c{(Package $\bnf \epsilon$)}~
+    \c{$\overline{Import}$}~\c{Plugin}~\c{$\overline{Phase}$}}\\
   \textbf{Package} & ::= \c{package Qual} \\
   \textbf{Import} & ::= \c{import Qual (.$\_ \bnf \epsilon$)} \\
   \textbf{Plugin} & ::= \c{plugin ID($\overline{ID}$) (\{ $\overline{Def}~\} 
@@ -49,9 +49,9 @@ following lists all the reserved words that cannot be used in \dsl:
   \textbf{Phase} & ::= \c{phase ID`('String`)' 
     \{ Preambles (Transform $\bnf$ Check)~$\overline{Def}$ \}} \\
   \textbf{Preambles} & ::= \c{After Before} \\
-  \textbf{After} & ::= \c{runsAfter = List($\overline{String}$); $\bnf$
-    runsRightAfter = String;} \\
-  \textbf{Before} & ::= \c{runsBefore = List($\overline{String}$);} \\
+  \textbf{After} & ::= \c{(runsAfter $\bnf$ runsRightAfter) 
+      `('$\overline{String}$`)';} \\
+  \textbf{Before} & ::= \c{runsBefore `('$\overline{String}$`)';} \\
   \textbf{Transform} & ::= \c{transform Expression} \\
   \textbf{Check} & ::= \c{check Expression} \\
   \textbf{Expression} & ::= \c{Expression $\bnf$ ID$\bnf$ Select} \\
@@ -76,7 +76,7 @@ following lists all the reserved words that cannot be used in \dsl:
   \textbf{Binary} & ::= \c{Expression Bop Expression} \\
   \textbf{Block} & ::= \c{\{ $\overline{Statment}$ Expression; \}} \\
   \textbf{Params} & ::= \c{ID: Type} \\
-  \textbf{TParams} & ::= [\overline{\c{ID}~(<: \bnf :>)~\c{ID}}] \\
+  \textbf{TParams} & ::= [\overline{\c{ID}~(<: \bnf :>)~\c{Type}}] \\
   \textbf{Bop} & ::= - \bnf + \bnf * \bnf / \bnf < \bnf <= \bnf > \bnf => \\
       & \bnf \% \bnf == \bnf \&\& \bnf \texttt{||} \bnf != \\
   \textbf{Uop} & ::= - \bnf ! \\
