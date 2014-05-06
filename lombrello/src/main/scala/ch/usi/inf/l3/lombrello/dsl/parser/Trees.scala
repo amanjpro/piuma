@@ -7,6 +7,7 @@ package ch.usi.inf.l3.lombrello.dsl.parser
 
 import ch.usi.inf.l3.lombrello.dsl
 import dsl.source.Position
+import dsl.Names
 
 trait Trees {
   
@@ -34,16 +35,19 @@ trait Trees {
 
 
   // Definitions
+  case class PackageDef(pid: SelectOrIdent, trees: List[Tree], 
+        pos: Position) extends PositionedTree
   case class DefDef(isPrivate: Boolean, name: Ident, tparams: List[TParamDef],
         params: List[DefDef], tpe: Ident, rhs: Expression, 
         pos: Position) extends PositionedTree 
-  case class PackageDef(pid: SelectOrIdent, trees: List[Tree], 
+  case class PluginDef(name: Ident, phases: List[SelectOrIdent], body: List[DefDef], 
         pos: Position) extends PositionedTree
-  case class PluginDef(name: Ident, phases: List[Ident], body: List[Tree], 
-        pos: Position) extends PositionedTree
-  case class PhaseDef(kind: PhaseKind, name: Ident, pluginName: String, 
-        perform: Expression, body: List[Tree], 
-        pos: Position) extends PositionedTree
+  case class PhaseDef(name: Ident, pluginName: String, preamble: List[Assign], 
+        perform: DefDef, body: List[Tree], pos: Position) extends PositionedTree {
+    val isChecker: Boolean = perform.name.name == Names.CHECKER
+    val isTransformer: Boolean = perform.name.name == Names.TRANSFORMER
+    val kind: PhaseKind = if(isChecker) CheckerPhase else TransformerPhase
+  }
   case class TParamDef(name: Ident, ubound: Ident, lbound: Ident, pos: Position)
         extends PositionedTree
 
@@ -61,15 +65,20 @@ trait Trees {
       extends Expression
   case class Apply(method: SelectOrIdent, args: List[Expression], 
       pos: Position) extends Expression
-  case class Literal[T <: AnyVal](value: T, pos: Position) extends Expression 
+  case class Literal(value: Any, pos: Position) extends Expression {
+    val valueAsString = value.toString
+  }
   
+  case object EmptyExpression extends Expression {
+    val pos = Position()
+  }
   // Select or Ident
   sealed trait SelectOrIdent extends PositionedTree
+
   case class Select(qual: SelectOrIdent, id: Ident, pos: Position) 
       extends Expression with SelectOrIdent
   case class Ident(name: String, pos: Position) extends Expression
     with SelectOrIdent
-  case class WildCard(pos: Position) extends SelectOrIdent
 
 
   // Branching
