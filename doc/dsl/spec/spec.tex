@@ -52,8 +52,8 @@ following lists all the reserved words that cannot be used in \dsl:
   \textbf{After} & ::= \c{(runsAfter $\bnf$ runsRightAfter) 
       `('$\overline{String}$`)';} \\
   \textbf{Before} & ::= \c{runsBefore `('$\overline{String}$`)';} \\
-  \textbf{Transform} & ::= \c{transform Expression} \\
-  \textbf{Check} & ::= \c{check Expression} \\
+  \textbf{Transform} & ::= \c{transform = Expression} \\
+  \textbf{Check} & ::= \c{check = Expression} \\
   \textbf{Expression} & ::= \c{Expression $\bnf$ ID$\bnf$ Select} \\
      & \bnf \c{ Match $\bnf$ IfElse $\bnf$ Fun $\bnf$ Apply $\bnf$ Literal} \\
      & \bnf \c{Unary $\bnf$ Binary $\bnf$ Block $\bnf$ Try
@@ -66,7 +66,7 @@ following lists all the reserved words that cannot be used in \dsl:
     \c{Qual[$\overline{Qual}$]} \bnf \c{`('$\overline{Type}$`)' $=>$ Type} \\
   \textbf{Qual} & ::= \c{Qual.ID} \bnf \c{ID} \\
   \textbf{Match} & ::= \c{Expression match \{ $\overline{Case}$ \}} \\
-  \textbf{Try} & :: = \c{try Block catch \{}~\overline{Case} \c{ \} }
+  \textbf{Try} & :: = \c{try Expression catch \{}~\overline{Case} \c{ \} }
       (\c{finally Expression} \bnf \epsilon) \\
   \textbf{Case} & ::= \c{WRITE IT} \\
   \textbf{IfElse} & ::= \c{if`('Epxression`)' Expression else Expression} \\
@@ -76,8 +76,8 @@ following lists all the reserved words that cannot be used in \dsl:
   \textbf{Binary} & ::= \c{Expression Bop Expression} \\
   \textbf{Block} & ::= \c{\{ $\overline{Statment}$ Expression; \}} \\
   \textbf{Params} & ::= \c{ID: Type} \\
-  \textbf{TParams} & ::= [\overline{\c{ID}~(<: \bnf :>)~\c{Type}}] \\
-  \textbf{Bop} & ::= - \bnf + \bnf * \bnf / \bnf < \bnf <= \bnf > \bnf => \\
+  \textbf{TParams} & ::= [\overline{\c{ID}~(<: \bnf >:)~\c{Type}}] \\
+  \textbf{Bop} & ::= - \bnf + \bnf * \bnf / \bnf < \bnf <= \bnf > \bnf >= \\
       & \bnf \% \bnf == \bnf \&\& \bnf \texttt{||} \bnf != \\
   \textbf{Uop} & ::= - \bnf ! \\
   \textbf{ID} & ::= [a-zA-Z\_]\overline{[0-9a-zA-Z\_]} \\
