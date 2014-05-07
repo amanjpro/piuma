@@ -53,7 +53,6 @@ trait Parsers { self: Compiler =>
 
     private def parsePackage(tokenList: TokenList): PackageDef = {
       val rest1 = parseOrReport(tokens.Keyword(tokens.Package), tokenList)
-      // TODO: make sure you do not allow wildcards here
       val (pid, rest2) = parseSelectOrIdent(rest1)
       val rest3 = parseOrReport(tokens.Punctuation(tokens.Semi), rest2)
       val trees = parseTrees(rest3)
@@ -82,8 +81,8 @@ trait Parsers { self: Compiler =>
           tree :: parseTrees(rest)
         case (tokens.Keyword(tokens.Def) | 
               tokens.Keyword(tokens.Private)) :: xs =>
-          val (tree, rest) = parseDef(tokenList)
-          tree :: parseTrees(rest)
+          val (trees, rest) = parseDef(tokenList)
+          trees ++ parseTrees(rest)
         case Nil => Nil
         case x :: xs => 
           // TODO: another naiive error recovery, test it then decide if it is good
@@ -114,7 +113,6 @@ trait Parsers { self: Compiler =>
       (PluginDef(name, args, body, posOfHead(tokenList)), rest4)
     }
 
-    // TODO: Implement
     private def pasePhase(tokenList: TokenList): (PhaseDef, TokenList) = {
       val rest1 = parseOrReport(tokens.Keyword(tokens.Phase), tokenList)
       val (id, rest2) = parseId(rest1)
@@ -126,21 +124,51 @@ trait Parsers { self: Compiler =>
     }
 
 
-    // FIXME: This does not work this syntax:
+    // FIXME: This does not parse this syntax:
     // def (b, a) = (1, 2)
-    private def parseDef(tokenList: TokenList): (DefDef, TokenList) = {
-      val (isPrivate, rest1) = parseModifier(tokenList)
+    private def parseDef(tokenList: TokenList): (List[DefDef], TokenList) = {
+      val (mod, rest1) = parseModifier(tokenList)
       val rest2 = parseOrReport(tokens.Keyword(tokens.Def), rest1)
-      val (name, rest3) = parseId(rest2)
-      val (tparams, rest4) = parseGenerics(rest3)
-      val (params, rest5) = parseParams(rest4)
-      val rest6 = parseOrReport(tokens.Punctuation(tokens.Colon), rest5)
-      val (tpe, rest7) = parseId(rest6)
-      val rest8 = parseOrReport(tokens.Punctuation(tokens.Assign), rest7)
-      val (rhs, rest9) = parseExpression(rest8)
-      val defdef = DefDef(isPrivate, name, tparams, params, tpe, 
-        rhs, posOfHead(tokenList))
-      (defdef, rest9)
+      rest2 match {
+        case tokens.Punctuation(tokens.LParan) :: xs =>
+          parseMultiDef(tokenList)
+        case _ =>
+          val (name, rest3) = parseId(rest2)
+          val (tparams, rest4) = parseGenerics(rest3)
+          val (params, rest5) = parseParams(rest4)
+          val rest6 = parseOrReport(tokens.Punctuation(tokens.Colon), rest5)
+          val (tpe, rest7) = parseType(rest6)
+          val rest8 = parseOrReport(tokens.Punctuation(tokens.Assign), rest7)
+          val (rhs, rest9) = parseExpression(rest8)
+          val defdef = DefDef(mod, name, tparams, params, tpe, 
+            rhs, posOfHead(tokenList))
+          (List(defdef), rest9)
+      }
+    }
+
+
+    private def parseMultiDef(tokenList: TokenList): (List[DefDef], TokenList) = {
+      
+      @tailrec def toDefs(mod: Modifier, ids: List[DefDef], rhs: Expression, acc: List[DefDef]): 
+          List[DefDef] = {
+        ids match {
+          case Nil => acc.reverse
+          case x :: xs =>
+            val toApply = s"_${acc.size + 1}"
+            val nme = Ident(toApply, rhs.pos)
+            val projector = Select(rhs, nme, rhs.pos)
+            val v = DefDef(mod, x.name, Nil, Nil, x.tpe, projector, x.pos)
+            toDefs(mod, xs, rhs, v :: acc)
+        }
+      }
+
+      val (mod, rest1) = parseModifier(tokenList)
+      val rest2 = parseOrReport(tokens.Keyword(tokens.Def), rest1)
+      val rest3 = parseOrReport(tokens.Punctuation(tokens.LParan), rest2)
+      val (defs, rest4) = parseParams(rest3)
+      val rest5 = parseOrReport(tokens.Punctuation(tokens.Assign), rest4)
+      val (rhs, rest6) = parseExpression(rest5)
+      (toDefs(mod, defs, rhs, Nil), rest6)
     }
 
     private def parseId(tokenList: TokenList): (Ident, TokenList) = {
@@ -149,53 +177,186 @@ trait Parsers { self: Compiler =>
           (Ident(x, pos), xs)
         case x :: xs =>
           // FIXME: Check if this error recovery sufficient
-          val pos = x.position.getOrElse(Position())
+          val pos = posOfHead(tokenList)
           reporter.report("identifier", x.toString, pos, BAD_TOKEN) 
           (Ident(Names.uniqueName("noID"), pos), x :: xs)
       }
     }
 
-    // TODO: Implement
     private def parseParams(tokenList: TokenList): (List[DefDef], TokenList) = {
-      null
-    }
-
-    // TODO: Implement
-    private def parseArgs(tokenList: TokenList): (List[Expression], TokenList) = {
-      null
-    }
-
-    private def parseIDArgs(tokenList: TokenList): (List[SelectOrIdent], TokenList) = {
-      // TODO: Make this tail recerusive
-      def helper(tokenss: TokenList): (List[SelectOrIdent], TokenList) = {
+      @tailrec def helper(tokenss: TokenList, acc: List[DefDef]): (List[DefDef], TokenList) = {
         tokenss match {
           case tokens.Punctuation(tokens.RParan) :: xs =>
-            (Nil, xs)
+            (acc.reverse, xs)
           case _ =>
-            val (id, rest1) = parseSelectOrIdent(tokenss)
+            val (id, rest1) = parseId(tokenss)
+            val rest2 = parseOrReport(tokens.Punctuation(tokens.Colon), rest1)
+            val (tpe, rest3) = parseType(rest2)
+            val param = DefDef(Modifier(Modifier.PARAM), id, Nil, Nil, tpe, EmptyExpression, id.pos)
+            rest3 match {
+              case tokens.Punctuation(tokens.Coma) :: xs =>
+                helper(xs, param :: acc)
+              case tokens.Punctuation(tokens.RParan) :: xs =>
+                val params = (param :: acc).reverse
+                (params, xs)
+              case x :: xs =>
+                val params = (param :: acc).reverse
+                reporter.report(x, tokens.Punctuation(tokens.RParan), BAD_TOKEN)
+                (params, rest3)
+          }
+        }
+      }
+      val rest1 = parseOrReport(tokens.Punctuation(tokens.LParan), tokenList)
+      helper(rest1, Nil)
+    }
+
+    private def parseType(tokenList: TokenList): (TypeTree, TokenList) = {
+      @tailrec def genericSequenceTypeParser(tokenss: TokenList, closer: tokens.Punctuation, 
+          acc: List[TypeTree]): (List[TypeTree], TokenList) = {
+        val (t, rest1) = parseType(tokenss)
+        rest1 match {
+          case `closer` :: xs =>
+            val ts = (t :: acc).reverse
+            (ts, xs)
+          case tokens.Punctuation(tokens.Coma) :: xs =>
+            genericSequenceTypeParser(xs, closer, t :: acc)   
+          case x :: xs =>
+            reporter.report(x, closer, BAD_TOKEN)
+            val ts = (t :: acc).reverse
+            (ts, xs)
+        }
+      }
+
+
+      def parseProductType(tokenss: TokenList): (List[TypeTree], TokenList) = {
+        genericSequenceTypeParser(tokenss, tokens.Punctuation(tokens.RParan), Nil)
+      }
+      def parseSimpleType(tokenss: TokenList): (TypeTree, TokenList) = {
+
+        def helperTArgs(tlist: TokenList): (List[TypeTree], TokenList) = {
+          genericSequenceTypeParser(tokenss, tokens.Punctuation(tokens.RBracket), Nil)
+        }
+        val (id, rest1) = parseSelectOrIdent(tokenss)
+        val (targs, rest2) = rest1 match {
+          case tokens.Punctuation(tokens.LBracket) :: xs =>
+            helperTArgs(xs)
+          case _ =>
+            (Nil, rest1)
+        }
+        (SimpleType(id, targs, id.pos), rest2)
+      }
+      
+      tokenList match {
+        case tokens.Punctuation(tokens.LParan) :: xs =>
+          val (product, rest1) = parseProductType(xs)
+          rest1 match {
+            case tokens.Punctuation(tokens.Arrow) :: xs =>
+              val (r, rest2) = parseType(xs)
+              (FunctionType(product, r, posOfHead(tokenList)), rest2)
+            case _ =>
+              (ProductType(product, posOfHead(tokenList)), rest1)
+          }
+          null
+        case _ =>
+          parseSimpleType(tokenList)
+      }
+    }
+
+    // FIXME:
+    // This is buggy, this accepts the following
+    // (args,) -- hence the comma in front of the close paranthesis
+    // Apparently this is also the case in other places
+    private def parseArgs(tokenList: TokenList): (List[Expression], TokenList) = {
+      @tailrec def helper(tokenss: TokenList, acc: List[Expression]):
+          (List[Expression], TokenList) = {
+        tokenss match {
+          case tokens.Punctuation(tokens.RParan) :: xs =>
+            (acc.reverse, xs)
+          case _ =>
+            val (id, rest1) = parseExpression(tokenss)
             rest1 match {
               case tokens.Punctuation(tokens.Coma) :: xs =>
-                val (ids, rest2) = helper(xs)
-                (id :: ids, rest2)
-              case _ =>
-                (id :: Nil, rest1)
+                helper(xs, id :: acc)
+              case tokens.Punctuation(tokens.RParan) :: xs =>
+                val ids = (id :: acc).reverse
+                (ids, xs)
+              case x :: xs =>
+                val ids = (id :: acc).reverse
+                reporter.report(x, tokens.Punctuation(tokens.RParan), BAD_TOKEN)
+                (ids, rest1)
             }
         }
       }
       val rest1 = parseOrReport(tokens.Punctuation(tokens.LParan), tokenList)
-      helper(rest1)
-    }
-    // TODO: Implement
-    private def parseGenerics(tokenList: TokenList): 
-        (List[TParamDef], TokenList) = {
-      null
+      helper(rest1, Nil)
     }
 
-    private def parseModifier(tokenList: TokenList): (Boolean, TokenList) = {
+    private def parseIDArgs(tokenList: TokenList): (List[SelectOrIdent], TokenList) = {
+      @tailrec def helper(tokenss: TokenList, acc: List[SelectOrIdent]): 
+          (List[SelectOrIdent], TokenList) = {
+        val (id, rest1) = parseSelectOrIdent(tokenss)
+        rest1 match {
+          case tokens.Punctuation(tokens.Coma) :: xs =>
+            helper(xs, id :: acc)
+          case tokens.Punctuation(tokens.RParan) :: xs =>
+            val ids = (id :: acc).reverse
+            (ids, xs)
+          case x :: xs =>
+            val ids = (id :: acc).reverse
+            reporter.report(x, tokens.Punctuation(tokens.RParan), BAD_TOKEN)
+            (ids, rest1)
+        }
+      }
+      val rest1 = parseOrReport(tokens.Punctuation(tokens.LParan), tokenList)
+      helper(rest1, Nil)
+    }
+
+    private def parseGenerics(tokenList: TokenList): 
+        (List[TParamDef], TokenList) = {
+          
+      @tailrec def parseTParams(tokenss: TokenList, acc: List[TParamDef]): 
+        (List[TParamDef], TokenList) = {
+        val (id, rest1) = parseId(tokenss)
+        val (lbound, rest2) = rest1 match {
+          case tokens.Punctuation(tokens.SuperType) :: xs =>
+            parseType(xs)
+          case _ =>
+            val pos = posOfHead(rest1)
+            (SimpleType(Ident("Nothing", pos), Nil, pos), rest1)
+        }
+        val (ubound, rest3) = rest2 match {
+          case tokens.Punctuation(tokens.SubType) :: xs =>
+            parseType(xs)
+          case _ =>
+            val pos = posOfHead(rest2)
+            (SimpleType(Ident("Any", pos), Nil, pos), rest2)
+        }
+
+        val tparam = TParamDef(id, lbound, ubound, id.pos)
+        val acc2 = tparam :: acc
+        rest3 match {
+          case tokens.Punctuation(tokens.Coma) :: xs =>
+            parseTParams(xs, acc2)
+          case tokens.Punctuation(tokens.RBracket) :: xs =>
+            (acc2.reverse, xs)
+          case x :: xs =>
+            reporter.report(tokens.Punctuation(tokens.RBracket), x, BAD_TOKEN)
+            (acc2.reverse, rest3)
+        }
+      }
+
+      tokenList match {
+        case tokens.Punctuation(tokens.LBracket) :: xs =>
+          parseTParams(tokenList, Nil)
+        case _ => (Nil, tokenList)
+      }
+    }
+
+    private def parseModifier(tokenList: TokenList): (Modifier, TokenList) = {
       tokenList match {
         case tokens.Keyword(tokens.Private) :: xs =>
-          (true, xs)
-        case xs => (false, xs)
+          (Modifier(Modifier.PRIVATE), xs)
+        case xs => (Modifier(Modifier.PUBLIC), xs)
       }
     }
 
@@ -204,14 +365,20 @@ trait Parsers { self: Compiler =>
       val pos = posOfHead(tokenList)
       val (name, rest1) = tokenList match {
         case tokens.Keyword(tokens.Transform) :: xs => (Ident(Names.TRANSFORMER, pos), xs)
-        case tokens.Keyword(tokens.Check) :: xs => (Ident(Names.TRANSFORMER, pos), xs)
+        case tokens.Keyword(tokens.Check) :: xs => (Ident(Names.CHECKER, pos), xs)
         case xs =>
           reporter.report(Names.TRANSFORMER, pos, BAD_TOKEN)
           (Ident(Names.TRANSFORMER, pos), xs)
       }
       val (rhs, rest2) = parseExpression(rest1)
-      val tpe = Ident(Names.TREE_TYPE, pos)
-      val m = DefDef(false, name, Nil, Nil, tpe, rhs, pos)
+      val tpe = SimpleType(Ident(Names.TREE_TYPE, pos), Nil, pos)
+      val mod = {
+        if(name.name == Names.TRANSFORMER) 
+          Modifier(Modifier.TRANSFORMER) 
+        else
+          Modifier(Modifier.CHECKER) 
+      }
+      val m = DefDef(mod, name, Nil, Nil, tpe, rhs, pos)
       (m, rest2)
     }
 
@@ -239,9 +406,9 @@ trait Parsers { self: Compiler =>
         tokenss match {
           case (tokens.Keyword(tokens.Def) | 
               tokens.Keyword(tokens.Private)) :: xs =>
-            val (m, r) = parseDef(tokenss)
+            val (ms, r) = parseDef(tokenss)
             val (defs, rest) = helper(r)
-            (m :: defs, rest)
+            (ms ++ defs, rest)
           case _ => (Nil, tokenss)
         }
       }
@@ -255,9 +422,9 @@ trait Parsers { self: Compiler =>
       }
     }
 
-    // TODO: Implement this
     private def parsePhaseBody(tokenList: TokenList): (List[Tree], List[Assign], 
           DefDef, TokenList) = {
+      // TODO: Make this tailrec
       def helper(tokenss: TokenList, body: List[Tree], preambles: List[Assign],
         performer: Option[DefDef]): (List[Tree], List[Assign], Option[DefDef], TokenList) = {
 
@@ -271,8 +438,8 @@ trait Parsers { self: Compiler =>
             helper(r, body, pre :: preambles, performer)
           case (tokens.Keyword(tokens.Def) | 
               tokens.Keyword(tokens.Private)) :: xs =>
-            val (m, r) = parseDef(tokenss)
-            helper(r, m :: body, preambles, performer)
+            val (ms, r) = parseDef(tokenss)
+            helper(r, ms ++ body, preambles, performer)
           case (tokens.Keyword(tokens.Transform) |
                tokens.Keyword(tokens.Check)) :: xs if performer == None => 
             val (p, r) = parseCheckOrTransform(tokenss)
@@ -289,7 +456,9 @@ trait Parsers { self: Compiler =>
         case None =>
           val pos = posOfHead(rest)
           val dummyName = Ident(Names.uniqueName(Names.DUMMY_NAME), pos)
-          val dummy = DefDef(false, dummyName, Nil, Nil, dummyName, EmptyExpression, pos)
+          val dummyType = SimpleType(dummyName, Nil, dummyName.pos)
+          val dummy = DefDef(Modifier(Modifier.PRIVATE), 
+              dummyName, Nil, Nil, dummyType, EmptyExpression, pos)
           reporter.report("}", Names.TRANSFORMER, pos, BAD_TOKEN)
           (body, preambles, dummy, rest)
       }
@@ -298,12 +467,16 @@ trait Parsers { self: Compiler =>
     // TODO: Make it tail recursive
     private def parseSelectOrIdent(tokenList: TokenList):
       (SelectOrIdent, TokenList) = {
-      def reshape(id: Ident, qual: SelectOrIdent): SelectOrIdent = {
+      def reshape(id: SelectOrIdent, qual: SelectOrIdent): SelectOrIdent = {
         qual match {
           case x: Ident => Select(id, x, id.pos)
-          case Select(q, n, _) =>
+          case Select(q: SelectOrIdent, n, _) =>
             val r = reshape(id, q)
             Select(r, n, id.pos)
+          case _ =>
+            // This case should never reached
+            reporter.report(qual.toString, qual.pos, BAD_TOKEN)
+            qual
         }
       }
       val (id, rest) = parseId(tokenList)
@@ -340,6 +513,45 @@ trait Parsers { self: Compiler =>
       (If(cond, thenp, elsep, posOfHead(tokenList)), rest7)
     }
 
+    private def parseCases(tokenList: TokenList): (List[CaseDef], TokenList) = {
+      def parseCase(tokenss: TokenList): (CaseDef, TokenList) = {
+        // TODO: Implement this
+        null
+      }
+      @tailrec def helper(tokenss: TokenList, acc: List[CaseDef]): 
+        (List[CaseDef], TokenList) = {
+        tokenss match {
+          case tokens.Punctuation(tokens.RCurly) :: xs =>
+            (acc.reverse, xs)
+          case xs =>
+            val (c, rest1) = parseCase(xs)
+            helper(rest1, c :: acc)
+        }
+      }
+      val rest1 = parseOrReport(tokens.Punctuation(tokens.LCurly), tokenList) 
+      helper(rest1, Nil)
+    }
+
+    private def parseMatch(tokenList: TokenList): (Match, TokenList) = {
+      val (expr, rest1) = parseExpression(tokenList)
+      val rest2 = parseOrReport(tokens.Keyword(tokens.Match), rest1) 
+      val (cases, rest3) = parseCases(rest2)
+      (Match(expr, cases, expr.pos), rest3)
+    }
+
+    private def parseTry(tokenList: TokenList): (Try, TokenList) = {
+      val rest1 = parseOrReport(tokens.Keyword(tokens.Try), tokenList)
+      val (expr, rest2) = parseExpression(rest1)
+      val rest3 = parseOrReport(tokens.Keyword(tokens.Catch), rest2)
+      val (cases, rest4) = parseCases(rest3)
+      val (fnly, rest5) = rest4 match {
+        case tokens.Keyword(tokens.Finally) :: xs =>
+          parseExpression(xs)
+        case _ =>
+          (EmptyExpression, rest4)
+      }
+      (Try(expr, cases, fnly, expr.pos), rest5)
+    }
     // TODO: Implement
     private def parseBlock(tokenList: TokenList): (Block, TokenList) = {
       null
@@ -671,7 +883,8 @@ trait Parsers { self: Compiler =>
         case ('|', '|') => tokens.Punctuation(tokens.Or, pos)
         case ('&', '&') => tokens.Punctuation(tokens.And, pos)
         case ('<', ':') => tokens.Punctuation(tokens.SubType, pos)
-        case (':', '>') => tokens.Punctuation(tokens.SuperType, pos)
+        case ('>', ':') => tokens.Punctuation(tokens.SuperType, pos)
+        case ('=', '>') => tokens.Punctuation(tokens.Arrow, pos)
         case _ => tokens.EmptyToken
       }
     }
@@ -775,6 +988,7 @@ trait Parsers { self: Compiler =>
     case object Ne extends Punctuations
     case object SubType extends Punctuations
     case object SuperType extends Punctuations
+    case object Arrow extends Punctuations
     case object And extends Punctuations
     case object Or extends Punctuations
 

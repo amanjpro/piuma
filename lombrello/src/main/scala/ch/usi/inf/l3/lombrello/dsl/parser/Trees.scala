@@ -37,8 +37,8 @@ trait Trees {
   // Definitions
   case class PackageDef(pid: SelectOrIdent, trees: List[Tree], 
         pos: Position) extends PositionedTree
-  case class DefDef(isPrivate: Boolean, name: Ident, tparams: List[TParamDef],
-        params: List[DefDef], tpe: Ident, rhs: Expression, 
+  case class DefDef(mod: Modifier, name: Ident, tparams: List[TParamDef],
+        params: List[DefDef], tpe: TypeTree, rhs: Expression, 
         pos: Position) extends PositionedTree 
   case class PluginDef(name: Ident, phases: List[SelectOrIdent], body: List[DefDef], 
         pos: Position) extends PositionedTree
@@ -48,9 +48,15 @@ trait Trees {
     val isTransformer: Boolean = perform.name.name == Names.TRANSFORMER
     val kind: PhaseKind = if(isChecker) CheckerPhase else TransformerPhase
   }
-  case class TParamDef(name: Ident, ubound: Ident, lbound: Ident, pos: Position)
+  case class TParamDef(name: Ident, lbound: TypeTree, ubound: TypeTree, pos: Position)
         extends PositionedTree
 
+  sealed trait TypeTree extends PositionedTree
+  case class SimpleType(id: SelectOrIdent, tparams: List[TypeTree], pos: Position) 
+      extends TypeTree
+  case class ProductType(items: List[TypeTree], pos: Position) extends TypeTree
+  case class FunctionType(params: List[TypeTree], ret: TypeTree, pos: Position)
+      extends TypeTree
 
   // Expressions
   sealed trait Expression extends PositionedTree
@@ -73,17 +79,16 @@ trait Trees {
     val pos = Position()
   }
   // Select or Ident
-  sealed trait SelectOrIdent extends PositionedTree
+  sealed trait SelectOrIdent extends Expression
 
-  case class Select(qual: SelectOrIdent, id: Ident, pos: Position) 
-      extends Expression with SelectOrIdent
-  case class Ident(name: String, pos: Position) extends Expression
-    with SelectOrIdent
+  case class Select(qual: Expression, id: Ident, pos: Position) 
+      extends SelectOrIdent
+  case class Ident(name: String, pos: Position) extends SelectOrIdent
 
 
   // Branching
   case class Match(cond: Expression, cases: List[CaseDef], pos: Position) 
-      extends Expression 
+      extends Expression
 
   // TODO: Do a better thing for pattern field in CaseDef
   case class CaseDef(pattern: Tree, rhs: Expression, 
@@ -93,6 +98,9 @@ trait Trees {
     pos: Position) extends Expression 
   
 
+  // Try-catch block
+  case class Try(cond: Expression, catches: List[CaseDef], fnly: Expression,
+    pos: Position) extends Expression
 
   // Binary and Unary operators
   case class Binary(lhs: Expression, op: BinOps, rhs: Expression, 
