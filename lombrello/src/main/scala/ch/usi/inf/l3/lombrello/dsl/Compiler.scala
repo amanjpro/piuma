@@ -35,7 +35,6 @@ class Compiler extends Trees
   // Only these two fields are mutable in this compiler
   // If you could easily remove it, then do
   var currentPhase: Phase = lexer
-  var errorCounter = 0
 
   lazy val phases: List[Phase] = orderPhases(List(
     normalizer,
@@ -111,7 +110,7 @@ class Compiler extends Trees
           }
         case Nil =>
           val ftime = System.currentTimeMillis
-          val (s1, s2, r) = errorCounter match {
+          val (s1, s2, r) = reporter.errorCounter match {
             case 0 =>
               ("No error", "success", SUCCESS)
             case 1 =>
@@ -119,7 +118,7 @@ class Compiler extends Trees
               ("1 error", "fail", FAIL)
             case _ =>
               reporter.printErrors
-              (s"${errorCounter} errors", "fail", FAIL)
+              (s"${reporter.errorCounter} errors", "fail", FAIL)
           }
           println(s"${s1} found")
           println(s"[${s2}] Total time: ${(ftime - stime) / 1000.0} s")
