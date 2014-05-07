@@ -23,6 +23,8 @@ trait Reporters {self: Compiler =>
   class Report {
     private var errorBank: List[String] = Nil
 
+    def errorCounter = errorBank.size
+
     def printErrors(): Unit = {
       errorBank.reverse.foreach(println)
     }
@@ -45,14 +47,12 @@ trait Reporters {self: Compiler =>
       s"     found: ${found}\n" +
       s"  expected: ${expected}\n" +
       rest(found)) :: errorBank
-      self.errorCounter = self.errorCounter + 1
     }
 
     def report(found: tokens.Token, msg: String): Unit = {
       errorBank = (s"[error] ${found.position.getOrElse("")}: ${msg}\n" +
       s"     found: ${found}\n" +
       rest(found)) :: errorBank
-      self.errorCounter = self.errorCounter + 1
     }
 
 
@@ -60,7 +60,6 @@ trait Reporters {self: Compiler =>
       errorBank = (s"[error] ${pos}: ${msg}\n" +
       s"     found: ${found}\n" +
       rest(pos)) :: errorBank
-      self.errorCounter = self.errorCounter + 1
     }
     
     def report(expected: String, found: String, pos: Position, msg: String): Unit = {
@@ -68,7 +67,6 @@ trait Reporters {self: Compiler =>
       s"     found: ${found}\n" +
       s"  expected: ${expected}\n" + 
       rest(pos)) :: errorBank
-      self.errorCounter = self.errorCounter + 1
     }
   }
 }
