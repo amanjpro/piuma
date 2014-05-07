@@ -69,13 +69,12 @@ trait Trees {
   // Function abstraction and application
   case class Function(params: List[DefDef], rhs: Expression, pos: Position)
       extends Expression
-  case class Apply(method: SelectOrIdent, args: List[Expression], 
-      pos: Position) extends Expression
+  case class Apply(method: Expression, targs: List[TypeTree],
+    args: List[Expression], pos: Position) extends Expression
   case class Literal(value: Any, pos: Position) extends Expression {
     val valueAsString = value.toString
   }
-  
-  case object EmptyExpression extends Expression {
+    case object EmptyExpression extends Expression {
     val pos = Position()
   }
   // Select or Ident
@@ -103,10 +102,11 @@ trait Trees {
     pos: Position) extends Expression
 
   // Binary and Unary operators
-  case class Binary(lhs: Expression, op: BinOps, rhs: Expression, 
+  case class Binary(lhs: Expression, op: BinOp, rhs: Expression, 
     pos: Position) extends Expression
-  case class Unary(op: UniOps, operand: Expression, 
+  case class Unary(op: UniOp, operand: Expression, 
     pos: Position) extends Expression
+  case class Record(values: List[Tree], pos: Position) extends Expression
 
 
   // Misc
@@ -116,6 +116,10 @@ trait Trees {
   case class PropertyTree(property: PropertyType, value: String, pos: Position) 
       extends PositionedTree
 
+  case class New(tpe: SimpleType, args: List[Expression], 
+      pos: Position) extends Expression
+
+  case class Throw(exp: Expression, pos: Position) extends Expression
 
   sealed trait PropertyType
 
@@ -124,25 +128,25 @@ trait Trees {
   case object RunsBeforeProperty extends PropertyType
 
 
-  sealed trait UniOps
-  case object Negative extends UniOps
-  case object Not extends UniOps
+  sealed trait UniOp
+  case object Negative extends UniOp
+  case object Not extends UniOp
 
-  sealed trait BinOps
-  case object Add extends BinOps
-  case object Sub extends BinOps
-  case object Mul extends BinOps
-  case object Div extends BinOps
-  case object Mod extends BinOps
-  case object And extends BinOps
-  case object Or extends BinOps
-  case object XOR extends BinOps
-  case object LT extends BinOps
-  case object GT extends BinOps
-  case object LE extends BinOps
-  case object GE extends BinOps
-  case object Eq extends BinOps
-  case object Neq extends BinOps
+  sealed trait BinOp
+  case object Add extends BinOp
+  case object Sub extends BinOp
+  case object Mul extends BinOp
+  case object Div extends BinOp
+  case object Mod extends BinOp
+  case object And extends BinOp
+  case object Or extends BinOp
+  case object XOR extends BinOp
+  case object LT extends BinOp
+  case object GT extends BinOp
+  case object LE extends BinOp
+  case object GE extends BinOp
+  case object Eq extends BinOp
+  case object Neq extends BinOp
 
   sealed trait CommentMod
   case object LineComment extends CommentMod
