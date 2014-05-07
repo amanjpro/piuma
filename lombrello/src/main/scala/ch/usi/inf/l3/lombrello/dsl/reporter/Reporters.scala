@@ -62,6 +62,10 @@ trait Reporters {self: Compiler =>
       rest(pos)) :: errorBank
     }
     
+    def report(msg: String, pos: Position): Unit = {
+      errorBank = (s"[error] ${pos}: ${msg}\n" +
+                    rest(pos)) :: errorBank
+    }
     def report(expected: String, found: String, pos: Position, msg: String): Unit = {
       errorBank = (s"[error] ${pos}: ${msg}\n" +
       s"     found: ${found}\n" +
