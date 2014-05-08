@@ -175,6 +175,9 @@ trait Trees {
     override def toString: String = "||"
   }
 
+  case object Pipe extends BinOp {
+    override def toString: String = "|"
+  }
   case object XOR extends BinOp {
     override def toString: String = "^"
   }

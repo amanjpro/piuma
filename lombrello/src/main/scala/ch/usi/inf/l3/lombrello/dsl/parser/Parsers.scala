@@ -399,20 +399,33 @@ trait Parsers { self: Compiler =>
       }
     }
 
+    @tailrec private def seenPreamble(preambles: List[PropertyTree], 
+        pre: PropertyTree): Boolean = {
+      preambles match {
+        case Nil => false
+        case x :: xs if x.property == pre.property => true
+        case x :: xs => seenPreamble(xs, pre)
+      }
+    }
+
     private def parsePhaseBody(tokenList: TokenList): (List[Tree], List[PropertyTree], 
           DefDef, TokenList) = {
       // TODO: Make this tailrec
       def helper(tokenss: TokenList, body: List[Tree], preambles: List[PropertyTree],
-        performer: Option[DefDef]): (List[Tree], List[PropertyTree], Option[DefDef], TokenList) = {
-
+        performer: Option[DefDef]): (List[Tree], List[PropertyTree], 
+              Option[DefDef], TokenList) = {
         tokenss match {
           case tokens.Punctuation(tokens.RCurly) :: xs =>
             (body, preambles, performer, xs)
           case (tokens.Keyword(tokens.RunsBefore) |
                 tokens.Keyword(tokens.RunsAfter) |
-                tokens.Keyword(tokens.RunsRightAfter)) :: xs => 
+                tokens.Keyword(tokens.RunsRightAfter)) :: xs =>
             val (pre, r) = parsePreamble(tokenss)
-            helper(r, body, pre :: preambles, performer)
+            if(seenPreamble(preambles, pre)) {
+              helper(r, body, preambles, performer)
+            } else {
+              helper(r, body, pre :: preambles, performer)
+            }
           case (tokens.Keyword(tokens.Def) | 
               tokens.Keyword(tokens.Private)) :: xs =>
             val (ms, r) = parseDef(tokenss)
@@ -542,7 +555,7 @@ trait Parsers { self: Compiler =>
             reporter.report(tokens.Punctuation(tokens.LParan), x, BAD_TOKEN)
             (Nil, rest1)
           case _ =>
-            reporter.report("(", "end of file", qual.pos, BAD_TOKEN)
+            reporter.report("(", EOF, qual.pos, BAD_TOKEN)
             (Nil, rest1)
         }
         (Bind(id, qual, ps, id.pos), rest2)
@@ -671,7 +684,8 @@ trait Parsers { self: Compiler =>
 
     
 
-    private def parseUnary(tokenList: TokenList, pos: Position, uop: UniOp): (Unary, TokenList) = {
+    private def parseUnary(tokenList: TokenList, 
+        pos: Position, uop: UniOp): (Unary, TokenList) = {
       val (expr, rest1) = parseExpression(tokenList)
       (Unary(uop, expr, pos), rest1)
     }
@@ -810,6 +824,7 @@ trait Parsers { self: Compiler =>
               tokens.GT |
               tokens.Xor |
               tokens.And |
+              tokens.Pipe |
               tokens.Or => true
           case _ => false
         }
@@ -831,6 +846,7 @@ trait Parsers { self: Compiler =>
           case tokens.Xor => XOR
           case tokens.And => And
           case tokens.Or => Or
+          case tokens.Pipe => Pipe
           case _ => 
             // This should not happen
             Add

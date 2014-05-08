@@ -16,9 +16,14 @@ trait Reporters {self: Compiler =>
 
   val BAD_TOKEN = "Unexpected token is found"
 
+
+  val DOUBLE_DEFINITION = "is already defined"
+
   val SCALA_KEYWORD = "Bad usage of Scala keywords"
 
   val LINE_FEED = "end of line"
+
+  val EOF = "end of file"
 
   class Report {
     private var errorBank: List[String] = Nil
