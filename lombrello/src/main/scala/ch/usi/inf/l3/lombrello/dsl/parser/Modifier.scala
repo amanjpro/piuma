@@ -15,6 +15,11 @@ class Modifier(mod: Int) {
   val isChecker = (mod & CHECKER) == CHECKER
   val isTransformer = (mod & TRANSFORMER) == TRANSFORMER
 
+
+  override def toString: String = {
+    if(isPrivate) "private" else ""
+  }
+
 }
 
 

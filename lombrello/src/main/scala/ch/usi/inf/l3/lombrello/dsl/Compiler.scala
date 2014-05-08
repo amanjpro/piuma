@@ -12,12 +12,14 @@ import scala.annotation.tailrec
 import parser._
 import reporter._
 import source._
+import codegen._
 
 
 
 class Compiler extends Trees
   with Parsers 
-  with Reporters {
+  with Reporters 
+  with CodeGenerators {
 
   val SUCCESS = 0
   val FAIL = 1
@@ -29,6 +31,7 @@ class Compiler extends Trees
   lazy val lexer = new Lexer
   lazy val normalizer = new Normalizer
   lazy val parser = new Parser
+  lazy val codegen = new CodeGenerator
 
 
   // FIXME:
@@ -38,7 +41,8 @@ class Compiler extends Trees
 
   lazy val phases: List[Phase] = orderPhases(List(
     normalizer,
-    parser
+    parser,
+    codegen
   ))
 
   // TODO: make this tailrec
