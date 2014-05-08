@@ -110,7 +110,7 @@ trait CodeGenerators { self: Compiler =>
           val cses = genSeq(cases, "", "", level + 1, "\n")
           val end = pad("}", level)
           s"${cs}${cses}\n${end}"
-        case CaseDef(p, rhs, _) =>
+        case CaseDef(p, cond, rhs, _) =>
           // TODO
           ""
         case If(cond, thenp, elsep, _) =>

@@ -94,9 +94,14 @@ trait Trees {
   case class Match(cond: Expression, cases: List[CaseDef], pos: Position) 
       extends Expression
 
-  // TODO: Do a better thing for pattern field in CaseDef
-  case class CaseDef(pattern: Tree, rhs: Expression, 
-    pos: Position) extends PositionedTree 
+  case class CaseDef(pattern: Pattern, cond: Option[Expression], 
+    rhs: Expression, pos: Position) extends PositionedTree 
+
+  sealed trait Pattern extends PositionedTree
+  case class Bind(id: Ident, tpe: SelectOrIdent, 
+      pattern: List[Pattern], pos: Position) extends Pattern
+  case class LiteralPattern(l: Literal, pos: Position) extends Pattern
+
 
   case class If(cond: Expression, thenp: Expression, elsep: Expression, 
     pos: Position) extends Expression 
