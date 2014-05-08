@@ -60,7 +60,7 @@ trait Parsers { self: Compiler =>
     }
     
     @tailrec private def parseTrees(tokenList: TokenList, 
-          collected: List[Tree] = Nil): List[Tree] = {
+          collected: List[Tree] = Nil, canImport: Boolean = true): List[Tree] = {
       tokenList match {
         // case tokens.ScalaBlock(verbatim, pos) :: xs => 
           // (ScalaBlock(verbatim, pos), xs)
@@ -70,15 +70,15 @@ trait Parsers { self: Compiler =>
           // Comment(LineComment, verbatim, pos) :: parseTrees(xs)
         // case tokens.Keyword(tokens.Package) :: xs =>
           // parsePackage(tokenList)
-        case tokens.Keyword(tokens.Import) :: xs =>
+        case tokens.Keyword(tokens.Import) :: xs if canImport =>
           val (tree, rest) = parseImport(tokenList)
           parseTrees(rest, tree :: collected)
         case tokens.Keyword(tokens.Plugin) :: xs =>
           val (tree, rest) = parsePlugin(tokenList)
-          parseTrees(rest, tree :: collected)
+          parseTrees(rest, tree :: collected, false)
         case tokens.Keyword(tokens.Phase) :: xs =>
           val (tree, rest) = parsePhase(tokenList)
-          parseTrees(rest, tree :: collected)
+          parseTrees(rest, tree :: collected, false)
         case Nil => Nil
           collected.reverse
         case x :: xs => 
@@ -359,15 +359,14 @@ trait Parsers { self: Compiler =>
       (m, rest2)
     }
 
-    private def parsePreamble(tokenList: TokenList): (Assign, TokenList) = {
+    private def parsePreamble(tokenList: TokenList): (PropertyTree, TokenList) = {
       val pos = posOfHead(tokenList)
       val (lhs, rest1) = tokenList match {
-        case tokens.Keyword(tokens.RunsBefore) :: xs => (Ident(Names.RUNS_BEFORE, pos), xs)
-        case tokens.Keyword(tokens.RunsAfter) :: xs => (Ident(Names.RUNS_AFTER, pos), xs)
-        case tokens.Keyword(tokens.RunsRightAfter) :: xs => (Ident(Names.RUNS_RIGHT_AFTER, pos), xs)
+        case tokens.Keyword(tokens.RunsBefore) :: xs => (RunsBeforeProperty, xs)
+        case tokens.Keyword(tokens.RunsAfter) :: xs => (RunsAfterProperty, xs)
+        case tokens.Keyword(tokens.RunsRightAfter) :: xs => (RunsRightAfterProperty, xs)
         case xs =>
-          reporter.report(Names.RUNS_AFTER, pos, BAD_TOKEN)
-          (Ident(Names.RUNS_AFTER, pos), xs)
+          (NoProperty, xs)
       }
       val (rhs, rest2) = parseArgs(rest1)
       val rhsPos = rhs match {
@@ -375,9 +374,10 @@ trait Parsers { self: Compiler =>
         case x :: xs => x.pos
       }
       val rest3 = parseOrReport(tokens.Punctuation(tokens.Semi), rest2)
-      val assign = Assign(lhs, Apply(Ident("List", rhsPos), Nil, rhs, rhsPos), pos)
+      val assign = PropertyTree(lhs, Apply(Ident("List", rhsPos), Nil, rhs, rhsPos), pos)
       (assign, rest3)
     }
+
     private def parsePluginBody(tokenList: TokenList): (List[DefDef], TokenList) = {
       def helper(tokenss: TokenList): (List[DefDef], TokenList) = {
         tokenss match {
@@ -399,11 +399,11 @@ trait Parsers { self: Compiler =>
       }
     }
 
-    private def parsePhaseBody(tokenList: TokenList): (List[Tree], List[Assign], 
+    private def parsePhaseBody(tokenList: TokenList): (List[Tree], List[PropertyTree], 
           DefDef, TokenList) = {
       // TODO: Make this tailrec
-      def helper(tokenss: TokenList, body: List[Tree], preambles: List[Assign],
-        performer: Option[DefDef]): (List[Tree], List[Assign], Option[DefDef], TokenList) = {
+      def helper(tokenss: TokenList, body: List[Tree], preambles: List[PropertyTree],
+        performer: Option[DefDef]): (List[Tree], List[PropertyTree], Option[DefDef], TokenList) = {
 
         tokenss match {
           case tokens.Punctuation(tokens.RCurly) :: xs =>
@@ -685,6 +685,9 @@ trait Parsers { self: Compiler =>
     // TODO: Turn this into a tail recursive function
     private def parseExpression(tokenList: TokenList): (Expression, TokenList) = {
       val (parsed, rest1) = tokenList match {
+        case tokens.Punctuation(tokens.Underscore) :: xs =>
+          // Not sure if we need this at this moment or not
+          (Ident(Names.WILDCARD, posOfHead(tokenList)), xs)
         case tokens.Punctuation(tokens.Minus) :: xs =>
           parseUnary(xs, posOfHead(tokenList), Negative)
         case tokens.Punctuation(tokens.Not) :: xs =>
@@ -934,13 +937,13 @@ trait Parsers { self: Compiler =>
           identify(read, pos) :: strLit :: lexify(rest, ncol, "")(file, nrow)
         case x :: xs if isIntegral(read + x) =>
           lexify(xs, col + 1, read + x)(file, row)
-        case '.' :: xs if isIntegral(read) =>
+        case '.' :: xs if read == "" || isIntegral(read) =>
           lexify(xs, col + 1, read + '.')(file, row)
-        case 'e' :: '-' :: xs if isDecimal(read) =>
+        case ('e' | 'E') :: '-' :: xs if isDecimal(read) =>
           lexify(xs, col + 2, read + "e-")(file, row)
-        case 'e' :: '+' :: xs if isDecimal(read) =>
+        case ('e' | 'E') :: '+' :: xs if isDecimal(read) =>
           lexify(xs, col + 2, read + "e+")(file, row)
-        case 'e' :: xs if isDecimal(read) =>
+        case ('e' | 'E') :: xs if isDecimal(read) =>
           lexify(xs, col + 1, read + "e")(file, row)
         case x :: xs if isDecimal(read + x) =>
           lexify(xs, col + 1, read + x)(file, row)

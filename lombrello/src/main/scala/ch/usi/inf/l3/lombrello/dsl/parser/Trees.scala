@@ -42,7 +42,7 @@ trait Trees {
         pos: Position) extends PositionedTree 
   case class PluginDef(name: Ident, phases: List[SelectOrIdent], body: List[DefDef], 
         pos: Position) extends PositionedTree
-  case class PhaseDef(name: Ident, pluginName: String, preamble: List[Assign], 
+  case class PhaseDef(name: Ident, pluginName: String, preamble: List[PropertyTree], 
         perform: DefDef, body: List[Tree], pos: Position) extends PositionedTree {
     val isChecker: Boolean = perform.name.name == Names.CHECKER
     val isTransformer: Boolean = perform.name.name == Names.TRANSFORMER
@@ -73,6 +73,11 @@ trait Trees {
     args: List[Expression], pos: Position) extends Expression
   case class Literal(value: Any, pos: Position) extends Expression {
     val valueAsString = value.toString
+    val litRep = value match {
+      case x: String => "\"" + x + "\""
+      case x: Char => s"'${x}'"
+      case x => x.toString
+    }
   }
     case object EmptyExpression extends Expression {
     val pos = Position()
@@ -111,9 +116,8 @@ trait Trees {
 
   // Misc
   case class Import(id: SelectOrIdent, pos: Position) extends PositionedTree
-  case class Assign(lhs: SelectOrIdent, rhs: Expression, 
-    pos: Position) extends PositionedTree
-  case class PropertyTree(property: PropertyType, value: String, pos: Position) 
+
+  case class PropertyTree(property: PropertyType, value: Expression, pos: Position) 
       extends PositionedTree
 
   case class New(tpe: SimpleType, args: List[Expression], 
@@ -126,27 +130,71 @@ trait Trees {
   case object RunsAfterProperty extends PropertyType
   case object RunsRightAfterProperty extends PropertyType
   case object RunsBeforeProperty extends PropertyType
+  case object NoProperty extends PropertyType
 
 
   sealed trait UniOp
-  case object Negative extends UniOp
-  case object Not extends UniOp
+  case object Negative extends UniOp {
+    override def toString: String = "-"
+  }
+  case object Not extends UniOp {
+    override def toString: String = "!"
+  }
 
   sealed trait BinOp
-  case object Add extends BinOp
-  case object Sub extends BinOp
-  case object Mul extends BinOp
-  case object Div extends BinOp
-  case object Mod extends BinOp
-  case object And extends BinOp
-  case object Or extends BinOp
-  case object XOR extends BinOp
-  case object LT extends BinOp
-  case object GT extends BinOp
-  case object LE extends BinOp
-  case object GE extends BinOp
-  case object Eq extends BinOp
-  case object Neq extends BinOp
+  case object Add extends BinOp {
+    override def toString: String = "+"
+  }
+
+  case object Sub extends BinOp {
+    override def toString: String = "-"
+  }
+
+  case object Mul extends BinOp {
+    override def toString: String = "*"
+  }
+
+  case object Div extends BinOp {
+    override def toString: String = "/"
+  }
+
+  case object Mod extends BinOp {
+    override def toString: String = "%"
+  }
+
+  case object And extends BinOp {
+    override def toString: String = "&&"
+  }
+
+  case object Or extends BinOp {
+    override def toString: String = "||"
+  }
+
+  case object XOR extends BinOp {
+    override def toString: String = "^"
+  }
+
+  case object LT extends BinOp {
+    override def toString: String = "<"
+  }
+
+  case object GT extends BinOp {
+    override def toString: String = ">"
+  }
+
+  case object LE extends BinOp {
+    override def toString: String = "<="
+  }
+  case object GE extends BinOp {
+    override def toString: String = ">="
+  }
+  case object Eq extends BinOp {
+    override def toString: String = "=="
+  }
+  case object Neq extends BinOp {
+    override def toString: String = "!="
+  }
+
 
   sealed trait CommentMod
   case object LineComment extends CommentMod
