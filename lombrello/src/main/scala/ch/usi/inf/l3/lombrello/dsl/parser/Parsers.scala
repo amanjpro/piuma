@@ -24,27 +24,27 @@ trait Parsers { self: Compiler =>
     val runsAfter: Option[String] = Some("normalizer")
 
     def run(tokenss: InputType): OutputType = {
-      // val trees = tokenss.map(parse(_))
-      // Program(trees)
-      null
+      val trees = tokenss.map(parse(_))
+      Program(trees)
     }
 
-    private def parse(tokenList: TokenList): (Tree, TokenList) = {
+    private def parse(tokenList: TokenList): Tree = {
       tokenList match {
         // case tokens.ScalaBlock(verbatim, pos) :: xs => 
           // (ScalaBlock(verbatim, pos), xs)
-        case tokens.CommentBlock(verbatim, pos) :: xs =>
-          (Comment(BlockComment, verbatim, pos), xs)
-        case tokens.CommentLine(verbatim, pos) :: xs =>
-          (Comment(LineComment, verbatim, pos), xs)
+        // There is no comment in the parse tree
+        // case tokens.CommentBlock(verbatim, pos) :: xs =>
+          // (Comment(BlockComment, verbatim, pos), xs)
+        // case tokens.CommentLine(verbatim, pos) :: xs =>
+          // (Comment(LineComment, verbatim, pos), xs)
         case tokens.Keyword(tokens.Package) :: xs =>
-          (parsePackage(tokenList), Nil)
-        case Nil => (NoTree, Nil)
+          parsePackage(tokenList)
+        case Nil => NoTree
         case xs =>
           val pos = posOfHead(xs)
           val pid = Ident(Names.EMPTY_PACKAGE, pos)
           val trees = parseTrees(xs)
-          (PackageDef(pid, trees, pos), Nil)
+          PackageDef(pid, trees, pos)
       }
     }
     
@@ -59,34 +59,30 @@ trait Parsers { self: Compiler =>
       PackageDef(pid, trees, posOfHead(tokenList))
     }
     
-    private def parseTrees(tokenList: TokenList): List[Tree] = {
+    @tailrec private def parseTrees(tokenList: TokenList, 
+          collected: List[Tree] = Nil): List[Tree] = {
       tokenList match {
         // case tokens.ScalaBlock(verbatim, pos) :: xs => 
           // (ScalaBlock(verbatim, pos), xs)
-        case tokens.CommentBlock(verbatim, pos) :: xs =>
-          Comment(BlockComment, verbatim, pos) :: parseTrees(xs)
-        case tokens.CommentLine(verbatim, pos) :: xs =>
-          Comment(LineComment, verbatim, pos) :: parseTrees(xs)
+        // case tokens.CommentBlock(verbatim, pos) :: xs =>
+          // Comment(BlockComment, verbatim, pos) :: parseTrees(xs)
+        // case tokens.CommentLine(verbatim, pos) :: xs =>
+          // Comment(LineComment, verbatim, pos) :: parseTrees(xs)
         // case tokens.Keyword(tokens.Package) :: xs =>
           // parsePackage(tokenList)
         case tokens.Keyword(tokens.Import) :: xs =>
           val (tree, rest) = parseImport(tokenList)
-          tree :: parseTrees(rest)
+          parseTrees(rest, tree :: collected)
         case tokens.Keyword(tokens.Plugin) :: xs =>
           val (tree, rest) = parsePlugin(tokenList)
-          tree :: parseTrees(rest)
-        // FIXME: Broken or not implemented
-        case tokens.Keyword(tokens.If) :: xs =>
-          val (tree, rest) = parseIf(tokenList)
-          tree :: parseTrees(rest)
-        case (tokens.Keyword(tokens.Def) | 
-              tokens.Keyword(tokens.Private)) :: xs =>
-          val (trees, rest) = parseDef(tokenList)
-          trees ++ parseTrees(rest)
+          parseTrees(rest, tree :: collected)
+        case tokens.Keyword(tokens.Phase) :: xs =>
+          val (tree, rest) = parsePhase(tokenList)
+          parseTrees(rest, tree :: collected)
         case Nil => Nil
+          collected.reverse
         case x :: xs => 
-          // TODO: another naiive error recovery, test it then decide if it is good
-          // or not
+          reporter.report(tokens.Keyword(tokens.Phase), x, BAD_TOKEN)
           Nil
       }
     }
@@ -113,7 +109,7 @@ trait Parsers { self: Compiler =>
       (PluginDef(name, args, body, posOfHead(tokenList)), rest4)
     }
 
-    private def pasePhase(tokenList: TokenList): (PhaseDef, TokenList) = {
+    private def parsePhase(tokenList: TokenList): (PhaseDef, TokenList) = {
       val rest1 = parseOrReport(tokens.Keyword(tokens.Phase), tokenList)
       val (id, rest2) = parseId(rest1)
       val rest3 = parseOrReport(tokens.Punctuation(tokens.LParan), rest2)
@@ -551,6 +547,15 @@ trait Parsers { self: Compiler =>
     }
 
     private def parseBlock(tokenList: TokenList): (Block, TokenList) = {
+      def shouldBeFollowedBySemi(expr: Expression): Boolean = {
+        expr match {
+          case x: Block => false
+          case x: Match => false
+          case x: If => false
+          case x: Try => false
+          case _ => true
+        }
+      }
       @tailrec def helper(tokenss: TokenList, acc: List[PositionedTree]): 
           (Block, TokenList) = {
         val (stmts, rest1) = tokenss match {
@@ -560,7 +565,10 @@ trait Parsers { self: Compiler =>
           case _ =>
             val (expr, rest1) = parseExpression(tokenss)
             // FIXME: Not all trees need to end with a semi colon
-            val rest2 = parseOrReport(tokens.Punctuation(tokens.Semi), rest1)
+            val rest2= shouldBeFollowedBySemi(expr) match {
+              case true => parseOrReport(tokens.Punctuation(tokens.Semi), rest1)
+              case false => rest1
+            }
             (List(expr), rest2)
         }
         rest1 match {
@@ -606,10 +614,10 @@ trait Parsers { self: Compiler =>
     }
 
 
-    private def parseBinary(tokenList: TokenList, lhs: Expression, pos: Position, bop: BinOp): 
+    private def parseBinary(tokenList: TokenList, lhs: Expression, bop: BinOp): 
         (Binary, TokenList) = {
       val (rhs, rest1) = parseExpression(tokenList)
-      (Binary(lhs, bop, rhs, pos), rest1)
+      (Binary(lhs, bop, rhs, lhs.pos), rest1)
     }
     
 
@@ -626,6 +634,17 @@ trait Parsers { self: Compiler =>
       val (ids, rest1) = parseSelectOrIdent(tokenList, Nil)
       val select = toSelect(expr, ids)
       (select, rest1)
+    }
+
+
+    @tailrec private def isFun(tokenList: TokenList, count: Int = 1): Boolean = {
+      tokenList match {
+        case tokens.Punctuation(tokens.Arrow) :: xs if count == 0 => true
+        case tokens.Punctuation(tokens.LParan) :: xs => isFun(xs, count + 1)
+        case tokens.Punctuation(tokens.RParan) :: xs => isFun(xs, count - 1)
+        case _ if count == 0 => false
+        case Nil => false
+      }
     }
 
     private def parseRecord(tokenList: TokenList): (Expression, TokenList) = {
@@ -658,12 +677,14 @@ trait Parsers { self: Compiler =>
      *  <li> Block
      *  <li> Try
      *  <li> (Expression)
+     *  <li> Throw
+     *  <li> New
      * </ul>
      */
     // TODO: Implement
     // TODO: Turn this into a tail recursive function
     private def parseExpression(tokenList: TokenList): (Expression, TokenList) = {
-      tokenList match {
+      val (parsed, rest1) = tokenList match {
         case tokens.Punctuation(tokens.Minus) :: xs =>
           parseUnary(xs, posOfHead(tokenList), Negative)
         case tokens.Punctuation(tokens.Not) :: xs =>
@@ -672,13 +693,105 @@ trait Parsers { self: Compiler =>
           parseIf(tokenList)
         case tokens.Keyword(tokens.Try) :: xs =>
           parseTry(tokenList)
+        case tokens.Punctuation(tokens.LParan) :: xs if isFun(xs) =>
+          parseFun(tokenList)
         case tokens.Punctuation(tokens.LParan) :: xs =>
           parseRecord(tokenList)
         case tokens.Punctuation(tokens.LCurly) :: xs =>
           parseBlock(tokenList)
+        case tokens.Keyword(tokens.Throw) :: xs =>
+          parseThrow(tokenList)
+        case tokens.Keyword(tokens.New) :: xs =>
+          parseNew(tokenList)
         case tokens.Literal(_, _) :: xs =>
           parseLiteral(tokenList)
-        case _ => null
+        case _ => parseSelectOrIdent(tokenList)
+      }
+      parseRestOfExpr(parsed, rest1)
+    }
+
+
+    private def parseRestOfExpr(expr: Expression, tokenList: TokenList): (Expression, TokenList) = {
+      def isAppliable(e: Expression): Boolean = {
+        e match {
+          case x: If => false
+          case x: Try => false
+          case x: Function => false
+          case x: Record => false
+          case x: Block => false
+          case x: Throw => false
+          case _ => true
+        }
+      }
+      def isTypeAppliable(e: Expression): Boolean = {
+        e match {
+          case x: Unary => false
+          case _ => isAppliable(e)
+        }
+      }
+      def isBinary(p: tokens.Punctuations): Boolean = {
+        p match {
+          case tokens.Plus |
+              tokens.Minus |
+              tokens.Div |
+              tokens.Mul |
+              tokens.Mod |
+              tokens.Le |
+              tokens.Ge |
+              tokens.Eq |
+              tokens.Ne |
+              tokens.LT |
+              tokens.GT |
+              tokens.Xor |
+              tokens.And |
+              tokens.Or => true
+          case _ => false
+        }
+      }
+
+      def toBinOp(p: tokens.Punctuations): BinOp = {
+        p match {
+          case tokens.Plus => Add
+          case tokens.Minus => Sub
+          case tokens.Div => Div
+          case tokens.Mul => Mul
+          case tokens.Mod => Mod
+          case tokens.Le => LE
+          case tokens.Ge => GE
+          case tokens.Eq => Eq
+          case tokens.Ne => Neq
+          case tokens.LT => LT
+          case tokens.GT => GT
+          case tokens.Xor => XOR
+          case tokens.And => And
+          case tokens.Or => Or
+          case _ => 
+            // This should not happen
+            Add
+        }
+      }
+      tokenList match {
+        case tokens.Keyword(tokens.Match) :: xs =>
+          parseMatch(expr, tokenList)
+        case tokens.Punctuation(tokens.Dot) :: xs => 
+          isAppliable(expr) match {
+            case true => parseSelectExprOrIdent(tokenList, expr)
+            case false => (expr, tokenList)
+          } 
+        case tokens.Punctuation(tokens.LParan) :: xs => 
+          isAppliable(expr) match {
+            case true => parseApply(tokenList, expr)
+            case false => (expr, tokenList)
+          } 
+        case tokens.Punctuation(tokens.LBracket) :: xs => 
+          isTypeAppliable(expr) match {
+            case true => parseApply(tokenList, expr)
+            case _ => (expr, tokenList)
+          }
+        case tokens.Punctuation(x) :: xs 
+            if isBinary(x) && isTypeAppliable(expr) =>
+          parseBinary(xs, expr, toBinOp(x))
+        case _ => (expr, tokenList)
       }
     }
 
@@ -847,7 +960,9 @@ trait Parsers { self: Compiler =>
           val prevPos = pos.copy(col = col - read.length)
           val (rest, block, ncol, nrow) = 
               readCommentBlock(xs, "", col + 2, row)(pos)
-          identify(read, prevPos) :: block :: lexify(rest, ncol, "")(file, nrow)
+          // We do throw away comments now and do not persist them
+          // identify(read, prevPos) :: block :: lexify(rest, ncol, "")(file, nrow)
+          identify(read, prevPos) :: lexify(rest, ncol, "")(file, nrow)
         // case '.' :: '.' :: '/' :: xs =>
         //   val pos = Position(file, col, row)
         //   val prevPos = pos.copy(col = col - read.length)
@@ -857,7 +972,9 @@ trait Parsers { self: Compiler =>
         case '/' :: '/' :: xs =>
           val pos = Position(file, col, row)
           val prevPos = pos.copy(col = col - read.length)
-          identify(read, pos) :: List(tokens.CommentLine(xs.mkString, pos))
+          // We do throw away comments and do not persist them now
+          // identify(read, pos) :: List(tokens.CommentLine(xs.mkString, pos)) 
+          identify(read, pos) :: Nil
         case x :: xs if isSeparator(x) =>
           val xPos = Position(file, col, row)
           val readPos = xPos.copy(col = col - read.length)
@@ -1009,6 +1126,7 @@ trait Parsers { self: Compiler =>
 
     private def identify(char: Char, pos: Position): tokens.Token = {
       char match {
+        case '^' => tokens.Punctuation(tokens.LCurly, pos)
         case '{' => tokens.Punctuation(tokens.LCurly, pos)
         case '}' => tokens.Punctuation(tokens.RCurly, pos)
         case '[' => tokens.Punctuation(tokens.LBracket, pos)
@@ -1061,6 +1179,7 @@ trait Parsers { self: Compiler =>
     // logical symbols
     case object LT extends Punctuations
     case object GT extends Punctuations
+    case object Xor extends Punctuations
     case object Not extends Punctuations
 
 
