@@ -507,11 +507,69 @@ trait Parsers { self: Compiler =>
       (If(cond, thenp, elsep, posOfHead(tokenList)), rest7)
     }
 
-    private def parseCases(tokenList: TokenList): (List[CaseDef], TokenList) = {
-      def parseCase(tokenss: TokenList): (CaseDef, TokenList) = {
-        // TODO: Implement this
-        null
+
+    private def parseCase(tokenList: TokenList): (CaseDef, TokenList) = {
+      val rest1 = parseOrReport(tokens.Keyword(tokens.Case), tokenList)
+      val (pattern, rest2) = parsePattern(rest1)
+      val (cond, rest3) = rest2 match {
+        case tokens.Keyword(tokens.If) :: xs =>
+          val (e, r) = parseExpression(xs)
+          (Some(e), r)
+        case _ =>
+          (None, rest2)
       }
+      val (rhs, rest4) = rest3 match {
+        case tokens.Punctuation(tokens.LCurly) :: xs =>
+          parseBlock(rest3)
+        case _ => parseBlockLike(rest3, tokens.Keyword(tokens.Case))
+      }
+
+
+      val cdef = CaseDef(pattern, cond, rhs, posOfHead(tokenList))
+      (cdef, rest3)
+    }
+
+    private def parsePattern(tokenList: TokenList): (Pattern, TokenList) = {
+      def helper(tokenss: TokenList, id: Ident, 
+        should: Boolean): (Pattern, TokenList) = {
+        val (qual, rest1) = parseSelectOrIdent(tokenss)
+        val (ps, rest2) = rest1 match {
+          case tokens.Punctuation(tokens.LParan) :: xs => 
+            sequenceHelper[Pattern](xs, Nil, parsePattern, 
+              tokens.Punctuation(tokens.RParan))
+          case _ if !should => (Nil, rest1)
+          case x :: xs =>
+            reporter.report(tokens.Punctuation(tokens.LParan), x, BAD_TOKEN)
+            (Nil, rest1)
+          case _ =>
+            reporter.report("(", "end of file", qual.pos, BAD_TOKEN)
+            (Nil, rest1)
+        }
+        (Bind(id, qual, ps, id.pos), rest2)
+      }
+      tokenList match {
+        case (x: tokens.Literal) :: xs => 
+          val (lit, rest1) = parseLiteral(tokenList)
+          (LiteralPattern(lit, lit.pos), rest1)
+        case tokens.Id(_, _) :: tokens.Punctuation(tokens.At) :: xs =>
+          val (id, rest1) = parseId(tokenList)
+          val rest2 = parseOrReport(tokens.Punctuation(tokens.At), rest1)
+          helper(rest2, id, true)
+        case tokens.Id(_, pos) :: tokens.Punctuation(tokens.Dot) :: xs => 
+          val star = Ident(Names.WILDCARD, pos)
+          helper(tokenList, star, false)
+        case tokens.Id(_, _) :: tokens.Punctuation(tokens.Colon) :: xs =>
+          val (id, rest1) = parseId(tokenList)
+          val (tp, rest2) = parseSelectOrIdent(rest1)
+          (Bind(id, tp, Nil, id.pos), rest2)
+        case tokens.Id(_, _) :: xs =>
+          val (id, rest) = parseId(tokenList)
+          val tp = Ident("Any", id.pos)
+          (Bind(id, tp, Nil, id.pos), rest)
+      }
+    }
+
+    private def parseCases(tokenList: TokenList): (List[CaseDef], TokenList) = {
       @tailrec def helper(tokenss: TokenList, acc: List[CaseDef]): 
         (List[CaseDef], TokenList) = {
         tokenss match {
@@ -545,17 +603,18 @@ trait Parsers { self: Compiler =>
       }
       (Try(expr, cases, fnly, expr.pos), rest5)
     }
-
-    private def parseBlock(tokenList: TokenList): (Block, TokenList) = {
-      def shouldBeFollowedBySemi(expr: Expression): Boolean = {
-        expr match {
-          case x: Block => false
-          case x: Match => false
-          case x: If => false
-          case x: Try => false
-          case _ => true
-        }
+    private def shouldBeFollowedBySemi(expr: Expression): Boolean = {
+      expr match {
+        case x: Block => false
+        case x: Match => false
+        case x: If => false
+        case x: Try => false
+        case _ => true
       }
+    }
+    private def parseBlockLike(tokenList: TokenList,
+      end: tokens.Token = tokens.Punctuation(tokens.RCurly)): (Block, TokenList) = {
+      
       @tailrec def helper(tokenss: TokenList, acc: List[PositionedTree]): 
           (Block, TokenList) = {
         val (stmts, rest1) = tokenss match {
@@ -572,7 +631,7 @@ trait Parsers { self: Compiler =>
             (List(expr), rest2)
         }
         rest1 match {
-          case tokens.Punctuation(tokens.RCurly) :: xs =>
+          case tokens.Punctuation(`end`) :: xs =>
             val contents = acc ++ stmts
             val block = contents.splitAt(contents.size) match {
               case (ss, List(e: Expression)) =>
@@ -584,8 +643,12 @@ trait Parsers { self: Compiler =>
           case _ => helper(rest1, acc ++ stmts)
         }
       }
+      helper(tokenList, Nil)
+    }
+
+    private def parseBlock(tokenList: TokenList): (Block, TokenList) = {
       val rest1 = parseOrReport(tokens.Punctuation(tokens.LCurly), tokenList)
-      helper(rest1, Nil)
+      parseBlockLike(rest1)
     }
 
 
@@ -920,6 +983,12 @@ trait Parsers { self: Compiler =>
           val pos = Position(file, col -read.length, row)
           val posSym = pos.copy(col = col)
           identify(read, pos) :: identify(x, y, posSym) :: lexify(xs)(file, col + 2)
+        case '`' :: xs =>
+          val pos = Position(file, col - read.length, row)
+          val posStr = pos.copy(col = col)
+          val (rest, id, nrow, ncol) = 
+            readVariable(xs, "", col + 1, row)(pos)
+          identify(read, pos) :: id :: lexify(rest, ncol, "")(file, nrow)
         case '\'' :: x :: '\'' :: xs =>
           val pos = Position(file, col - read.length, row)
           val posChar = pos.copy(col = col)
@@ -1003,6 +1072,23 @@ trait Parsers { self: Compiler =>
     // }
 
 
+    @tailrec private def readVariable(chars: List[Char], read: String,
+        col: Int, row: Int)(implicit pos: Position): 
+        (List[Char], tokens.Id, Int, Int) = {
+      chars match {
+        case Nil =>
+          reporter.report("`", LINE_FEED, pos.copy(col = col), BAD_TOKEN)
+          (Nil, tokens.Id(read, pos), col, row)
+        case '\n' :: xs =>
+          reporter.report("`", LINE_FEED, pos.copy(col = col + 1), BAD_TOKEN)
+          (xs, tokens.Id(read, pos), 1, row + 1)
+        case '`' :: xs =>
+          (xs, tokens.Id(read, pos), col + 1, row)
+        case x :: xs =>
+          readVariable(xs, read + x, col + 1, row)
+      }
+
+    }
     @tailrec private def readStringLiteral(chars: List[Char], read: String, 
       col: Int, row: Int)(implicit pos: Position): 
           (List[Char], tokens.Literal, Int, Int) = {
@@ -1038,7 +1124,7 @@ trait Parsers { self: Compiler =>
 
     private def isSeparator(x: Char): Boolean = {
       // A list of the punctuations that can separate a word
-      val separators = " \n\r{}()[]=+-/*%<>!|&'\"_.;:\\,@"
+      val separators = " \n\r{}()[]=+-/*%<>!|&`'\"_.;:\\,@"
       separators.contains(x) 
     }
 
@@ -1129,7 +1215,7 @@ trait Parsers { self: Compiler =>
 
     private def identify(char: Char, pos: Position): tokens.Token = {
       char match {
-        case '^' => tokens.Punctuation(tokens.LCurly, pos)
+        case '^' => tokens.Punctuation(tokens.Xor, pos)
         case '{' => tokens.Punctuation(tokens.LCurly, pos)
         case '}' => tokens.Punctuation(tokens.RCurly, pos)
         case '[' => tokens.Punctuation(tokens.LBracket, pos)
