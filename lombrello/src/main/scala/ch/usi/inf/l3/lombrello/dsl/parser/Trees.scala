@@ -79,9 +79,9 @@ trait Trees {
       case x => x.toString
     }
   }
-    case object EmptyExpression extends Expression {
-    val pos = Position()
-  }
+  // case object EmptyExpression extends Expression {
+  //   val pos = Position()
+  // }
   // Select or Ident
   sealed trait SelectOrIdent extends Expression
 
@@ -108,7 +108,7 @@ trait Trees {
   
 
   // Try-catch block
-  case class Try(cond: Expression, catches: List[CaseDef], fnly: Expression,
+  case class Try(cond: Expression, catches: List[CaseDef], fnly: Option[Expression],
     pos: Position) extends Expression
 
   // Binary and Unary operators

@@ -189,7 +189,7 @@ trait Parsers { self: Compiler =>
         val (id, rest1) = parseId(tokenss)
         val rest2 = parseOrReport(tokens.Punctuation(tokens.Colon), rest1)
         val (tpe, rest3) = parseType(rest2)
-        val m = DefDef(Modifier(Modifier.PARAM), id, Nil, Nil, tpe, EmptyExpression, id.pos)
+        val m = DefDef(Modifier(Modifier.PARAM), id, Nil, Nil, tpe, id, id.pos)
         (m, rest3)
       }
       val rest1 = parseOrReport(tokens.Punctuation(tokens.LParan), tokenList)
@@ -374,7 +374,12 @@ trait Parsers { self: Compiler =>
         case x :: xs => x.pos
       }
       val rest3 = parseOrReport(tokens.Punctuation(tokens.Semi), rest2)
-      val assign = PropertyTree(lhs, Apply(Ident("List", rhsPos), Nil, rhs, rhsPos), pos)
+      val assign = lhs match {
+        case RunsRightAfterProperty =>
+          PropertyTree(lhs, Apply(Ident("Some", rhsPos), Nil, rhs, rhsPos), pos)
+        case _ =>
+          PropertyTree(lhs, Apply(Ident("List", rhsPos), Nil, rhs, rhsPos), pos)
+      }
       (assign, rest3)
     }
 
@@ -448,7 +453,7 @@ trait Parsers { self: Compiler =>
           val dummyName = Ident(Names.uniqueName(Names.DUMMY_NAME), pos)
           val dummyType = SimpleType(dummyName, Nil, dummyName.pos)
           val dummy = DefDef(Modifier(Modifier.PRIVATE), 
-              dummyName, Nil, Nil, dummyType, EmptyExpression, pos)
+              dummyName, Nil, Nil, dummyType, dummyName, pos)
           reporter.report("}", Names.TRANSFORMER, pos, BAD_TOKEN)
           (body, preambles, dummy, rest)
       }
@@ -610,9 +615,10 @@ trait Parsers { self: Compiler =>
       val (cases, rest4) = parseCases(rest3)
       val (fnly, rest5) = rest4 match {
         case tokens.Keyword(tokens.Finally) :: xs =>
-          parseExpression(xs)
+          val (expr, rest) = parseExpression(xs)
+          (Some(expr), rest)
         case _ =>
-          (EmptyExpression, rest4)
+          (None, rest4)
       }
       (Try(expr, cases, fnly, expr.pos), rest5)
     }
@@ -636,7 +642,6 @@ trait Parsers { self: Compiler =>
             parseDef(tokenss)
           case _ =>
             val (expr, rest1) = parseExpression(tokenss)
-            // FIXME: Not all trees need to end with a semi colon
             val rest2= shouldBeFollowedBySemi(expr) match {
               case true => parseOrReport(tokens.Punctuation(tokens.Semi), rest1)
               case false => rest1
@@ -707,7 +712,6 @@ trait Parsers { self: Compiler =>
 
     private def parseSelectExprOrIdent(tokenList: TokenList, 
         expr: Expression): (SelectOrIdent, TokenList) = {
-      // TODO: make sure this call terminates
       val (ids, rest1) = parseSelectOrIdent(tokenList, Nil)
       val select = toSelect(expr, ids)
       (select, rest1)
@@ -758,7 +762,6 @@ trait Parsers { self: Compiler =>
      *  <li> New
      * </ul>
      */
-    // TODO: Implement
     // TODO: Turn this into a tail recursive function
     private def parseExpression(tokenList: TokenList): (Expression, TokenList) = {
       val (parsed, rest1) = tokenList match {
@@ -824,7 +827,6 @@ trait Parsers { self: Compiler =>
               tokens.GT |
               tokens.Xor |
               tokens.And |
-              tokens.Pipe |
               tokens.Or => true
           case _ => false
         }
@@ -846,7 +848,6 @@ trait Parsers { self: Compiler =>
           case tokens.Xor => XOR
           case tokens.And => And
           case tokens.Or => Or
-          case tokens.Pipe => Pipe
           case _ => 
             // This should not happen
             Add
@@ -1197,7 +1198,7 @@ trait Parsers { self: Compiler =>
     private def identify(str: String, pos: Position): tokens.Token = {
       str match {
         case "runsAfter" => tokens.Keyword(tokens.RunsAfter, pos)
-        case "runsRightAfter" => tokens.Keyword(tokens.RunsRightAfter, pos)
+        case "uunsRightAfter" => tokens.Keyword(tokens.RunsRightAfter, pos)
         case "runsBefore" => tokens.Keyword(tokens.RunsBefore, pos)
         case "import" => tokens.Keyword(tokens.Import, pos)
         case "if" => tokens.Keyword(tokens.If, pos)

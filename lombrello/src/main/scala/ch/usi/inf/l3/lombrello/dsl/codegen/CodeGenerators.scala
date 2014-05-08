@@ -35,6 +35,7 @@ trait CodeGenerators { self: Compiler =>
     }
 
     // TODO: make this tailrec
+    // TODO: and implement it
     private def generateCode(tree: Tree): CompiledCode = {
       tree match {
         case PackageDef(pid, trees, _) =>
@@ -110,17 +111,41 @@ trait CodeGenerators { self: Compiler =>
           val cses = genSeq(cases, "", "", level + 1, "\n")
           val end = pad("}", level)
           s"${cs}${cses}\n${end}"
-        case CaseDef(p, cond, rhs, _) =>
-          // TODO
-          ""
+        case CaseDef(p, Some(cond), rhs, _) =>
+          val cse = pad(s"case ${codegen(p)} if(${codegen(cond)}) =>\n", level)
+          val body = codegen(rhs, level + 1)
+          cse + body
+        case CaseDef(p, None, rhs, _) =>
+          val cse = pad(s"case ${codegen(p)} =>\n", level)
+          val body = codegen(rhs, level + 1)
+          cse + body
+        case Bind(id, tpe, Nil, _) =>
+          val ids = codegen(id)
+          val tps = codegen(tpe)
+          s"${ids}: ${tpe}"
+        case Bind(id, tpe, pats, _) =>
+          val ids = codegen(id)
+          val tps = codegen(tpe)
+          val ps = genSeq(pats, "(", ")")
+          s"${ids} @ ${tpe}${ps}"
+        case LiteralPattern(l, _) =>
+          codegen(l)
         case If(cond, thenp, elsep, _) =>
           val ifconds = pad(s"if(${codegen(cond)}) \n", level)
           val thenps = codegen(thenp, level + 1)
           val elseps = codegen(elsep, level + 1)
           s"${ifconds}\n${thenps}\nelse\n${elsep}"
-        case Try(cond, catches, fnly, _) =>
-          // TODO
-          ""
+        case Try(body, catches, Some(expr), _) =>
+          val ts =  pad("try", level)
+          val bs = codegen(body, level + 1)
+          val cs = genSeq(catches, "", "", level + 1, "\n")
+          val fs = codegen(expr)
+          s"${ts}\n${bs}catch {\n${cs}\n} fainlly ${fs}"
+        case Try(body, catches, None, _) =>
+          val ts =  pad("try", level)
+          val bs = codegen(body, level + 1)
+          val cs = genSeq(catches, "", "", level + 1, "\n")
+          s"${ts}\n${bs}catch {\n${cs}\n}"
         case Binary(lhs, op, rhs, _) =>
           pad(s"(${codegen(lhs)}) ${op.toString} (${codegen(rhs)})", level)
         case Unary(op, oprnd, _) =>
@@ -135,16 +160,14 @@ trait CodeGenerators { self: Compiler =>
           val es = codegen(exp)
           pad(s"throw ${es}", level)
         case PropertyTree(RunsBeforeProperty, value, pos) =>
-          // TODO
-          ""
+          pad(s"override val runsBefore: List[String] = ${codegen(value)};", level)
         case PropertyTree(RunsAfterProperty, value, pos) =>
-          // TODO
-          ""
+          pad(s"val runsAfter: List[String] = ${codegen(value)};", level)
         case PropertyTree(RunsRightAfterProperty, value, pos) =>
-          // TODO
-          ""
+          val r = "override val runsRightAfter: Option[String] = " +
+                  s"${codegen(value)};"
+          pad(r, level)
         case PropertyTree(NoProperty, value, pos) =>
-          // TODO
           ""
       }
     }
