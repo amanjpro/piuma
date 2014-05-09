@@ -49,7 +49,12 @@ trait Parsers { self: Compiler =>
     }
     
 
-
+    private def seenPlugin(trees: List[Tree]): Boolean = {
+      trees.filter(_.isInstanceOf[PluginDef]) match {
+        case Nil => true
+        case _ => false
+      }
+    }
 
     private def parsePackage(tokenList: TokenList): PackageDef = {
       val rest1 = parseOrReport(tokens.Keyword(tokens.Package), tokenList)
@@ -73,7 +78,8 @@ trait Parsers { self: Compiler =>
         case tokens.Keyword(tokens.Import) :: xs if canImport =>
           val (tree, rest) = parseImport(tokenList)
           parseTrees(rest, tree :: collected)
-        case tokens.Keyword(tokens.Plugin) :: xs =>
+        case tokens.Keyword(tokens.Plugin) :: xs 
+            if !seenPlugin(collected) =>
           val (tree, rest) = parsePlugin(tokenList)
           parseTrees(rest, tree :: collected, false)
         case tokens.Keyword(tokens.Phase) :: xs =>
@@ -827,7 +833,12 @@ trait Parsers { self: Compiler =>
               tokens.GT |
               tokens.Xor |
               tokens.And |
-              tokens.Or => true
+              tokens.Or |
+              tokens.Cons|
+              tokens.Join |
+              tokens.To |
+              tokens.SHR |
+              tokens.SHL => true
           case _ => false
         }
       }
@@ -848,6 +859,11 @@ trait Parsers { self: Compiler =>
           case tokens.Xor => XOR
           case tokens.And => And
           case tokens.Or => Or
+          case tokens.SHR => SHR
+          case tokens.SHL => SHL
+          case tokens.Cons => Cons
+          case tokens.Join => Join
+          case tokens.To => To
           case _ => 
             // This should not happen
             Add
@@ -1023,7 +1039,7 @@ trait Parsers { self: Compiler =>
           identify(read, pos) :: strLit :: lexify(rest, ncol, "")(file, nrow)
         case x :: xs if isIntegral(read + x) =>
           lexify(xs, col + 1, read + x)(file, row)
-        case '.' :: xs if read == "" || isIntegral(read) =>
+        case '.' :: xs if isIntegral(read) =>
           lexify(xs, col + 1, read + '.')(file, row)
         case ('e' | 'E') :: '-' :: xs if isDecimal(read) =>
           lexify(xs, col + 2, read + "e-")(file, row)
@@ -1166,6 +1182,7 @@ trait Parsers { self: Compiler =>
       }
     }
 
+
     private def isComposedSymbol(c1: Char, c2: Char): Boolean = {
       (c1, c2) match {
         case ('=', '=') => true
@@ -1191,6 +1208,11 @@ trait Parsers { self: Compiler =>
         case ('<', ':') => tokens.Punctuation(tokens.SubType, pos)
         case ('>', ':') => tokens.Punctuation(tokens.SuperType, pos)
         case ('=', '>') => tokens.Punctuation(tokens.Arrow, pos)
+        case (':', ':') => tokens.Punctuation(tokens.Cons, pos)
+        case ('+', '+') => tokens.Punctuation(tokens.Join, pos)
+        case ('-', '>') => tokens.Punctuation(tokens.To, pos)
+        case ('>', '>') => tokens.Punctuation(tokens.SHR, pos)
+        case ('<', '<') => tokens.Punctuation(tokens.SHL, pos)
         case _ => tokens.EmptyToken
       }
     }
@@ -1287,6 +1309,8 @@ trait Parsers { self: Compiler =>
     case object GT extends Punctuations
     case object Xor extends Punctuations
     case object Not extends Punctuations
+    case object SHL extends Punctuations
+    case object SHR extends Punctuations
 
 
     // composed symbols
@@ -1311,6 +1335,11 @@ trait Parsers { self: Compiler =>
     case object At extends Punctuations
     case object NL extends Punctuations
     case object Pipe extends Punctuations
+
+    // Collection operators
+    case object Join extends Punctuations
+    case object Cons extends Punctuations
+    case object To extends Punctuations
 
     
     // Lombrello keywords

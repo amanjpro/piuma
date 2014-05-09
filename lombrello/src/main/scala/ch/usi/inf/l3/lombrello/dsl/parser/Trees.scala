@@ -42,7 +42,7 @@ trait Trees {
         pos: Position) extends PositionedTree 
   case class PluginDef(name: Ident, phases: List[SelectOrIdent], body: List[DefDef], 
         pos: Position) extends PositionedTree
-  case class PhaseDef(name: Ident, pluginName: String, preamble: List[PropertyTree], 
+  case class PhaseDef(name: Ident, phaseName: String, preamble: List[PropertyTree], 
         perform: DefDef, body: List[Tree], pos: Position) extends PositionedTree {
     val isChecker: Boolean = perform.name.name == Names.CHECKER
     val isTransformer: Boolean = perform.name.name == Names.TRANSFORMER
@@ -202,8 +202,22 @@ trait Trees {
   case object Neq extends BinOp {
     override def toString: String = "!="
   }
-
-
+  case object Join extends BinOp {
+    override def toString: String = "++"
+  }
+  case object Cons extends BinOp {
+    override def toString: String = "::"
+  }
+  case object To extends BinOp {
+    override def toString: String = "->"
+  }
+  case object SHR extends BinOp {
+    override def toString: String = ">>"
+  }
+  case object SHL extends BinOp {
+    override def toString: String = "<<"
+  }
+  
   sealed trait CommentMod
   case object LineComment extends CommentMod
   case object BlockComment extends CommentMod
