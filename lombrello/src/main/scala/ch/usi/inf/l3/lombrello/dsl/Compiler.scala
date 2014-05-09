@@ -19,7 +19,8 @@ import codegen._
 class Compiler extends Trees
   with Parsers 
   with Reporters 
-  with CodeGenerators {
+  with CodeGenerators
+  with Finalizers {
 
   val SUCCESS = 0
   val FAIL = 1
@@ -32,6 +33,7 @@ class Compiler extends Trees
   lazy val normalizer = new Normalizer
   lazy val parser = new Parser
   lazy val codegen = new CodeGenerator
+  lazy val finalizer = new CodeGenerator
 
 
   // FIXME:
@@ -42,7 +44,8 @@ class Compiler extends Trees
   lazy val phases: List[Phase] = orderPhases(List(
     normalizer,
     parser,
-    codegen
+    codegen,
+    finalizer
   ))
 
   // TODO: make this tailrec
