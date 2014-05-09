@@ -32,6 +32,16 @@ following lists all the reserved words that cannot be used in \dsl:
 \textbf{abstract, class, do, extends, for, forSome, implicitly, lazy, null,
   object, override, protected, return, sealed, trait, try, type, val, var,
   while, with, yield}
+
+
+\section{Operators}
+\dsl defines the following operators:
+
+\begin{itemize}
+  \item Binary operators: $+,~-,~*,~/,~\%,~|~|,~\&~\&,~
+    <,~>,~>=,~<=,~!=,~==,~<<,~::,~++,~->,~>:,~<:$
+  \item Unary operators: \textbf{-, +, !}
+\end{itemize}
   
 
 \newpage
@@ -39,7 +49,6 @@ following lists all the reserved words that cannot be used in \dsl:
 \section{The Context-Free Grammar (CFG) of \dsl}
 % ~\c{\overline{Import}}~\c{Plugin$($\overline{Phase}$)$} \\
 \begin{align*}
-  \displaybreak
   \textbf{Program} & ::= \overline{\c{(Package $\bnf \epsilon$)}~
     \c{$\overline{Import}$}~\c{Plugin}~\c{$\overline{Phase}$}}\\
   \textbf{Package} & ::= \c{package Qual} \\
@@ -54,24 +63,35 @@ following lists all the reserved words that cannot be used in \dsl:
   \textbf{Before} & ::= \c{runsBefore `('$\overline{String}$`)';} \\
   \textbf{Transform} & ::= \c{transform = Expression} \\
   \textbf{Check} & ::= \c{check = Expression} \\
-  \textbf{Expression} & ::= \c{Expression $\bnf$ ID$\bnf$ Select} \\
+  \textbf{Expression} & ::= \c{`('$\overline{Expression}$`)' $\bnf$ 
+          ID$\bnf$ Select} \bnf \c{New} \bnf \c{Throw} \\
      & \bnf \c{ Match $\bnf$ IfElse $\bnf$ Fun $\bnf$ Apply $\bnf$ Literal} \\
      & \bnf \c{Unary $\bnf$ Binary $\bnf$ Block $\bnf$ Try
        $\bnf$ `('Expression`)'} \\
    \textbf{Def} & ::= \c{(private $\bnf \epsilon$) def (ID TParams Params $\bnf$
     `('$\overline{ID}$`)') : Type = Expression} \\
+  \displaybreak
   \textbf{Statement} & ::= \c{Def $\bnf$ Expression;} \\
-  \textbf{Select} & ::= \c{Expression.Expression} \\
+  \textbf{Select} & ::= \c{Expression.ID} \\
   \textbf{Type} & ::= \c{Qual} \bnf \c{`('$\overline{Type}$`)'} \bnf 
     \c{Qual[$\overline{Qual}$]} \bnf \c{`('$\overline{Type}$`)' $=>$ Type} \\
   \textbf{Qual} & ::= \c{Qual.ID} \bnf \c{ID} \\
   \textbf{Match} & ::= \c{Expression match \{ $\overline{Case}$ \}} \\
   \textbf{Try} & :: = \c{try Expression catch \{}~\overline{Case} \c{ \} }
       (\c{finally Expression} \bnf \epsilon) \\
-  \textbf{Case} & ::= \c{WRITE IT} \\
+  \textbf{Case} & ::= \c{case Patterns (if Expression $\bnf \epsilon$) $=>$
+        BlockLike} \\
+  \textbf{BlockLie} & ::= \c{$\overline{Statment}$ Expression; $\bnf$ Block} \\
+  \textbf{Patterns} & ::= \c{Pattern Patterns2} \\
+  \textbf{Patterns2} & ::= \c{`$|$' Pattern Patterns2} \bnf \epsilon \\
+  \textbf{Pattern} & ::= \c{ID} \bnf \c{ID: Qual} \bnf \c{\_ : Qual} \bnf
+        \c{\_} \bnf \c{ID @ Qual`('$\overline{Patterns}$`)'} \bnf \c{Lit} \\
   \textbf{IfElse} & ::= \c{if`('Epxression`)' Expression else Expression} \\
+  \textbf{New} & ::= \c{new Type`('$\overline{Expression}$`)'} \\
+  \textbf{Throw} & ::= \c{throw Expression} \\
   \textbf{Fun} & ::= \c{`('Params`)' $=>$ Expression} \\
-  \textbf{Apply} & ::= \c{(ID $\bnf$ Select) `('$\overline{Expression}$`)'} \\
+  \textbf{Apply} & ::= \c{(ID $\bnf$ Select) ([$\overline{Type}$] 
+        $\bnf$ $\epsilon$) `('$\overline{Expression}$`)'} \\
   \textbf{Unary} & ::= \c{Uop Expression} \\
   \textbf{Binary} & ::= \c{Expression Bop Expression} \\
   \textbf{Block} & ::= \c{\{ $\overline{Statment}$ Expression; \}} \\
@@ -79,8 +99,10 @@ following lists all the reserved words that cannot be used in \dsl:
   \textbf{TParams} & ::= [\overline{\c{ID}~(<: \bnf >:)~\c{Type}}] \\
   \textbf{Bop} & ::= - \bnf + \bnf * \bnf / \bnf < \bnf <= \bnf > \bnf >= \\
       & \bnf \% \bnf == \bnf \&\& \bnf \texttt{||} \bnf != \\
+      & \bnf :: \bnf ++ \bnf << \bnf >> \bnf -> \\
   \textbf{Uop} & ::= - \bnf ! \\
   \textbf{ID} & ::= [a-zA-Z\_]\overline{[0-9a-zA-Z\_]} \\
+  \textbf{Lit} & ::= ``Language Literals''
 \end{align*}
 
 
