@@ -19,6 +19,8 @@ trait CodeGenerators { self: Compiler =>
     type InputType = self.Tree
     type OutputType = List[CompiledCode]
 
+    private val additionalImports = "import ch.usi.inf.l3.lombrello.transform.dsl._;\n" +
+                              "import ch.usi.inf.l3.lombrello.util._;\n"
     val name: String = "codegen"
     val runsAfter: Option[String] = Some("parser")
 
@@ -28,25 +30,123 @@ trait CodeGenerators { self: Compiler =>
     def run(tree: InputType): OutputType = {
       tree match {
         case Program(trees) => 
-          trees.map(generateCode(_))
-          Nil
+          trees.map(generateCode(_)).flatten
         case _ => Nil
       }
     }
 
-    // TODO: make this tailrec
-    // TODO: and implement it
-    private def generateCode(tree: Tree): CompiledCode = {
+    private def generateCode(tree: Tree): List[CompiledCode] = {
       tree match {
         case PackageDef(pid, trees, _) =>
           val pname = codegen(pid)
-          val pkgPath = pname.replaceAll(".", java.io.File.separator)
-          val pkg = s"package ${pname}"
-          null
-        case _ => null
+          val sep = java.io.File.separator
+          val pkgPath = pname.replaceAll(".", sep)
+          val pkg = s"package ${pname};\n\n\n"
+          val classes = codegen(trees, pkg, Map.empty, "")
+          classes.map((x) => {
+            new CompiledCode(s"${pkgPath}${sep}${x._1}.scala", x._2)
+          }).toList
+        case _ => Nil
       } 
     }
 
+
+    @tailrec private def codegen(trees: List[Tree], preamble: String, 
+          collected: Map[String, String], plgn: String): Map[String, String]  = {
+      trees match {
+        case Nil => collected
+        case Import(id, _) :: xs => 
+          codegen(xs, preamble + s"import ${codegen(id)};\n", collected, plgn)
+        case (x: PhaseDef) :: xs =>
+          val (r, ph) = codegenPhase(x, plgn, preamble) 
+          codegen(xs, preamble, collected + (ph -> r), plgn)
+        case (x: PluginDef) :: xs =>
+          val (r, pn) = codegenPlugin(x, preamble) 
+          codegen(xs, preamble, collected + (pn -> r), pn)
+        case x :: xs =>
+          codegen(xs, preamble, collected, plgn)
+      }
+    }
+
+    private def codegenPlugin(plugin: PluginDef, preamble: String): 
+          (String, String) = {
+      val plgnName = codegen(plugin.name)
+      val header = s"final class ${plgnName}"+
+            "(override val global: TGlobal) extends TransformerPlugin(global)"
+      val components = {
+        val temp = plugin.phases.foldLeft("")((z, y) => {
+          s"${z}\nnew ${codegen(y, 2)}(this),"
+        })
+        pad("List[TransformerPluginComponent] = List(" +
+          s"${temp.substring(0, temp.length -1)})", 1)
+      }
+      val defs = plugin.body.foldLeft("")((z, y) => {
+        s"${z}\n${codegen(y, 1)}"
+      })
+      
+      val r = s"""|
+      |${additionalImports} 
+      |${preamble} 
+      |
+      |
+      |
+      |${header} {
+      |${components}
+      |
+      |${defs}
+      |}
+      """.stripMargin
+      (r, plgnName)
+    }
+
+    private def codegenPhase(phase: PhaseDef, 
+            plgn: String, preamble: String): (String, String) = {
+      val phaseName = codegen(phase.name)
+      val header = s"final class ${phaseName}"+
+            s"(val plgn: ${plgn}) extends TransformerPluginComponent(plgn)"
+      val nme = pad(s"""val phaseName = "${phase.name}";""", 1)
+      val properties = phase.preamble.foldLeft("")((z, y) =>{
+        s"${z}${codegen(y, 1)};\n"
+      })
+      val moreImports = pad("import plugin.global._;\nimport plugin._;\n", 1)
+      val action = codegenPerform(phase.perform, phase.isChecker)
+      
+      val body = phase.body.foldLeft("")((z, y) => {
+        s"${z}\n${codegen(y, 1)}"
+      })
+      val r = s"""|
+      |${additionalImports} 
+      |${preamble} 
+      |
+      |
+      |
+      |${header} {
+      |
+      |${properties}
+      |
+      |${moreImports}
+      |
+      |${action}
+      |
+      |${body}
+      |
+      |}
+      """.stripMargin
+      (r, phaseName)
+    }
+
+    private def codegenPerform(action: DefDef, isChecker: Boolean): String = {
+      val h = isChecker match {
+        //TODO fix this
+        case true =>
+          pad("def transform(cmp: TransformComponent, " + 
+          "tree: Tree): Either[Tree, Tree] = ", 1)
+        case false =>
+          pad("def transform(cmp: TransformComponent, " + 
+          "tree: Tree): Either[Tree, Tree] = ", 1)
+      }
+      s"${h}\n${codegen(action.rhs, 1)}"
+    }
 
     @tailrec private def genSeq(trees: List[Tree], opener: String,
       closer: String, level: Int = 0, sep: String = ",",
@@ -94,8 +194,11 @@ trait CodeGenerators { self: Compiler =>
           val r = codegen(ret)
           pad(s"${curries} => ${r}", level)
         case Block(stats, expr, _) => 
-          // TODO
-          ""
+          val stmts = genSeq(stats, "", "", level + 1, "\n")
+          val es = pad(codegen(expr), level + 1)
+          val open = pad("{\n", level)
+          val close = pad("}", level)
+          s"${open}${stmts}${es}\n${close}"
         case Function(params, rhs, _) =>
           val ps = genSeq(params, "(", ")")
           val rs = codegen(rhs)
