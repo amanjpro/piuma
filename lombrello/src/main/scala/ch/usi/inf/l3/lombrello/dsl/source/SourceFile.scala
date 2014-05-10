@@ -18,12 +18,38 @@ class SourceFile(file: File) {
   val canonicalName = file.getCanonicalPath
   val name = file.getName
 
-  private val lines = try {
-    Source.fromFile(file).getLines.toArray
+  private def readLines() = try {
+    name match {
+      case "" => Array("")
+      case _ =>
+        val lns = Source.fromFile(file).getLines
+        lns.toArray
+    }
   } catch {
-    case e: IOException => Array("")
+    case e: IOException => 
+      println(s"Cannot read from ${name}")
+      println(e.getMessage)
+      Array("")
   }
+
+  private val lines = readLines
+
+
   val content: List[Char] = lines.mkString("\n").toList
 
-  def line(n: Int) = lines(n - 1)
+
+
+  def line(n: Int) = {
+    name match {
+      case "" => ""
+      case _ => 
+        try {
+          lines(n - 1)
+        } catch {
+          case ex: ArrayIndexOutOfBoundsException =>
+            println(ex.getMessage)
+            ""
+        }
+    }
+  }
 }

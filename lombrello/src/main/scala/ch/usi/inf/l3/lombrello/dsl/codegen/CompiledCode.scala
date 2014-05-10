@@ -21,7 +21,7 @@ case class CompiledCode(name: String, content: String) {
   private val sep = File.separatorChar
   def writeToFile(): Int = {
     try {
-      val (path, name) = split
+      val (path, _) = split
       new File(path).mkdirs
       val file = new File(name)
       val writer = new PrintWriter(file)
@@ -38,6 +38,6 @@ case class CompiledCode(name: String, content: String) {
 
   private def split(): (String, String) = {
     val (path, nme) = name.splitAt(name.lastIndexOf(sep))
-    (path.substring(0, path.length - 1), nme)
+    (path.substring(0, path.length), nme)
   }
 }

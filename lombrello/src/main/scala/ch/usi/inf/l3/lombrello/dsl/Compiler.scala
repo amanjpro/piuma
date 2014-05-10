@@ -33,7 +33,7 @@ class Compiler extends Trees
   lazy val normalizer = new Normalizer
   lazy val parser = new Parser
   lazy val codegen = new CodeGenerator
-  lazy val finalizer = new CodeGenerator
+  lazy val finalizer = new Finalizer
 
 
   // FIXME:
@@ -109,6 +109,7 @@ class Compiler extends Trees
             run(xs, r)
           } catch {
             case ex : ClassCastException =>
+              println(ex.getMessage)
               val ftime = System.currentTimeMillis
               println(s"Incompatible compiler phases: ${x.name}, " +
                 s"and ${x.runsAfter.getOrElse("lexer")}")
