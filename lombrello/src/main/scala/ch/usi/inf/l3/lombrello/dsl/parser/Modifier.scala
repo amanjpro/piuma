@@ -14,6 +14,7 @@ class Modifier(mod: Int) {
   val isParam = (mod & PARAM) == PARAM
   val isChecker = (mod & CHECKER) == CHECKER
   val isTransformer = (mod & TRANSFORMER) == TRANSFORMER
+  val isByName = (mod & BYNAME) == BYNAME
 
 
   override def toString: String = {
@@ -33,6 +34,7 @@ object Modifier {
   val PARAM = 1 << 3
   val CHECKER = 1 << 4
   val TRANSFORMER = 1 << 5
+  val BYNAME = 1 << 6
 }
 
 
