@@ -1,0 +1,12 @@
+package empty
+
+plugin SimplePlugin(NoWay) {
+}
+
+
+phase NoWay("shitter") {
+  runsAfter("namer")
+
+  transform = ""
+}
+
