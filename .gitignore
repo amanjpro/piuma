@@ -8,6 +8,7 @@ test/plugins/*/classes
 # sbt specific
 dist/*
 target/
+test/dummyMethod*
 lib_managed/
 src_managed/
 project/boot/
