@@ -10,6 +10,7 @@ object LombrelloBuildSettings {
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := "ch.usi.inf.l3",
     version := "0.1-SNAPSHOT",
+    mainClass in Compile := Some("ch.usi.inf.l3.lombrello.dsl.Main"),
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"), // s"-doc-external-doc:${scalaInstance.value.libraryJar}#http://www.scala-lang.org/api/${scalaVersion.value}/",  "-sourcepath"),
     scalaVersion := sversion,
     resolvers += Resolver.sonatypeRepo("snapshots"),
