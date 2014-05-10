@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Author: Amanj Sherwany
+# Date: 9 May 2014
+# This script is an executable for Neve compiler
+
+scala "lib/lombrello.jar" ${@}

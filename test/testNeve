@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Author: Amanj Sherwany
+# Date: 9 May 2014
+# This script runs Neve's test cases
+
+./nevec tests/neve/*.neve

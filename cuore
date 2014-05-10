@@ -47,7 +47,9 @@ def buildSBTProject(name: String) = {
 }
 
 def packageSBTProject(name: String) = {
-  s"sbt ${name}/package".run(pio).exitValue
+  val v = s"sbt ${name}/package".run(pio).exitValue
+  s"cp ${lombrello} test${sp}lib${sp}lombrello.jar".run(pio).exitValue
+  v
 }
 
 def cleanSBTProject(name: String) = {
