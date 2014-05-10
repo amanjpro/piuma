@@ -19,8 +19,10 @@ trait CodeGenerators { self: Compiler =>
     type InputType = self.Tree
     type OutputType = List[CompiledCode]
 
-    private val additionalImports = "import ch.usi.inf.l3.lombrello.transform.dsl._;\n" +
-                              "import ch.usi.inf.l3.lombrello.util._;\n"
+    private val additionalImports = 
+                "import ch.usi.inf.l3.lombrello.transform.dsl._\n" +
+                "import ch.usi.inf.l3.lombrello.util._\n"
+
     val name: String = "codegen"
     val runsAfter: Option[String] = Some("parser")
 
@@ -40,8 +42,8 @@ trait CodeGenerators { self: Compiler =>
         case PackageDef(pid, trees, _) =>
           val pname = codegen(pid)
           val sep = java.io.File.separator
-          val pkgPath = pname.replaceAll(".", sep)
-          val pkg = s"package ${pname};\n\n\n"
+          val pkgPath = pname.replace(".", sep)
+          val pkg = s"package ${pname}\n\n\n"
           val classes = codegen(trees, pkg, Map.empty, "")
           classes.map((x) => {
             new CompiledCode(s"${pkgPath}${sep}${x._1}.scala", x._2)
@@ -56,7 +58,7 @@ trait CodeGenerators { self: Compiler =>
       trees match {
         case Nil => collected
         case Import(id, _) :: xs => 
-          codegen(xs, preamble + s"import ${codegen(id)};\n", collected, plgn)
+          codegen(xs, preamble + s"import ${codegen(id)}\n", collected, plgn)
         case (x: PhaseDef) :: xs =>
           val (r, ph) = codegenPhase(x, plgn, preamble) 
           codegen(xs, preamble, collected + (ph -> r), plgn)
@@ -75,7 +77,7 @@ trait CodeGenerators { self: Compiler =>
             "(override val global: TGlobal) extends TransformerPlugin(global)"
       val components = {
         val temp = plugin.phases.foldLeft("")((z, y) => {
-          s"${z}\nnew ${codegen(y, 2)}(this),"
+          pad(s"${z}\nnew ${codegen(y)}(this),", 1)
         })
         pad("List[TransformerPluginComponent] = List(" +
           s"${temp.substring(0, temp.length -1)})", 1)
@@ -85,8 +87,8 @@ trait CodeGenerators { self: Compiler =>
       })
       
       val r = s"""|
-      |${additionalImports} 
       |${preamble} 
+      |${additionalImports} 
       |
       |
       |
@@ -104,19 +106,19 @@ trait CodeGenerators { self: Compiler =>
       val phaseName = codegen(phase.name)
       val header = s"final class ${phaseName}"+
             s"(val plgn: ${plgn}) extends TransformerPluginComponent(plgn)"
-      val nme = pad(s"""val phaseName = "${phase.name}";""", 1)
+      val nme = pad(s"""val phaseName = "${phase.name}"""", 1)
       val properties = phase.preamble.foldLeft("")((z, y) =>{
-        s"${z}${codegen(y, 1)};\n"
+        s"${z}${codegen(y, 1)}\n"
       })
-      val moreImports = pad("import plugin.global._;\nimport plugin._;\n", 1)
+      val moreImports = pad("import plugin.global._\nimport plugin._\n", 1)
       val action = codegenPerform(phase.perform, phase.isChecker)
       
       val body = phase.body.foldLeft("")((z, y) => {
         s"${z}\n${codegen(y, 1)}"
       })
       val r = s"""|
-      |${additionalImports} 
       |${preamble} 
+      |${additionalImports} 
       |
       |
       |
@@ -168,7 +170,8 @@ trait CodeGenerators { self: Compiler =>
         case Select(qual, id, _) =>
           pad(s"${codegen(qual)}.${codegen(id)}", level)
         case DefDef(mod, name, Nil, Nil, tpe, rhs, _) if mod.isParam =>
-          val r = s"${codegen(name)}: ${codegen(tpe)}"
+          val byname = if(mod.isByName) " => " else ""
+          val r = s"${codegen(name)}: ${byname} ${codegen(tpe)}"
           pad(r, level)
         case DefDef(mod, name, Nil, Nil, tpe, rhs, _) =>
           val r = s"${mod} val ${codegen(name)}: ${codegen(tpe)} =\n"
@@ -262,13 +265,17 @@ trait CodeGenerators { self: Compiler =>
         case Throw(exp, _) =>
           val es = codegen(exp)
           pad(s"throw ${es}", level)
+        case This(_) =>
+          pad("this", level)
+        case Super(_) =>
+          pad("super", level)
         case PropertyTree(RunsBeforeProperty, value, pos) =>
-          pad(s"override val runsBefore: List[String] = ${codegen(value)};", level)
+          pad(s"override val runsBefore: List[String] = ${codegen(value)}", level)
         case PropertyTree(RunsAfterProperty, value, pos) =>
-          pad(s"val runsAfter: List[String] = ${codegen(value)};", level)
+          pad(s"val runsAfter: List[String] = ${codegen(value)}", level)
         case PropertyTree(RunsRightAfterProperty, value, pos) =>
           val r = "override val runsRightAfter: Option[String] = " +
-                  s"${codegen(value)};"
+                  s"${codegen(value)}"
           pad(r, level)
         case PropertyTree(NoProperty, value, pos) =>
           ""

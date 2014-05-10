@@ -85,13 +85,19 @@ trait Trees {
   // Select or Ident
   sealed trait SelectOrIdent extends Expression
 
-  case class Select(qual: Expression, id: Ident, pos: Position) 
+  case class Select(qual: Expression, id: IdentOrThis, pos: Position) 
       extends SelectOrIdent
   case class Ident(name: String, pos: Position) extends SelectOrIdent
+      with IdentOrThis
 
+
+  sealed trait IdentOrThis extends Expression
+  case class This(pos: Position) extends IdentOrThis
+
+  case class Super(pos: Position) extends Expression
 
   // Branching
-  case class Match(cond: Expression, cases: List[CaseDef], pos: Position) 
+  case class Match(cond: Expression, cases: List[CaseDef], pos: Position)
       extends Expression
 
   case class CaseDef(pattern: Pattern, cond: Option[Expression], 
@@ -108,8 +114,8 @@ trait Trees {
   
 
   // Try-catch block
-  case class Try(cond: Expression, catches: List[CaseDef], fnly: Option[Expression],
-    pos: Position) extends Expression
+  case class Try(cond: Expression, catches: List[CaseDef], 
+    fnly: Option[Expression], pos: Position) extends Expression
 
   // Binary and Unary operators
   case class Binary(lhs: Expression, op: BinOp, rhs: Expression, 
@@ -120,10 +126,11 @@ trait Trees {
 
 
   // Misc
-  case class Import(id: SelectOrIdent, pos: Position) extends PositionedTree
-
-  case class PropertyTree(property: PropertyType, value: Expression, pos: Position) 
+  case class Import(id: SelectOrIdent, pos: Position) 
       extends PositionedTree
+
+  case class PropertyTree(property: PropertyType, value: Expression, 
+    pos: Position) extends PositionedTree
 
   case class New(tpe: SimpleType, args: List[Expression], 
       pos: Position) extends Expression

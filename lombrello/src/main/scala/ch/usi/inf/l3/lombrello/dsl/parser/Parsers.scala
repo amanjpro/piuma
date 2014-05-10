@@ -51,8 +51,8 @@ trait Parsers { self: Compiler =>
 
     private def seenPlugin(trees: List[Tree]): Boolean = {
       trees.filter(_.isInstanceOf[PluginDef]) match {
-        case Nil => true
-        case _ => false
+        case Nil => false
+        case _ => true
       }
     }
 
@@ -112,7 +112,8 @@ trait Parsers { self: Compiler =>
       val (name, rest2) = parseId(rest1)
       val (args, rest3) = parseIDArgs(rest2)
       val (body, rest4) = parsePluginBody(rest3)
-      (PluginDef(name, args, body, posOfHead(tokenList)), rest4)
+      val rest5 = parseOrReport(tokens.Punctuation(tokens.Semi), rest4)
+      (PluginDef(name, args, body, posOfHead(tokenList)), rest5)
     }
 
     private def parsePhase(tokenList: TokenList): (PhaseDef, TokenList) = {
@@ -122,7 +123,8 @@ trait Parsers { self: Compiler =>
       val (lit, rest4) = parseLiteral(rest3)
       val rest5 = parseOrReport(tokens.Punctuation(tokens.RParan), rest4)
       val (body, pre, perf, rest6) = parsePhaseBody(rest5) 
-      (PhaseDef(id, lit.valueAsString, pre, perf, body, posOfHead(tokenList)), rest6)
+      val rest7 = parseOrReport(tokens.Punctuation(tokens.Semi), rest6)
+      (PhaseDef(id, lit.valueAsString, pre, perf, body, posOfHead(tokenList)), rest7)
     }
 
 
@@ -149,8 +151,8 @@ trait Parsers { self: Compiler =>
 
     private def parseMultiDef(tokenList: TokenList): (List[DefDef], TokenList) = {
       
-      @tailrec def toDefs(mod: Modifier, ids: List[DefDef], rhs: Expression, acc: List[DefDef]): 
-          List[DefDef] = {
+      @tailrec def toDefs(mod: Modifier, ids: List[DefDef], 
+            rhs: Expression, acc: List[DefDef]): List[DefDef] = {
         ids match {
           case Nil => acc.reverse
           case x :: xs =>
@@ -194,17 +196,25 @@ trait Parsers { self: Compiler =>
       def parseParam(tokenss: TokenList): (DefDef, TokenList) = {
         val (id, rest1) = parseId(tokenss)
         val rest2 = parseOrReport(tokens.Punctuation(tokens.Colon), rest1)
-        val (tpe, rest3) = parseType(rest2)
-        val m = DefDef(Modifier(Modifier.PARAM), id, Nil, Nil, tpe, id, id.pos)
-        (m, rest3)
+        val (mod, rest3) = rest2 match {
+          case tokens.Punctuation(tokens.Arrow) :: xs =>
+            val m = Modifier(Modifier.PARAM | Modifier.BYNAME)
+            (m, xs)
+          case _ => (Modifier(Modifier.PARAM), rest2)
+        }
+        val (tpe, rest4) = parseType(rest3)
+        val m = DefDef(mod, id, Nil, Nil, tpe, id, id.pos)
+        (m, rest4)
       }
       val rest1 = parseOrReport(tokens.Punctuation(tokens.LParan), tokenList)
-      sequenceHelper[DefDef](rest1, Nil, parseParam, tokens.Punctuation(tokens.RParan))
+      sequenceHelper[DefDef](rest1, Nil, parseParam, 
+            tokens.Punctuation(tokens.RParan))
     }
 
     private def parseSimpleType(tokenss: TokenList): (SimpleType, TokenList) = {
       def helperTArgs(tlist: TokenList): (List[TypeTree], TokenList) = {
-        sequenceHelper[TypeTree](tokenss, Nil, parseType, tokens.Punctuation(tokens.RBracket))
+        sequenceHelper[TypeTree](tokenss, Nil, parseType, 
+            tokens.Punctuation(tokens.RBracket))
       }
       val (id, rest1) = parseSelectOrIdent(tokenss)
       val (targs, rest2) = rest1 match {
@@ -353,7 +363,8 @@ trait Parsers { self: Compiler =>
           reporter.report(Names.TRANSFORMER, pos, BAD_TOKEN)
           (Ident(Names.TRANSFORMER, pos), xs)
       }
-      val (rhs, rest2) = parseExpression(rest1)
+      val rest2 = parseOrReport(tokens.Punctuation(tokens.Assign), rest1)
+      val (rhs, rest3) = parseExpression(rest2)
       val tpe = SimpleType(Ident(Names.TREE_TYPE, pos), Nil, pos)
       val mod = {
         if(name.name == Names.TRANSFORMER) 
@@ -362,7 +373,7 @@ trait Parsers { self: Compiler =>
           Modifier(Modifier.CHECKER) 
       }
       val m = DefDef(mod, name, Nil, Nil, tpe, rhs, pos)
-      (m, rest2)
+      (m, rest3)
     }
 
     private def parsePreamble(tokenList: TokenList): (PropertyTree, TokenList) = {
@@ -419,8 +430,8 @@ trait Parsers { self: Compiler =>
       }
     }
 
-    private def parsePhaseBody(tokenList: TokenList): (List[Tree], List[PropertyTree], 
-          DefDef, TokenList) = {
+    private def parsePhaseBody(tokenList: TokenList): 
+        (List[Tree], List[PropertyTree], DefDef, TokenList) = {
       // TODO: Make this tailrec
       def helper(tokenss: TokenList, body: List[Tree], preambles: List[PropertyTree],
         performer: Option[DefDef]): (List[Tree], List[PropertyTree], 
@@ -460,7 +471,7 @@ trait Parsers { self: Compiler =>
           val dummyType = SimpleType(dummyName, Nil, dummyName.pos)
           val dummy = DefDef(Modifier(Modifier.PRIVATE), 
               dummyName, Nil, Nil, dummyType, dummyName, pos)
-          reporter.report("}", Names.TRANSFORMER, pos, BAD_TOKEN)
+          reporter.report(Names.TRANSFORMER, "}", pos, BAD_TOKEN)
           (body, preambles, dummy, rest)
       }
     }
@@ -468,7 +479,6 @@ trait Parsers { self: Compiler =>
 
     @tailrec private def parseSelectOrIdent(tokenList: TokenList, acc: List[Ident]):
         (List[Ident], TokenList) = {
-
       val (id, rest) =  parseId(tokenList)
       rest match {
         case tokens.Punctuation(tokens.Dot) :: 
@@ -502,7 +512,8 @@ trait Parsers { self: Compiler =>
       ids match {
         case Nil =>
           // This should never happen
-          val dummyName = Ident(Names.uniqueName(Names.DUMMY_NAME), posOfHead(tokenList))
+          val dummyName = Ident(Names.uniqueName(Names.DUMMY_NAME), 
+                posOfHead(tokenList))
           (dummyName, rest1)
         case x :: Nil =>
           (x, rest1)
@@ -536,6 +547,11 @@ trait Parsers { self: Compiler =>
       val rest1 = parseOrReport(tokens.Keyword(tokens.Case), tokenList)
       val (pattern, rest2) = parsePattern(rest1)
       val (cond, rest3) = rest2 match {
+        case tokens.Keyword(tokens.If) :: 
+            tokens.Punctuation(tokens.LCurly) :: xs =>
+          val (e, r) = parseExpression(xs)
+          val r1 = parseOrReport(tokens.Punctuation(tokens.RCurly), r)
+          (Some(e), r1)
         case tokens.Keyword(tokens.If) :: xs =>
           val (e, r) = parseExpression(xs)
           (Some(e), r)
@@ -630,10 +646,10 @@ trait Parsers { self: Compiler =>
     }
     private def shouldBeFollowedBySemi(expr: Expression): Boolean = {
       expr match {
-        case x: Block => false
-        case x: Match => false
-        case x: If => false
-        case x: Try => false
+        // case x: Block => false
+        // case x: Match => false
+        // case x: If => false
+        // case x: Try => false
         case _ => true
       }
     }
@@ -776,6 +792,10 @@ trait Parsers { self: Compiler =>
           (Ident(Names.WILDCARD, posOfHead(tokenList)), xs)
         case tokens.Punctuation(tokens.Minus) :: xs =>
           parseUnary(xs, posOfHead(tokenList), Negative)
+        case tokens.Keyword(tokens.This) :: xs =>
+          (This(posOfHead(tokenList)), xs)
+        case tokens.Keyword(tokens.Super) :: xs =>
+          (Super(posOfHead(tokenList)), xs)
         case tokens.Punctuation(tokens.Not) :: xs =>
           parseUnary(xs, posOfHead(tokenList), Not)
         case tokens.Keyword(tokens.If) :: xs =>
@@ -800,7 +820,8 @@ trait Parsers { self: Compiler =>
     }
 
 
-    private def parseRestOfExpr(expr: Expression, tokenList: TokenList): (Expression, TokenList) = {
+    private def parseRestOfExpr(expr: Expression, 
+          tokenList: TokenList): (Expression, TokenList) = {
       def isAppliable(e: Expression): Boolean = {
         e match {
           case x: If => false
@@ -914,31 +935,46 @@ trait Parsers { self: Compiler =>
     val runsAfter: Option[String] = Some("lexer")
 
     def run(tokenList: InputType): OutputType = {
-      val removedExtraNL = tokenList.map(removeExtraNL(_))
-      removedExtraNL.map(normalize(_))
+      val noEmpty = tokenList.map((x) => {
+        x.filter((y) => y != tokens.EmptyToken)
+      })
+      val removedExtraNL = noEmpty.map(removeExtra(_, 
+          tokens.Punctuation(tokens.NL)))
+      val f = removedExtraNL.map(normalize(_))
+      val r = f.map(removeExtra(_, tokens.Punctuation(tokens.Semi)))
+      // r.foreach((x) => x.map(println(_)))
+      r.map((x) => {
+        x.filter((y) => y != tokens.Punctuation(tokens.NL))
+      })
     }
 
-    private def removeExtraNL(tokenList: TokenList): TokenList = {
+
+    @tailrec private def removeExtra(tokenList: TokenList, tkn: tokens.Token,
+            collected: TokenList = Nil): TokenList = {
       tokenList match {
-        case Nil => Nil
-        case tokens.Punctuation(tokens.NL) :: tokens.Punctuation(tokens.NL) :: xs => 
-          removeExtraNL(tokens.Punctuation(tokens.NL) :: xs)
-        case x :: xs => x :: removeExtraNL(xs)
+        case Nil => 
+          collected.reverse
+        case `tkn` :: `tkn` :: xs => 
+          removeExtra(tkn :: xs, tkn, collected)
+        case x :: xs => removeExtra(xs, tkn, x :: collected)
       }
     }
 
-    private def normalize(tokenList: TokenList): TokenList = {
+    @tailrec private def normalize(tokenList: TokenList,
+          collected: TokenList = Nil): TokenList = {
       tokenList match {
-        case Nil => Nil
-        case tokens.EmptyToken :: xs => normalize(xs)
+        case x :: Nil => 
+          normalize(Nil, tokens.Punctuation(tokens.Semi) :: x :: collected)
+        case Nil => 
+          collected.reverse
         case x :: tokens.Punctuation(tokens.NL) :: y :: xs 
             if canEnd(x) && canStart(y) =>
-          x :: tokens.Punctuation(tokens.Semi) :: normalize(xs)
+          normalize(y :: xs, tokens.Punctuation(tokens.Semi) :: x :: collected)
         case x :: tokens.Punctuation(tokens.NL) :: y :: xs =>
-          x :: y :: normalize(xs)
-        case tokens.Punctuation(tokens.NL) :: xs => normalize(xs)
+          normalize(y :: xs, x :: collected)
+        case tokens.Punctuation(tokens.NL) :: xs => normalize(xs, collected)
         case x :: xs =>
-          x :: normalize(xs)
+          normalize(xs, x :: collected)
       }
     }
 
@@ -1013,30 +1049,35 @@ trait Parsers { self: Compiler =>
       chars match {
         case Nil => Nil
         case x :: y :: xs if isComposedSymbol(x, y) =>
-          val pos = Position(file, col -read.length, row)
+          val pos = Position(file, col - read.length, row)
           val posSym = pos.copy(col = col)
-          identify(read, pos) :: identify(x, y, posSym) :: lexify(xs)(file, col + 2)
+          identify(read, pos) :: identify(x, y, posSym) :: lexify(xs, col + 2)
         case '`' :: xs =>
           val pos = Position(file, col - read.length, row)
           val posStr = pos.copy(col = col)
           val (rest, id, nrow, ncol) = 
             readVariable(xs, "", col + 1, row)(pos)
           identify(read, pos) :: id :: lexify(rest, ncol, "")(file, nrow)
+        case '\'' :: '\\' :: y :: x :: '\'' :: xs if isEscape(y) =>
+          val pos = Position(file, col - read.length, row)
+          val posChar = pos.copy(col = col)
+          identify(read, pos) :: tokens.Literal(x, posChar) :: 
+              lexify(xs, col + 3)
         case '\'' :: x :: '\'' :: xs =>
           val pos = Position(file, col - read.length, row)
           val posChar = pos.copy(col = col)
           identify(read, pos) :: tokens.Literal(x, posChar) :: 
-              lexify(xs)(file, col + 3)
+              lexify(xs, col + 3)
         case '\'' :: xs =>
           val pos = Position(file, col - read.length, row)
           reporter.report("'", pos, BAD_TOKEN)
-          identify(read, pos) :: lexify(xs)(file, col + 1)
+          identify(read, pos) :: lexify(xs, col + 1)
         case '\"' :: xs =>
           val pos = Position(file, col - read.length, row)
           val posStr = pos.copy(col = col)
-          val (rest, strLit, nrow, ncol) = 
-            readStringLiteral(xs, "", col + 1, row)(pos)
-          identify(read, pos) :: strLit :: lexify(rest, ncol, "")(file, nrow)
+          val (rest, strLit, ncol) = 
+            readStringLiteral(xs, "", col + 1)(pos)
+          identify(read, pos) :: strLit :: lexify(rest, ncol, "")
         case x :: xs if isIntegral(read + x) =>
           lexify(xs, col + 1, read + x)(file, row)
         case '.' :: xs if isIntegral(read) =>
@@ -1049,13 +1090,13 @@ trait Parsers { self: Compiler =>
           lexify(xs, col + 1, read + "e")(file, row)
         case x :: xs if isDecimal(read + x) =>
           lexify(xs, col + 1, read + x)(file, row)
-        case  xs if isIntegral(read) =>
+        case xs if isIntegral(read) =>
           val pos = Position(file, col - read.length, row)
           tokens.Literal(read.toInt, pos) :: lexify(xs, col, "")(file, row)
-        case  xs if isDecimal(read) =>
+        case xs if isDecimal(read) =>
           val pos = Position(file, col - read.length, row)
           tokens.Literal(read.toDouble, pos) :: lexify(xs, col, "")(file, row)
-        case ('\n' | '\r') :: xs => 
+        case '\n' :: xs => 
           val pos = Position(file, col - read.length, row)
           val posNL = pos.copy(col = col)
           identify(read, pos) :: tokens.Punctuation(tokens.NL, posNL) :: 
@@ -1079,7 +1120,8 @@ trait Parsers { self: Compiler =>
           val prevPos = pos.copy(col = col - read.length)
           // We do throw away comments and do not persist them now
           // identify(read, pos) :: List(tokens.CommentLine(xs.mkString, pos)) 
-          identify(read, pos) :: Nil
+          val (rest, comment) = readComment(xs, "")(pos)
+          identify(read, pos) :: lexify(rest, 1, "")(file, row + 1)
         case x :: xs if isSeparator(x) =>
           val xPos = Position(file, col, row)
           val readPos = xPos.copy(col = col - read.length)
@@ -1123,24 +1165,49 @@ trait Parsers { self: Compiler =>
 
     }
     @tailrec private def readStringLiteral(chars: List[Char], read: String, 
-      col: Int, row: Int)(implicit pos: Position): 
-          (List[Char], tokens.Literal, Int, Int) = {
+      col: Int)(implicit pos: Position): 
+          (List[Char], tokens.Literal, Int) = {
       chars match {
         case Nil =>
           reporter.report("\"", LINE_FEED, pos.copy(col = col), BAD_TOKEN)
-          (Nil, tokens.Literal(read, pos), col, row)
-        case '\\' :: '"' :: xs =>
-          readStringLiteral(xs, read + "\\\"", col + 2, row)
+          (Nil, tokens.Literal(read, pos), col)
+        case '\\' :: y :: xs if isEscape(y) =>
+          readStringLiteral(xs, read + "\\" + y, col + 2)
         case '\n' :: xs =>
           reporter.report("\"", LINE_FEED, pos.copy(col = col + 1), BAD_TOKEN)
-          (xs, tokens.Literal(read, pos), 1, row + 1)
+          (xs, tokens.Literal(read, pos), 1)
         case '"' :: xs =>
-          (xs, tokens.Literal(read, pos), col + 1, row)
+          (xs, tokens.Literal(read, pos), col + 1)
         case x :: xs =>
-          readStringLiteral(xs, read + x, col + 1, row)
+          readStringLiteral(xs, read + x, col + 1)
       }
     }
 
+    private def isEscape(x: Char): Boolean = {
+      x match {
+        case '\b' => true
+        case '\t' => true
+        case '\n' => true
+        case '\f' => true
+        case '\r' => true
+        case '\"' => true
+        case '\'' => true
+        case '\\' => true
+        case _ => false
+      }
+    }
+
+    @tailrec private def readComment(chars: List[Char], read: String)
+          (implicit pos: Position): 
+        (List[Char], tokens.CommentLine) = {
+      chars match {
+        case Nil => (Nil, tokens.CommentLine(read, pos))
+        case ('\n' | '\r') :: xs =>
+          (xs, tokens.CommentLine(read, pos))
+        case x :: xs =>
+          readComment(xs, read + x)
+      }
+    }
     @tailrec private def readCommentBlock(chars: List[Char], read: String, 
       col: Int, row: Int)(implicit pos: Position): 
         (List[Char], tokens.CommentBlock, Int, Int) = {
@@ -1148,7 +1215,7 @@ trait Parsers { self: Compiler =>
         case Nil => (Nil, tokens.CommentBlock(read, pos), col, row)
         case '*' :: '/' :: xs =>
           (xs, tokens.CommentBlock(read, pos), col + 2, row)
-        case ('\n' | '\r') :: xs =>
+        case '\n' :: xs =>
           readCommentBlock(xs, read, 1, row + 1)
         case x :: xs =>
           readCommentBlock(xs, read + x, col + 1, row)
@@ -1157,7 +1224,7 @@ trait Parsers { self: Compiler =>
 
     private def isSeparator(x: Char): Boolean = {
       // A list of the punctuations that can separate a word
-      val separators = " \n\r{}()[]=+-/*%<>!|&`'\"_.;:\\,@"
+      val separators = " \n{}()[]=+-/*%<>!|&`'\"_.;:\\,@"
       separators.contains(x) 
     }
 
@@ -1165,7 +1232,13 @@ trait Parsers { self: Compiler =>
     private def isIntegral(str: String): Boolean = {
       str match {
         case "" => false
-        case s => s.foldLeft(true)((z, y) => z && y.isDigit)
+        case s => 
+          try {
+            s.toInt
+            true
+          } catch{
+            case e: NumberFormatException => false
+          }
       }
     }
 
@@ -1235,8 +1308,8 @@ trait Parsers { self: Compiler =>
         case "case" => tokens.Keyword(tokens.Case, pos)
         case "tree" => tokens.Keyword(tokens.Tree, pos)
         case "private" => tokens.Keyword(tokens.Private, pos)
-        case "this" => tokens.Id("this", pos)
-        case "super" => tokens.Id("super", pos)
+        case "this" => tokens.Keyword(tokens.This, pos)
+        case "super" => tokens.Keyword(tokens.Super, pos)
         case "throw" => tokens.Keyword(tokens.Throw, pos)
         case "try" => tokens.Keyword(tokens.Try, pos)
         case "catch" => tokens.Keyword(tokens.Catch, pos)
@@ -1388,11 +1461,13 @@ trait Parsers { self: Compiler =>
     class Keyword(val keyword: Keywords, val pos: Position) 
       extends PositionedToken {
 
+      override def toString: String = 
+        s"(Keyword: ${keyword}, Position: ${pos})"
       override def hashCode: Int = keyword.hashCode
       override def equals(that: Any): Boolean = {
         that match {
           case null => false
-          case `keyword` => true
+          case x: Keyword => x.keyword == keyword
           case _ => false
         }
       }
@@ -1410,11 +1485,14 @@ trait Parsers { self: Compiler =>
     }
     class Punctuation(val kind: Punctuations, 
       val pos: Position) extends PositionedToken {
+
+      override def toString: String = 
+        s"(Kind: ${kind}, Position: ${pos})"
       override def hashCode: Int = kind.hashCode
       override def equals(that: Any): Boolean = {
         that match {
           case null => false
-          case `kind` => true
+          case x: Punctuation => x.kind == kind
           case _ => false
         }
       }
@@ -1430,7 +1508,7 @@ trait Parsers { self: Compiler =>
         new Punctuation(kind, pos)
       }
     }
-       case object EmptyToken extends Token {
+    case object EmptyToken extends Token {
       def position = None
     }
   }
