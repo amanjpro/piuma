@@ -357,7 +357,8 @@ trait Parsers { self: Compiler =>
     private def parseCheckOrTransform(tokenList: TokenList): (DefDef, TokenList) = {
       val pos = posOfHead(tokenList)
       val (name, rest1) = tokenList match {
-        case tokens.Keyword(tokens.Transform) :: xs => (Ident(Names.TRANSFORMER, pos), xs)
+        case tokens.Keyword(tokens.Transform) :: xs => 
+          (Ident(Names.TRANSFORMER, pos), xs)
         case tokens.Keyword(tokens.Check) :: xs => (Ident(Names.CHECKER, pos), xs)
         case xs =>
           reporter.report(Names.TRANSFORMER, pos, BAD_TOKEN)
@@ -381,7 +382,8 @@ trait Parsers { self: Compiler =>
       val (lhs, rest1) = tokenList match {
         case tokens.Keyword(tokens.RunsBefore) :: xs => (RunsBeforeProperty, xs)
         case tokens.Keyword(tokens.RunsAfter) :: xs => (RunsAfterProperty, xs)
-        case tokens.Keyword(tokens.RunsRightAfter) :: xs => (RunsRightAfterProperty, xs)
+        case tokens.Keyword(tokens.RunsRightAfter) :: xs => 
+              (RunsRightAfterProperty, xs)
         case xs =>
           (NoProperty, xs)
       }
@@ -1293,7 +1295,7 @@ trait Parsers { self: Compiler =>
     private def identify(str: String, pos: Position): tokens.Token = {
       str match {
         case "runsAfter" => tokens.Keyword(tokens.RunsAfter, pos)
-        case "uunsRightAfter" => tokens.Keyword(tokens.RunsRightAfter, pos)
+        case "runsRightAfter" => tokens.Keyword(tokens.RunsRightAfter, pos)
         case "runsBefore" => tokens.Keyword(tokens.RunsBefore, pos)
         case "import" => tokens.Keyword(tokens.Import, pos)
         case "if" => tokens.Keyword(tokens.If, pos)
