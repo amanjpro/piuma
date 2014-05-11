@@ -177,9 +177,9 @@ trait CodeGenerators { self: Compiler =>
           val r = s"${mod} val ${codegen(name)}: ${codegen(tpe)} =\n"
           pad(r + s"${codegen(rhs, level + 1)}", level)
         case DefDef(mod, name, tparams, params, tpe, rhs, _) =>
-          val r1 = s"${mod} val ${codegen(name)}${genSeq(tparams, "[", "]")}"
-          val r2 = s"${genSeq(params, "(", ")")}"
-          val r3 = s"${codegen(tpe)} =\n${codegen(rhs, level + 1)}}"
+          val r1 = s"${mod} def ${codegen(name)}${genSeq(tparams, "[", "]")}"
+          val r2 = s"${genSeq(params, "(", ")")}:"
+          val r3 = s"${codegen(tpe)} =\n${codegen(rhs, level + 1)}"
           pad(r1 + r2 + r3, level)
         case TParamDef(name, lbound, ubound, _) =>
           val nme = codegen(name)
