@@ -23,15 +23,15 @@
 \raggedright
 \dsl defines the following keywords: \textbf{runsAfter, runsRightAfter, runsBefore,
   import, if, else, match, package, plugin, phase, transform, check, def, case,
-  tree, private, super, this, try, catch, finally, throw, new, true, false}
+  tree, super, this, try, catch, finally, throw, new, true, false}
 
 \section{Reserved Words}
 
 All Scala keywords are reserved words here, but not all of them are used. The
 following lists all the reserved words that cannot be used in \dsl:
 \textbf{abstract, class, do, extends, for, forSome, implicitly, lazy, null,
-  object, override, protected, return, sealed, trait, try, type, val, var,
-  while, with, yield}
+  object, private, override, protected, return, sealed, trait, try, type, val,
+  var, while, with, yield}
 
 
 \section{Operators}
@@ -68,8 +68,8 @@ following lists all the reserved words that cannot be used in \dsl:
      & \bnf \c{ Match $\bnf$ IfElse $\bnf$ Fun $\bnf$ Apply $\bnf$ Literal} \\
      & \bnf \c{Unary $\bnf$ Binary $\bnf$ Block $\bnf$ Try
        $\bnf$ `('Expression`)'} \\
-   \textbf{Def} & ::= \c{(private $\bnf \epsilon$) def (ID TParams Params $\bnf$
-    `('$\overline{ID}$`)') : Type = Expression} \\
+  \textbf{Def} & ::= \c{def (ID TParams Params $\bnf$ `('$\overline{ID}$`)') :
+    Type = Expression} \\
   \displaybreak
   \textbf{Statement} & ::= \c{Def $\bnf$ Expression;} \\
   \textbf{Select} & ::= \c{Expression.ID} \\
