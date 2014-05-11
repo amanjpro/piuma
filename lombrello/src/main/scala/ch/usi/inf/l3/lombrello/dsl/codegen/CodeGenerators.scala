@@ -173,11 +173,11 @@ trait CodeGenerators { self: Compiler =>
           val byname = if(mod.isByName) " => " else ""
           val r = s"${codegen(name)}: ${byname} ${codegen(tpe)}"
           pad(r, level)
-        case DefDef(mod, name, Nil, Nil, tpe, rhs, _) =>
-          val r = s"${mod} val ${codegen(name)}: ${codegen(tpe)} =\n"
+        case DefDef(mod, name, Nil, Nil, tpe, rhs, _) if mod.isVariable =>
+          val r = s"private val ${codegen(name)}: ${codegen(tpe)} =\n"
           pad(r + s"${codegen(rhs, level + 1)}", level)
         case DefDef(mod, name, tparams, params, tpe, rhs, _) =>
-          val r1 = s"${mod} def ${codegen(name)}${genSeq(tparams, "[", "]")}"
+          val r1 = s"private def ${codegen(name)}${genSeq(tparams, "[", "]")}"
           val r2 = s"${genSeq(params, "(", ")")}:"
           val r3 = s"${codegen(tpe)} =\n${codegen(rhs, level + 1)}"
           pad(r1 + r2 + r3, level)

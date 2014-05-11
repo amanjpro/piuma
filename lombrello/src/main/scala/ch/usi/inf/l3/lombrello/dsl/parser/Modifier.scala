@@ -9,17 +9,13 @@ package ch.usi.inf.l3.lombrello.dsl.parser
 class Modifier(mod: Int) {
   import Modifier._
 
-  val isPublic = (mod & PUBLIC) == PUBLIC
-  val isPrivate = (mod & PRIVATE) == PRIVATE
+  val isDef = (mod & DEF) == DEF
+  val isVariable = (mod & VARIABLE) == VARIABLE
   val isParam = (mod & PARAM) == PARAM
   val isChecker = (mod & CHECKER) == CHECKER
   val isTransformer = (mod & TRANSFORMER) == TRANSFORMER
   val isByName = (mod & BYNAME) == BYNAME
 
-
-  override def toString: String = {
-    if(isPrivate) "private" else ""
-  }
 
 }
 
@@ -29,12 +25,12 @@ object Modifier {
   def apply(mod: Int): Modifier = {
     new Modifier(mod)
   }
-  val PUBLIC = 1 << 1
-  val PRIVATE = 1 << 2
-  val PARAM = 1 << 3
-  val CHECKER = 1 << 4
-  val TRANSFORMER = 1 << 5
-  val BYNAME = 1 << 6
+  val DEF = 1 << 1
+  val VARIABLE = 1 << 2
+  val PARAM = 1 << 2
+  val CHECKER = 1 << 3
+  val TRANSFORMER = 1 << 4
+  val BYNAME = 1 << 5
 }
 
 

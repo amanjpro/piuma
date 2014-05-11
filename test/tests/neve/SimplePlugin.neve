@@ -1,6 +1,6 @@
 package empty
 
-plugin SimplePlugin(NoWay) {
+plugin SimplePlugin(YesWay, NoWay) {
 }
 
 
@@ -15,4 +15,13 @@ phase YesWay("b\"\tphase") {
   runsBefore("namer")
   runsRightAfter("namer")
   check = ""
+
+  def (a: Int, b: Int) = (1, 2)
+
+  def id[T](a: T): T = a
+  def id(a: Any): Any = a
+
+  // @fail
+  /*check = ""*/
+
 }

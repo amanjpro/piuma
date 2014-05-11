@@ -132,23 +132,27 @@ trait Parsers { self: Compiler =>
 
 
     private def parseDef(tokenList: TokenList): (List[DefDef], TokenList) = {
-      val (mod, rest1) = parseModifier(tokenList)
-      val rest2 = parseOrReport(tokens.Keyword(tokens.Def), rest1)
-      rest2 match {
+      // val (mod, rest1) = parseModifier(tokenList)
+      val rest1 = parseOrReport(tokens.Keyword(tokens.Def), tokenList)
+      rest1 match {
         case tokens.Punctuation(tokens.LParan) :: xs =>
           parseMultiDef(tokenList)
         case _ =>
-          val (name, rest3) = parseId(rest2)
-          val (tparams, rest4) = parseGenerics(rest3)
-          val (params, rest5) = parseParams(rest4)
-          val rest6 = parseOrReport(tokens.Punctuation(tokens.Colon), rest5)
-          val (tpe, rest7) = parseType(rest6)
-          val rest8 = parseOrReport(tokens.Punctuation(tokens.Assign), rest7)
-          val (rhs, rest9) = parseExpression(rest8)
-          val rest10 = parseSemi(rhs, rest9)
+          val (name, rest2) = parseId(rest1)
+          val (tparams, rest3) = parseGenerics(rest2)
+          val (params, rest4) = parseParams(rest3)
+          val mod = params match {
+            case Nil => Modifier(Modifier.VARIABLE)
+            case _ => Modifier(Modifier.DEF)
+          }
+          val rest5 = parseOrReport(tokens.Punctuation(tokens.Colon), rest4)
+          val (tpe, rest6) = parseType(rest5)
+          val rest7 = parseOrReport(tokens.Punctuation(tokens.Assign), rest6)
+          val (rhs, rest8) = parseExpression(rest7)
+          val rest9 = parseSemi(rhs, rest8)
           val defdef = DefDef(mod, name, tparams, params, tpe, 
             rhs, posOfHead(tokenList))
-          (List(defdef), rest10)
+          (List(defdef), rest9)
       }
     }
 
@@ -168,9 +172,9 @@ trait Parsers { self: Compiler =>
         }
       }
 
-      val (mod, rest1) = parseModifier(tokenList)
-      val rest2 = parseOrReport(tokens.Keyword(tokens.Def), rest1)
-      val (defs, rest3) = parseParams(rest2)
+      val mod = Modifier(Modifier.VARIABLE)
+      val rest1 = parseOrReport(tokens.Keyword(tokens.Def), tokenList)
+      val (defs, rest2) = parseParams(rest1)
       // defs match {
       //   case Nil =>
       //     reporter.report("(", ":", opsOfHead(rest3), BAD_TOKEN)
@@ -179,10 +183,10 @@ trait Parsers { self: Compiler =>
       //           "to be at least of length 2", opsOfHead(rest3))
       //   case _ => ()
       // }
-      val rest4 = parseOrReport(tokens.Punctuation(tokens.Assign), rest3)
-      val (rhs, rest5) = parseExpression(rest4)
-      val rest6 = parseSemi(rhs, rest5)
-      (toDefs(mod, defs, rhs, Nil), rest6)
+      val rest3 = parseOrReport(tokens.Punctuation(tokens.Assign), rest2)
+      val (rhs, rest4) = parseExpression(rest3)
+      val rest5 = parseSemi(rhs, rest4)
+      (toDefs(mod, defs, rhs, Nil), rest5)
     }
 
     private def parseId(tokenList: TokenList): (Ident, TokenList) = {
@@ -354,13 +358,13 @@ trait Parsers { self: Compiler =>
       }
     }
 
-    private def parseModifier(tokenList: TokenList): (Modifier, TokenList) = {
-      tokenList match {
-        case tokens.Keyword(tokens.Private) :: xs =>
-          (Modifier(Modifier.PRIVATE), xs)
-        case xs => (Modifier(Modifier.PUBLIC), xs)
-      }
-    }
+    // private def parseModifier(tokenList: TokenList): (Modifier, TokenList) = {
+    //   tokenList match {
+    //     case tokens.Keyword(tokens.Private) :: xs =>
+    //       (Modifier(Modifier.PRIVATE), xs)
+    //     case xs => (Modifier(Modifier.PUBLIC), xs)
+    //   }
+    // }
 
 
     private def parseSemi(expr: Expression, 
@@ -427,8 +431,7 @@ trait Parsers { self: Compiler =>
         (List[DefDef], TokenList) = {
       def helper(tokenss: TokenList): (List[DefDef], TokenList) = {
         tokenss match {
-          case (tokens.Keyword(tokens.Def) | 
-              tokens.Keyword(tokens.Private)) :: xs =>
+          case tokens.Keyword(tokens.Def) :: xs =>
             val (ms, r) = parseDef(tokenss)
             val (defs, rest) = helper(r)
             (ms ++ defs, rest)
@@ -472,8 +475,7 @@ trait Parsers { self: Compiler =>
             } else {
               helper(r, body, pre :: preambles, performer)
             }
-          case (tokens.Keyword(tokens.Def) | 
-              tokens.Keyword(tokens.Private)) :: xs =>
+          case tokens.Keyword(tokens.Def) :: xs =>
             val (ms, r) = parseDef(tokenss)
             helper(r, ms ++ body, preambles, performer)
           case (tokens.Keyword(tokens.Transform) |
@@ -496,7 +498,7 @@ trait Parsers { self: Compiler =>
           val pos = posOfHead(rest)
           val dummyName = Ident(Names.uniqueName(Names.DUMMY_NAME), pos)
           val dummyType = SimpleType(dummyName, Nil, dummyName.pos)
-          val dummy = DefDef(Modifier(Modifier.PRIVATE), 
+          val dummy = DefDef(Modifier(Modifier.VARIABLE), 
               dummyName, Nil, Nil, dummyType, dummyName, pos)
           reporter.report(Names.TRANSFORMER, "}", pos, BAD_TOKEN)
           (body, preambles, dummy, rest)
@@ -689,8 +691,7 @@ trait Parsers { self: Compiler =>
       @tailrec def helper(tokenss: TokenList, acc: List[PositionedTree]): 
           (Block, TokenList) = {
         val (stmts, rest1) = tokenss match {
-          case (tokens.Keyword(tokens.Private) |
-            tokens.Keyword(tokens.Def)) :: xs => 
+          case tokens.Keyword(tokens.Def) :: xs => 
             parseDef(tokenss)
           case _ =>
             val (expr, rest1) = parseExpression(tokenss)
@@ -1033,7 +1034,7 @@ trait Parsers { self: Compiler =>
                 tokens.RunsBefore | tokens.Import | tokens.If |
                 tokens.Package | tokens.Plugin | tokens.New | 
                 tokens.Phase | tokens.Transform | tokens.Check | 
-                tokens.Def | tokens.Private | tokens.Super |
+                tokens.Def | tokens.Super |
                 tokens.This | tokens.Throw => true
             case _ => false
           }
@@ -1335,7 +1336,7 @@ trait Parsers { self: Compiler =>
         case "def" => tokens.Keyword(tokens.Def, pos)
         case "case" => tokens.Keyword(tokens.Case, pos)
         case "tree" => tokens.Keyword(tokens.Tree, pos)
-        case "private" => tokens.Keyword(tokens.Private, pos)
+        // case "private" => tokens.Keyword(tokens.Private, pos)
         case "this" => tokens.Keyword(tokens.This, pos)
         case "super" => tokens.Keyword(tokens.Super, pos)
         case "throw" => tokens.Keyword(tokens.Throw, pos)
@@ -1460,7 +1461,7 @@ trait Parsers { self: Compiler =>
     case object Def extends Keywords
     case object Case extends Keywords
     case object Tree extends Keywords   
-    case object Private extends Keywords
+    // case object Private extends Keywords
     case object Super extends Keywords
     case object This extends Keywords
     case object Throw extends Keywords
