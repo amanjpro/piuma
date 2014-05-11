@@ -6,6 +6,13 @@ package ch.usi.inf.l3.lombrello.dsl
  * @date 2 May 2014
  */
 
+/**
+ * What I need:
+ * 1- To throw away the boiler plate code needed for writing a plugin
+ * 2- To limit the user from accessing the current compiler API
+ * 3- To provide a ``safer'' and ``easier'' compiler API, so we can
+ *    make sure that plugins do not do bad things
+ */
 object Main {
 
 
