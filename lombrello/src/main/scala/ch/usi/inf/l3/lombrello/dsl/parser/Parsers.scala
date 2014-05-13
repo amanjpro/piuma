@@ -220,7 +220,8 @@ trait Parsers { self: Compiler =>
             tokens.Punctuation(tokens.RParan))
     }
 
-    private def parseSimpleType(tokenss: TokenList): (SimpleType, TokenList) = {
+    private def parseSimpleType(tokenss: TokenList): 
+          (SimpleTypeTree, TokenList) = {
       def helperTArgs(tlist: TokenList): (List[TypeTree], TokenList) = {
         sequenceHelper[TypeTree](tokenss, Nil, parseType, 
             tokens.Punctuation(tokens.RBracket))
@@ -232,11 +233,12 @@ trait Parsers { self: Compiler =>
         case _ =>
         (Nil, rest1)
       }
-      (SimpleType(id, targs, id.pos), rest2)
+      (SimpleTypeTree(id, targs, id.pos), rest2)
     }
 
 
-    private def parseType(tokenList: TokenList): (TypeTree, TokenList) = {
+    private def parseType(tokenList: TokenList): 
+            (TypeTree, TokenList) = {
       def parseProductType(tokenss: TokenList): (List[TypeTree], TokenList) = {
         sequenceHelper[TypeTree](tokenss, Nil, parseType, 
               tokens.Punctuation(tokens.RParan))
@@ -249,9 +251,9 @@ trait Parsers { self: Compiler =>
           rest1 match {
             case tokens.Punctuation(tokens.Arrow) :: xs =>
               val (r, rest2) = parseType(xs)
-              (FunctionType(product, r, posOfHead(tokenList)), rest2)
+              (FunctionTypeTree(product, r, posOfHead(tokenList)), rest2)
             case _ =>
-              (ProductType(product, posOfHead(tokenList)), rest1)
+              (ProductTypeTree(product, posOfHead(tokenList)), rest1)
           }
         case _ =>
           parseSimpleType(tokenList)
@@ -336,14 +338,14 @@ trait Parsers { self: Compiler =>
             parseType(xs)
           case _ =>
             val pos = posOfHead(rest1)
-            (SimpleType(Ident("Nothing", pos), Nil, pos), rest1)
+            (SimpleTypeTree(Ident("Nothing", pos), Nil, pos), rest1)
         }
         val (ubound, rest3) = rest2 match {
           case tokens.Punctuation(tokens.SubType) :: xs =>
             parseType(xs)
           case _ =>
             val pos = posOfHead(rest2)
-            (SimpleType(Ident("Any", pos), Nil, pos), rest2)
+            (SimpleTypeTree(Ident("Any", pos), Nil, pos), rest2)
         }
 
         val tparam = TParamDef(id, lbound, ubound, id.pos)
@@ -390,7 +392,7 @@ trait Parsers { self: Compiler =>
       val rest2 = parseOrReport(tokens.Punctuation(tokens.Assign), rest1)
       val (rhs, rest3) = parseExpression(rest2)
       val rest4 = parseSemi(rhs, rest3)
-      val tpe = SimpleType(Ident(Names.TREE_TYPE, pos), Nil, pos)
+      val tpe = SimpleTypeTree(Ident(Names.TREE_TYPE, pos), Nil, pos)
 
       val mod = {
         if(name.name == Names.TRANSFORMER) 
@@ -497,7 +499,7 @@ trait Parsers { self: Compiler =>
         case None =>
           val pos = posOfHead(rest)
           val dummyName = Ident(Names.uniqueName(Names.DUMMY_NAME), pos)
-          val dummyType = SimpleType(dummyName, Nil, dummyName.pos)
+          val dummyType = SimpleTypeTree(dummyName, Nil, dummyName.pos)
           val dummy = DefDef(Modifier(Modifier.VARIABLE), 
               dummyName, Nil, Nil, dummyType, dummyName, pos)
           reporter.report(Names.TRANSFORMER, "}", pos, BAD_TOKEN)
@@ -1390,85 +1392,205 @@ trait Parsers { self: Compiler =>
 
     sealed abstract class Punctuations
     // brackets, braces and curly brackets
-    case object LCurly extends Punctuations
-    case object RCurly extends Punctuations
-    case object LParan extends Punctuations
-    case object RParan extends Punctuations
-    case object LBracket extends Punctuations
-    case object RBracket extends Punctuations
+    case object LCurly extends Punctuations {
+      override def toString: String = "{"
+    }
+    case object RCurly extends Punctuations {
+      override def toString: String = "}"
+    }
+    case object LParan extends Punctuations {
+      override def toString: String = "("
+    }
+    case object RParan extends Punctuations {
+      override def toString: String = ")"
+    }
+    case object LBracket extends Punctuations {
+      override def toString: String = "["
+    }
+    case object RBracket extends Punctuations {
+      override def toString: String = "]"
+    }
 
 
     // mathmatical symbols
-    case object Assign extends Punctuations
-    case object Plus extends Punctuations
-    case object Minus extends Punctuations
-    case object Div extends Punctuations
-    case object Mul extends Punctuations
-    case object Mod extends Punctuations
+    case object Assign extends Punctuations {
+      override def toString: String = "="
+    }
+    case object Plus extends Punctuations {
+      override def toString: String = "+"
+    }
+    case object Minus extends Punctuations {
+      override def toString: String = "-"
+    }
+    case object Div extends Punctuations {
+      override def toString: String = "/"
+    }
+    case object Mul extends Punctuations {
+      override def toString: String = "*"
+    }
+    case object Mod extends Punctuations {
+      override def toString: String = "%"
+    }
 
     // logical symbols
-    case object LT extends Punctuations
-    case object GT extends Punctuations
-    case object Xor extends Punctuations
-    case object Not extends Punctuations
-    case object SHL extends Punctuations
-    case object SHR extends Punctuations
+    case object LT extends Punctuations {
+      override def toString: String = "<"
+    }
+    case object GT extends Punctuations {
+      override def toString: String = ">"
+    }
+    case object Xor extends Punctuations {
+      override def toString: String = "^"
+    }
+    case object Not extends Punctuations {
+      override def toString: String = "!"
+    }
+    case object SHL extends Punctuations {
+      override def toString: String = "<<"
+    }
+    case object SHR extends Punctuations {
+      override def toString: String = ">>"
+    }
 
 
     // composed symbols
-    case object Le extends Punctuations
-    case object Ge extends Punctuations
-    case object Eq extends Punctuations
-    case object Ne extends Punctuations
-    case object SubType extends Punctuations
-    case object SuperType extends Punctuations
-    case object Arrow extends Punctuations
-    case object And extends Punctuations
-    case object Or extends Punctuations
+    case object Le extends Punctuations {
+      override def toString: String = "<="
+    }
+    case object Ge extends Punctuations {
+      override def toString: String = ">="
+    }
+    case object Eq extends Punctuations {
+      override def toString: String = "=="
+    }
+    case object Ne extends Punctuations {
+      override def toString: String = "!="
+    }
+    case object SubType extends Punctuations {
+      override def toString: String = "<:"
+    }
+    case object SuperType extends Punctuations {
+      override def toString: String = ">:"
+    }
+    case object Arrow extends Punctuations {
+      override def toString: String = "=>"
+    }
+    case object And extends Punctuations {
+      override def toString: String = "&&"
+    }
+    case object Or extends Punctuations {
+      override def toString: String = "||"
+    }
 
 
     // other symbols
-    case object Underscore extends Punctuations
-    case object Dot extends Punctuations
-    case object Semi extends Punctuations
-    case object Colon extends Punctuations
+    case object Underscore extends Punctuations {
+      override def toString: String = "_"
+    }
+    case object Dot extends Punctuations {
+      override def toString: String = "."
+    }
+    case object Semi extends Punctuations {
+      override def toString: String = ";"
+    }
+    case object Colon extends Punctuations {
+      override def toString: String = ":"
+    }
     // case object BackSlash extends Punctuations
-    case object Coma extends Punctuations
-    case object At extends Punctuations
-    case object NL extends Punctuations
-    case object Pipe extends Punctuations
+    case object Coma extends Punctuations {
+      override def toString: String = ","
+    }
+    case object At extends Punctuations {
+      override def toString: String = "@"
+    }
+    case object NL extends Punctuations {
+      override def toString: String = "new line"
+    }
+    case object Pipe extends Punctuations {
+      override def toString: String = "|"
+    }
 
     // Collection operators
-    case object Join extends Punctuations
-    case object Cons extends Punctuations
-    case object To extends Punctuations
+    case object Join extends Punctuations {
+      override def toString: String = "++"
+    }
+    case object Cons extends Punctuations {
+      override def toString: String = "::"
+    }
+    case object To extends Punctuations {
+      override def toString: String = "->"
+    }
 
     
     // Lombrello keywords
     sealed abstract class Keywords
-    case object RunsAfter extends Keywords
-    case object RunsRightAfter extends Keywords
-    case object RunsBefore extends Keywords
-    case object Import extends Keywords
-    case object If extends Keywords
-    case object Else extends Keywords
-    case object Match extends Keywords
-    case object Package extends Keywords
-    case object Plugin extends Keywords
-    case object Phase extends Keywords
-    case object Transform extends Keywords
-    case object Check extends Keywords
-    case object Def extends Keywords
-    case object Case extends Keywords
-    case object Tree extends Keywords   
+    case object RunsAfter extends Keywords {
+      override def toString: String = "runsAfter"
+    }
+    case object RunsRightAfter extends Keywords {
+      override def toString: String = "runsRightAfter"
+    }
+    case object RunsBefore extends Keywords {
+      override def toString: String = "runsBefore"
+    }
+    case object Import extends Keywords {
+      override def toString: String = "import"
+    }
+    case object If extends Keywords {
+      override def toString: String = "if"
+    }
+    case object Else extends Keywords {
+      override def toString: String = "else"
+    }
+    case object Match extends Keywords {
+      override def toString: String = "match"
+    }
+    case object Package extends Keywords {
+      override def toString: String = "pacakge"
+    }
+    case object Plugin extends Keywords {
+      override def toString: String = "plugin"
+    }
+    case object Phase extends Keywords {
+      override def toString: String = "phase"
+    }
+    case object Transform extends Keywords {
+      override def toString: String = "transform"
+    }
+    case object Check extends Keywords {
+      override def toString: String = "check"
+    }
+    case object Def extends Keywords {
+      override def toString: String = "def"
+    }
+    case object Case extends Keywords {
+      override def toString: String = "case"
+    }
+    case object Tree extends Keywords    {
+      override def toString: String = "tree"
+    }
     // case object Private extends Keywords
-    case object Super extends Keywords
-    case object This extends Keywords
-    case object Throw extends Keywords
-    case object Try extends Keywords
-    case object Catch extends Keywords
-    case object Finally extends Keywords
-    case object New extends Keywords
+    case object Super extends Keywords {
+      override def toString: String = "super"
+    }
+    case object This extends Keywords {
+      override def toString: String = "this"
+    }
+    case object Throw extends Keywords {
+      override def toString: String = "throw"
+    }
+    case object Try extends Keywords {
+      override def toString: String = "try"
+    }
+    case object Catch extends Keywords {
+      override def toString: String = "catch"
+    }
+    case object Finally extends Keywords {
+      override def toString: String = "finally"
+    }
+    case object New extends Keywords {
+      override def toString: String = "new"
+    }
 
     sealed abstract class Token {
       def position: Option[Position]
@@ -1490,8 +1612,8 @@ trait Parsers { self: Compiler =>
     class Keyword(val keyword: Keywords, val pos: Position) 
       extends PositionedToken {
 
-      override def toString: String = 
-        s"(Keyword: ${keyword}, Position: ${pos})"
+      override def toString: String = keyword.toString
+
       override def hashCode: Int = keyword.hashCode
       override def equals(that: Any): Boolean = {
         that match {
@@ -1515,8 +1637,8 @@ trait Parsers { self: Compiler =>
     class Punctuation(val kind: Punctuations, 
       val pos: Position) extends PositionedToken {
 
-      override def toString: String = 
-        s"(Kind: ${kind}, Position: ${pos})"
+      override def toString: String = kind.toString
+
       override def hashCode: Int = kind.hashCode
       override def equals(that: Any): Boolean = {
         that match {

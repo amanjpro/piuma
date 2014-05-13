@@ -24,7 +24,7 @@ trait CodeGenerators { self: Compiler =>
                 "import ch.usi.inf.l3.lombrello.util._\n"
 
     val name: String = "codegen"
-    val runsAfter: Option[String] = Some("parser")
+    val runsAfter: Option[String] = Some("typer")
 
 
     private val TABSIZE: Int = 2
@@ -186,13 +186,13 @@ trait CodeGenerators { self: Compiler =>
           val lb = codegen(lbound)
           val ub = codegen(ubound)
           pad(s"${nme} >: ${lb} <: ${ub}", level)
-        case SimpleType(id, tparams, _) =>
+        case SimpleTypeTree(id, tparams, _) =>
           val nme = codegen(id)
           val tps = genSeq(tparams, "[", "]")
           pad(s"${nme}${tps}", level)
-        case ProductType(tpes, _) =>
+        case ProductTypeTree(tpes, _) =>
           pad(genSeq(tpes, "(", ")"), level)
-        case FunctionType(tpes, ret, _) =>
+        case FunctionTypeTree(tpes, ret, _) =>
           val curries = genSeq(tpes, "(", ")")
           val r = codegen(ret)
           pad(s"${curries} => ${r}", level)

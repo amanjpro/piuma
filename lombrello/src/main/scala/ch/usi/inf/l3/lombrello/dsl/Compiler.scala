@@ -10,17 +10,23 @@ package ch.usi.inf.l3.lombrello.dsl
 
 import scala.annotation.tailrec
 import parser._
+import typechecker._
 import reporter._
 import source._
 import codegen._
+import symbols._
 
 
 
 class Compiler extends Trees
+  with Symbols
+  with Types
   with Parsers 
+  with Typers
   with Reporters 
   with CodeGenerators
   with Finalizers {
+
 
   val SUCCESS = 0
   val FAIL = 1
@@ -32,6 +38,7 @@ class Compiler extends Trees
   lazy val lexer = new Lexer
   lazy val normalizer = new Normalizer
   lazy val parser = new Parser
+  lazy val typer = new Typer
   lazy val codegen = new CodeGenerator
   lazy val finalizer = new Finalizer
 
@@ -44,6 +51,7 @@ class Compiler extends Trees
   lazy val phases: List[Phase] = orderPhases(List(
     normalizer,
     parser,
+    typer,
     codegen,
     finalizer
   ))

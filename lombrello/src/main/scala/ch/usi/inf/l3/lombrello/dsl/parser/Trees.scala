@@ -8,8 +8,9 @@ package ch.usi.inf.l3.lombrello.dsl.parser
 import ch.usi.inf.l3.lombrello.dsl
 import dsl.source.Position
 import dsl.Names
+import dsl.symbols
 
-trait Trees {
+trait Trees { self: dsl.Compiler =>
   
   sealed trait Tree {
     def position: Option[Position]
@@ -40,23 +41,26 @@ trait Trees {
   case class DefDef(mod: Modifier, name: Ident, tparams: List[TParamDef],
         params: List[DefDef], tpe: TypeTree, rhs: Expression, 
         pos: Position) extends PositionedTree 
-  case class PluginDef(name: Ident, phases: List[SelectOrIdent], body: List[DefDef], 
-        pos: Position) extends PositionedTree
-  case class PhaseDef(name: Ident, phaseName: String, preamble: List[PropertyTree], 
-        perform: DefDef, body: List[Tree], pos: Position) extends PositionedTree {
+  case class PluginDef(name: Ident, phases: List[SelectOrIdent], 
+      body: List[DefDef], pos: Position) extends PositionedTree
+  case class PhaseDef(name: Ident, phaseName: String, 
+    preamble: List[PropertyTree], perform: DefDef, 
+        body: List[Tree], pos: Position) extends PositionedTree {
     val isChecker: Boolean = perform.name.name == Names.CHECKER
     val isTransformer: Boolean = perform.name.name == Names.TRANSFORMER
     val kind: PhaseKind = if(isChecker) CheckerPhase else TransformerPhase
   }
-  case class TParamDef(name: Ident, lbound: TypeTree, ubound: TypeTree, pos: Position)
-        extends PositionedTree
+
+  case class TParamDef(name: Ident, lbound: TypeTree, ubound: TypeTree, 
+    pos: Position) extends PositionedTree
 
   sealed trait TypeTree extends PositionedTree
-  case class SimpleType(id: SelectOrIdent, tparams: List[TypeTree], pos: Position) 
-      extends TypeTree
-  case class ProductType(items: List[TypeTree], pos: Position) extends TypeTree
-  case class FunctionType(params: List[TypeTree], ret: TypeTree, pos: Position)
-      extends TypeTree
+  case class SimpleTypeTree(id: SelectOrIdent, tparams: List[TypeTree], 
+        pos: Position) extends TypeTree
+  case class ProductTypeTree(items: List[TypeTree], 
+        pos: Position) extends TypeTree
+  case class FunctionTypeTree(params: List[TypeTree], ret: TypeTree, 
+        pos: Position) extends TypeTree
 
   // Expressions
   sealed trait Expression extends PositionedTree
@@ -132,7 +136,7 @@ trait Trees {
   case class PropertyTree(property: PropertyType, value: Expression, 
     pos: Position) extends PositionedTree
 
-  case class New(tpe: SimpleType, args: List[Expression], 
+  case class New(tpe: SimpleTypeTree, args: List[Expression], 
       pos: Position) extends Expression
 
   case class Throw(exp: Expression, pos: Position) extends Expression
