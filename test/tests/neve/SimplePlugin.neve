@@ -21,7 +21,7 @@ phase YesWay("b\"\tphase") {
   def id[T](a: T): T = a
   def id(a: Any): Any = a
 
-  // @fail
-  /*check = ""*/
+  // @fail(Unexpected token is found)
+  check = ""
 
 }

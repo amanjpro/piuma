@@ -1,7 +1,181 @@
 #!/bin/sh
+exec scala -save -feature "$0" "$@"
+!#
 
-# Author: Amanj Sherwany
-# Date: 9 May 2014
-# This script runs Neve's test cases
+/*
+ * Copyright (c) <2014>, Amanj Sherwany <http://www.amanj.me>
+ * All rights reserved.
+ * A simple Scala script, to automatically run Neve's test cases
+ */
 
-./nevec tests/neve/*.neve
+import sys.process._
+import scala.io._
+import java.io._
+import scala.language.postfixOps
+
+// File Name -> Line number -> message
+type MapType = Map[(String, Int), String]
+
+
+private def red(s: String): String = {
+  val red = "\033[91m"
+  val end = "\033[0m"
+  s"${red}${s}${end}"
+}
+
+private def green(s: String): String = {
+  val green = "\033[92m"
+  val end = "\033[0m"
+  s"${green}${s}${end}"
+}
+
+/**
+ * Returns (expected, found)
+ */
+private def findMismatches(expected: List[String], found: List[String]):
+      (List[String], List[String]) = {
+  find(expected, found, Nil, (x: String, y: String) => x != y) 
+}
+
+/**
+ * Returns (expected, found)
+ */
+private def findMatches(expected: List[String], found: List[String]):
+      (List[String], List[String]) = {
+  find(expected, found, Nil, (x: String, y: String) => x == y) 
+}
+
+private def find(expected: List[String], found: List[String],
+      expComp: List[String], f: (String, String) => Boolean):
+      (List[String], List[String]) = {
+  expected match {
+    case Nil => (expComp.reverse, found) 
+    case x :: xs =>
+      found.contains(x) match {
+        case true =>
+          val newFound = found.filter(f(_, x))
+          find(xs, newFound, expComp, f)
+        case false =>
+          find(xs, found, x :: expComp, f)
+      }
+  }
+}
+private def split(s: String): Option[(String, Int, String)] = {
+  val splitted = s.split(",").toList
+  splitted match {
+    case x :: y :: z :: Nil =>
+      try {
+        Some(x.trim, y.trim.toInt, z.trim)
+      } catch {
+        case ex: NumberFormatException => 
+          None
+      }
+    case _ => 
+      None
+  }
+}
+/**
+ * Returns (computed, rest)
+ */
+private def cluster(list: List[String], current: Int = -1, 
+        computed: List[(String, Int, String)] = Nil): 
+      (List[(String, Int, String)], List[String]) = {
+  list match {
+    case x :: xs =>
+      val (f, c, l) = split(x).getOrElse("", -1, "")
+      if(c - current == 1 || computed == Nil) {
+        cluster(xs, c, (f, c, l) :: computed) 
+      } else {
+        (computed.reverse, list)
+      }
+    case Nil => (computed.reverse, Nil)
+  }
+}
+
+private def clusterify(l: List[String],
+      computed: List[List[(String, Int, String)]] = Nil): 
+          List[List[(String, Int, String)]] = {
+  l match {
+    case Nil => computed.reverse
+    case _ => 
+      val (c, r) = cluster(l)
+      clusterify(r, c :: computed)
+  }
+}
+
+private def decluster(l: List[(String, Int, String)], 
+        computed: List[String] = Nil): List[String] = {
+  l match {
+    case Nil => computed.reverse
+    case (f, s, t) :: xs =>
+      decluster(xs, s"${f}, ${s + l.length}, ${t}" :: computed)
+  }
+}
+
+private def declusterify(l: List[List[(String, Int, String)]],
+        computed: List[String] = Nil): List[String] = {
+  l match {
+    case Nil => computed
+    case x :: xs =>
+      declusterify(xs, decluster(x) ++ computed)
+  }
+}
+private def normalize(l: List[String]): List[String] = {
+  val clusters = clusterify(l) 
+  declusterify(clusters)
+}
+
+
+val detector = "scripts/detector.sed"
+val merger = "scripts/merger.sed"
+val extractor = "scripts/extractor.sed"
+
+val sp = File.separator
+val testDir = s"tests${sp}neve"
+val testFiles = new File(testDir).list.toList.filter(_.endsWith(".neve"))
+val tests = testFiles.map((x) => s"${testDir}${sp}${x}")
+val testsStr = tests.mkString("\n")
+
+
+val neve = s"./nevec ${testsStr}"
+val expectedPre: List[List[String]] = for(t <- testFiles) yield {
+  val temp: String
+        = s"sed -f ${detector} ${testDir}${sp}${t}" #| s"sed -f ${merger}" !!<
+
+  temp.split("\n").toList.map((x) => t + ", " + x)
+}
+
+val expected = expectedPre.flatten
+
+val actual = (s"${neve}" #| s"sed -f ${extractor}" !!<).split(
+              "\n").toList.map(_.trim)
+
+
+
+// val expected: MapType = organizeInfo(expectedList)
+// val actual: MapType = organizeInfo(actualList, true)
+
+val (missExpected, missFound) = findMismatches(normalize(expected), actual)
+
+
+(missExpected, missFound) match {
+  case (Nil, Nil) => 
+    println(green("All tests have passed"))
+    System.exit(0)
+  case (Nil, xs) =>
+    println(red("Unreported tests found"))
+    xs.foreach(println)
+    System.exit(1)
+  case (xs, Nil) =>
+    println(red("False reported tests found"))
+    xs.foreach(println)
+    System.exit(1)
+  case (xs, ys) =>
+    println(red("False reported tests found"))
+    xs.foreach(println)
+    println("-" * 20)
+    println(red("Unreported tests found"))
+    ys.foreach(println)
+    System.exit(1)
+}
+
