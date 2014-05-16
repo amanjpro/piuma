@@ -1,5 +1,5 @@
 #!/bin/sh
-exec scala -save -feature "$0" "$@"
+export SCRIPT_PATH=$(greadlink -f "$0") && exec scala -save -feature "$0" "$@"
 !#
 
 /*
@@ -126,18 +126,20 @@ private def normalize(l: List[String]): List[String] = {
 }
 
 
-val detector = "scripts/detector.sed"
-val merger = "scripts/merger.sed"
-val extractor = "scripts/extractor.sed"
-
 val sp = File.separator
-val testDir = s"tests${sp}neve"
+val scriptPath = System.getenv("SCRIPT_PATH")
+val currentDir = scriptPath.substring(0, scriptPath.lastIndexOf('/'))
+val detector = s"${currentDir}${sp}scripts${sp}detector.sed"
+val merger = s"${currentDir}${sp}scripts${sp}merger.sed"
+val extractor = s"${currentDir}${sp}scripts${sp}extractor.sed"
+
+val testDir = s"${currentDir}${sp}tests${sp}neve"
 val testFiles = new File(testDir).list.toList.filter(_.endsWith(".neve"))
 val tests = testFiles.map((x) => s"${testDir}${sp}${x}")
 val testsStr = tests.mkString("\n")
 
 
-val neve = s"./nevec ${testsStr}"
+val neve = s"sh ${currentDir}${sp}nevec ${testsStr}"
 val expectedPre: List[List[String]] = for(t <- testFiles) yield {
   val temp: String
         = s"sed -f ${detector} ${testDir}${sp}${t}" #| s"sed -f ${merger}" !!<

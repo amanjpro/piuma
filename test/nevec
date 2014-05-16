@@ -1,7 +1,22 @@
 #!/bin/sh
+export SCRIPT_PATH=$(greadlink -f "$0") && exec scala -save -feature "$0" "$@"
+!#
 
-# Author: Amanj Sherwany
-# Date: 9 May 2014
-# This script is an executable for Neve compiler
+/*
+ * Copyright (c) <2014>, Amanj Sherwany <http://www.amanj.me>
+ * All rights reserved.
+ * A simple Scala script, to automatically run Neve's test cases
+ */
 
-scala "lib/lombrello.jar" ${@}
+import java.io.File
+import sys.process._
+
+
+val sp = File.separator
+
+val scriptPath = System.getenv("SCRIPT_PATH")
+val currentDir = scriptPath.substring(0, scriptPath.lastIndexOf(sp))
+
+val jar = s"${currentDir}${sp}lib${sp}lombrello.jar"
+
+s"scala -cp ${jar} ${jar} ${args.mkString(" ")}".!

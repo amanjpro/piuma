@@ -239,7 +239,9 @@ def processOptions(opts: Array[String]): Unit = {
       docSBTProject(mainProject)
       0
       
-
+    case Array("test", "neve") =>
+      "sh test/testNeve" !
+      
     case Array("compile", prjct) if (plugins.contains(prjct)) =>
       print(prjct)
       buildSBTProject(prjct)
