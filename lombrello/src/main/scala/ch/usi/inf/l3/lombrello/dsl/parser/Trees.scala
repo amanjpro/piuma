@@ -42,8 +42,7 @@ trait Trees { self: dsl.Compiler =>
 
   // Definitions
   case class PackageDef(pid: SelectOrIdent, trees: List[Tree], 
-        pos: Position) extends PositionedTree {
-    def symbol: Symbol = NoSymbol
+        pos: Position, symbol: Symbol = NoSymbol) extends PositionedTree {
   }
   case class DefDef(mod: Modifier, name: Ident, tparams: List[TParamDef],
         params: List[DefDef], tpe: TypeTree, rhs: Expression, 

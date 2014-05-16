@@ -39,7 +39,7 @@ trait CodeGenerators { self: Compiler =>
 
     private def generateCode(tree: Tree): List[CompiledCode] = {
       tree match {
-        case PackageDef(pid, trees, _) =>
+        case PackageDef(pid, trees, _, _) =>
           val pname = codegen(pid)
           val sep = java.io.File.separator
           val pkgPath = pname.replace(".", sep)
