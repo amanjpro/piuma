@@ -24,9 +24,17 @@ trait Parsers { self: Compiler =>
     val runsAfter: Option[String] = Some("normalizer")
 
     def run(tokenss: InputType): OutputType = {
-      val trees = tokenss.map(parse(_))
-      Program(trees)
+      val pkgs = tokenss.map(parse).foldLeft(Nil: List[PackageDef])((z, y) => {
+        y match {
+          case x: PackageDef => x :: z
+          case _ => z
+        }
+      })
+      Program(pkgs)
     }
+    
+
+    
 
     private def parse(tokenList: TokenList): Tree = {
       tokenList match {

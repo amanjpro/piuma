@@ -18,7 +18,7 @@ trait Trees { self: dsl.Compiler =>
   }
 
 
-  case class Program(trees: List[Tree]) extends Tree {
+  case class Program(trees: List[PackageDef]) extends Tree {
     def position: Option[Position] = None
     def symbol: Symbol = NoSymbol
   }
