@@ -28,6 +28,7 @@ object Names {
 
 
   val DUMMY_NAME = "dummyMethod"
+  val NO_TYPE = "NoType"
 
   private val scalaKeywords = List("abstract", "class", "do", "extends", "final", 
                             "for", "forSome", "implicit", "lazy", "null",

@@ -14,7 +14,7 @@ trait Typers {self: Compiler =>
     type InputType = self.Tree
     type OutputType = self.Tree
     val name: String = "typer"
-    val runsAfter: Option[String] = Some("parser")
+    val runsAfter: Option[String] = Some("namer")
 
     def run(tree: InputType): OutputType = {
       tree

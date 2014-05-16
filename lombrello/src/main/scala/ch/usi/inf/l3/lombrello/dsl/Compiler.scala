@@ -22,6 +22,7 @@ class Compiler extends Trees
   with Symbols
   with Types
   with Parsers 
+  with Namers 
   with Typers
   with Reporters 
   with CodeGenerators
@@ -38,19 +39,21 @@ class Compiler extends Trees
   lazy val lexer = new Lexer
   lazy val normalizer = new Normalizer
   lazy val parser = new Parser
+  lazy val namer = new Namer
   lazy val typer = new Typer
   lazy val codegen = new CodeGenerator
   lazy val finalizer = new Finalizer
 
 
   // FIXME:
-  // Only these two fields are mutable in this compiler
+  // Only this field is mutable in this class
   // If you could easily remove it, then do
   var currentPhase: Phase = lexer
 
   lazy val phases: List[Phase] = orderPhases(List(
     normalizer,
     parser,
+    namer,
     typer,
     codegen,
     finalizer
@@ -69,16 +72,16 @@ class Compiler extends Trees
     }
   }
 
-  // TODO: make this tailrec
   def orderPhases(phases: List[Phase]): List[Phase] = {
-    def order(ph: Phase, phaseList: List[Phase]): List[Phase] = {
+    @tailrec def order(ph: Phase, phaseList: List[Phase], 
+          computed: List[Phase] = Nil): List[Phase] = {
       phaseList match {
-        case x :: Nil => x :: Nil
+        case Nil => computed.reverse 
         case xs =>
           val (r, rest) = findNext(xs, ph.name)
           r match {
             case Some(result) =>
-              result :: order(result, rest)
+              order(result, rest, result :: computed)
             case None =>
               throw new Error("There is no phase that runs after phase: " +
                 ph.name)

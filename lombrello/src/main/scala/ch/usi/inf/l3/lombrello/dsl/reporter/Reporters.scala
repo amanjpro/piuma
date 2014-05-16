@@ -26,6 +26,7 @@ trait Reporters {self: Compiler =>
   val EOF = "end of file"
 
   class Report {
+
     private var errorBank: List[String] = Nil
 
     def errorCounter = errorBank.size
