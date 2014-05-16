@@ -166,33 +166,33 @@ trait CodeGenerators { self: Compiler =>
 
     private def codegen(tree: Tree, level: Int = 0): String = {
       tree match {
-        case Ident(name, _) => pad(name, level)
-        case Select(qual, id, _) =>
+        case Ident(name, _, _) => pad(name, level)
+        case Select(qual, id, _, _) =>
           pad(s"${codegen(qual)}.${codegen(id)}", level)
-        case DefDef(mod, name, Nil, Nil, tpe, rhs, _) if mod.isParam =>
+        case DefDef(mod, name, Nil, Nil, tpe, rhs, _, _) if mod.isParam =>
           val byname = if(mod.isByName) " => " else ""
           val r = s"${codegen(name)}: ${byname} ${codegen(tpe)}"
           pad(r, level)
-        case DefDef(mod, name, Nil, Nil, tpe, rhs, _) if mod.isVariable =>
+        case DefDef(mod, name, Nil, Nil, tpe, rhs, _, _) if mod.isVariable =>
           val r = s"private val ${codegen(name)}: ${codegen(tpe)} =\n"
           pad(r + s"${codegen(rhs, level + 1)}", level)
-        case DefDef(mod, name, tparams, params, tpe, rhs, _) =>
+        case DefDef(mod, name, tparams, params, tpe, rhs, _, _) =>
           val r1 = s"private def ${codegen(name)}${genSeq(tparams, "[", "]")}"
           val r2 = s"${genSeq(params, "(", ")")}:"
           val r3 = s"${codegen(tpe)} =\n${codegen(rhs, level + 1)}"
           pad(r1 + r2 + r3, level)
-        case TParamDef(name, lbound, ubound, _) =>
+        case TParamDef(name, lbound, ubound, _, _) =>
           val nme = codegen(name)
           val lb = codegen(lbound)
           val ub = codegen(ubound)
           pad(s"${nme} >: ${lb} <: ${ub}", level)
-        case SimpleTypeTree(id, tparams, _) =>
+        case SimpleTypeTree(id, tparams, _, _) =>
           val nme = codegen(id)
           val tps = genSeq(tparams, "[", "]")
           pad(s"${nme}${tps}", level)
-        case ProductTypeTree(tpes, _) =>
+        case ProductTypeTree(tpes, _, _) =>
           pad(genSeq(tpes, "(", ")"), level)
-        case FunctionTypeTree(tpes, ret, _) =>
+        case FunctionTypeTree(tpes, ret, _, _) =>
           val curries = genSeq(tpes, "(", ")")
           val r = codegen(ret)
           pad(s"${curries} => ${r}", level)
@@ -206,7 +206,7 @@ trait CodeGenerators { self: Compiler =>
           val ps = genSeq(params, "(", ")")
           val rs = codegen(rhs)
           pad(s"${ps} => ${rs}", level)
-        case Apply(m, targs, args, _) =>
+        case Apply(m, targs, args, _, _) =>
           val ms = codegen(m)
           val ts = genSeq(targs, "[", "]")
           val as = genSeq(args, "(", ")")
@@ -225,11 +225,11 @@ trait CodeGenerators { self: Compiler =>
           val cse = pad(s"case ${codegen(p)} =>\n", level)
           val body = codegen(rhs, level + 1)
           cse + body
-        case Bind(id, tpe, Nil, _) =>
+        case Bind(id, tpe, Nil, _, _) =>
           val ids = codegen(id)
           val tps = codegen(tpe)
           s"${ids}: ${tpe}"
-        case Bind(id, tpe, pats, _) =>
+        case Bind(id, tpe, pats, _, _) =>
           val ids = codegen(id)
           val tps = codegen(tpe)
           val ps = genSeq(pats, "(", ")")
@@ -258,16 +258,16 @@ trait CodeGenerators { self: Compiler =>
           pad(s"${op.toString} (${codegen(oprnd)})", level)
         case Record(values, _) =>
           pad(genSeq(values, "(", ")"), level)
-        case New(tpe, args, _) =>
+        case New(tpe, args, _, _) =>
           val ts = codegen(tpe)
           val as = genSeq(args, "(", ")")
           pad(s"new ${ts}${as}", level)
-        case Throw(exp, _) =>
+        case Throw(exp, _, _) =>
           val es = codegen(exp)
           pad(s"throw ${es}", level)
-        case This(_) =>
+        case This(_, _) =>
           pad("this", level)
-        case Super(_) =>
+        case Super(_, _) =>
           pad("super", level)
         case PropertyTree(RunsBeforeProperty, value, pos) =>
           pad(s"override val runsBefore: List[String] = ${codegen(value)}", level)
