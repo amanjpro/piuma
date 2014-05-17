@@ -228,6 +228,11 @@ trait Parsers { self: Compiler =>
             tokens.Punctuation(tokens.RParan))
     }
 
+    /**
+     * TODO:
+     * Make sure to convert the Type names to fully qualified names
+     * Using the import statements
+     */
     private def parseSimpleType(tokenss: TokenList): 
           (SimpleTypeTree, TokenList) = {
       def helperTArgs(tlist: TokenList): (List[TypeTree], TokenList) = {
