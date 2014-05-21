@@ -9,6 +9,7 @@ import ch.usi.inf.l3.lombrello.dsl
 import dsl.source.Position
 import dsl.Names
 import dsl.symbols
+import scala.annotation.tailrec
 
 trait Trees { self: dsl.Compiler =>
   
@@ -43,7 +44,9 @@ trait Trees { self: dsl.Compiler =>
   // Definitions
   case class PackageDef(pid: SelectOrIdent, trees: List[Tree], 
         pos: Position, symbol: Symbol = NoSymbol) extends PositionedTree {
+    lazy val pidString: String = pid.asString   
   }
+
   case class DefDef(mod: Modifier, name: Ident, tparams: List[TParamDef],
         params: List[DefDef], tpe: TypeTree, rhs: Expression, 
         pos: Position, symbol: Symbol = NoSymbol) extends PositionedTree 
@@ -95,16 +98,32 @@ trait Trees { self: dsl.Compiler =>
       case x => x.toString
     }
   }
-  // case object EmptyExpression extends Expression {
-  //   val pos = Position()
-  // }
+  
   // Select or Ident
-  sealed trait SelectOrIdent extends Expression
+  sealed trait SelectOrIdent extends Expression {
+    def asString: String
+  }
 
   case class Select(qual: Expression, id: IdentOrThis, pos: Position, 
-      symbol: Symbol = NoSymbol) extends SelectOrIdent
+      symbol: Symbol = NoSymbol) extends SelectOrIdent {
+   lazy val asString: String = {
+      @tailrec def helper(tree: Expression, computed: List[String]): String = {
+        tree match {
+          case Select(expr, id: Ident, _, _) => helper(expr, id.name :: computed)
+          case Ident(name, _, _) => (name :: computed).mkString(".")
+          case _ => computed.mkString(".")
+        }
+      }
+      id match {
+        case Ident(name, _, _) => s"${helper(qual, Nil)}.${name}"
+        case _ => s"${helper(qual, Nil)}.${this}"
+      }
+    }
+  }
   case class Ident(name: String, pos: Position, 
-      symbol: Symbol = NoSymbol) extends SelectOrIdent with IdentOrThis
+      symbol: Symbol = NoSymbol) extends SelectOrIdent with IdentOrThis {
+    lazy val asString: String = name
+  }
 
 
   sealed trait IdentOrThis extends Expression
@@ -161,6 +180,7 @@ trait Trees { self: dsl.Compiler =>
   case class Import(id: SelectOrIdent, pos: Position) 
       extends PositionedTree {
     def symbol: Symbol = NoSymbol
+    lazy val idString: String = id.asString
   }
 
   case class PropertyTree(property: PropertyType, value: Expression, 
