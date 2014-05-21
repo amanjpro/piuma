@@ -1134,12 +1134,8 @@ trait Parsers { self: Compiler =>
           lexify(xs, col + 2, read + "e+")(file, row)
         case ('e' | 'E') :: xs if isDecimal(read) =>
           lexify(xs, col + 1, read + "e")(file, row)
-        case '\n' :: xs if isIntegral(read) =>
-          val pos = Position(file, col - read.length, row)
-          tokens.Literal(read.toInt, pos) :: 
-              tokens.Punctuation(tokens.NL, pos.copy(col = col)) :: 
-                lexify(xs, col + 1, "")(file, row)
-        case '\n' :: xs if isDecimal(read) =>
+        case '\n' :: xs if isDecimal(read) => 
+          // Because "2\n" is a valid double for Scala
           val pos = Position(file, col - read.length, row)
           tokens.Literal(read.toDouble, pos) :: 
             tokens.Punctuation(tokens.NL, pos.copy(col = col)) :: 
