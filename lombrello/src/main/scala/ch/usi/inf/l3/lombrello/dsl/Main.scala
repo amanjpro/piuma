@@ -15,14 +15,17 @@ package ch.usi.inf.l3.lombrello.dsl
  */
 object Main {
 
+  // TODO: Implement this
+  def usage: String = "Usage message"
 
 
   def main(args: Array[String]): Unit = {
+    require(args.length > 0, usage)
     // TODO: This is a very naiive approach to parse optons,
     // a better approach is to use ``scopt'' library which is
     // hosted on: https://github.com/scopt/scopt
 
     val r = new Compiler().compile(args.toList)
-    System.exit(if(r == 0) r else 1)
+    System.exit(if(r == 0) 0 else 1)
   }
 }
