@@ -47,6 +47,7 @@ trait Trees { self: dsl.Compiler =>
     lazy val pidString: String = pid.asString   
   }
 
+  // TODO: What about multi-list params?
   case class DefDef(mod: Modifier, name: Ident, tparams: List[TParamDef],
         params: List[DefDef], tpe: TypeTree, rhs: Expression, 
         pos: Position, symbol: Symbol = NoSymbol) extends PositionedTree 
@@ -86,6 +87,9 @@ trait Trees { self: dsl.Compiler =>
       extends Expression {
     def symbol: Symbol = NoSymbol
   }
+
+
+  // TODO: What about multi-list params?
   case class Apply(method: Expression, targs: List[TypeTree], args: List[Expression], 
     pos: Position, symbol: Symbol = NoSymbol) extends Expression
 
