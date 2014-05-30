@@ -20,6 +20,7 @@ object Names {
   val WILDCARD = "_"
   val TREE_TYPE = "Tree"
   val EMPTY_PACKAGE = "<empty>"
+  val ROOT_PACKAGE = "<root>"
   val TRANSFORMER = "transform"
   val CHECKER = "atPhase"
   val RUNS_BEFORE = "runsBefore"

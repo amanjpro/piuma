@@ -20,8 +20,10 @@ import symbols._
 
 class Compiler extends Trees
   with Symbols
+  with Symtabs
   with Types
   with Parsers 
+  with Refchecks 
   with Namers 
   with Typers
   with Reporters 
@@ -32,13 +34,18 @@ class Compiler extends Trees
   val SUCCESS = 0
   val FAIL = 1
 
+  // Make sure to assign scala.lang and other auto-imported packages
+  // to here.
+  val scalaDefaultImports = List("scala._", "scala.Predef._", "java.lang._")
 
   val tokens = new Tokens {}
   val reporter = new Report
+  val symtab = new Symtab
 
   lazy val lexer = new Lexer
   lazy val normalizer = new Normalizer
   lazy val parser = new Parser
+  lazy val refcheck = new Refcheck
   lazy val namer = new Namer
   lazy val typer = new Typer
   lazy val codegen = new CodeGenerator
@@ -53,6 +60,7 @@ class Compiler extends Trees
   lazy val phases: List[Phase] = orderPhases(List(
     normalizer,
     parser,
+    refcheck,
     namer,
     typer,
     codegen,

@@ -18,14 +18,13 @@ trait Symbols { self: dsl.Compiler =>
     def declarations: List[Symbol]
     def has(sym: Symbol): Boolean
     def directlyHas(sym: Symbol): Boolean
-    def add(sym: Symbol): Boolean
+    def add(sym: Symbol): Boolean 
     def remove(sym: Symbol): Boolean
+    def owner: Symbol
   }
 
 
-  case class TypeSymbol(tpe: self.NeveType) extends Symbol {
-    // TODO: Fix this
-    private var owner: Symbol = NoSymbol
+  case class TypeSymbol(tpe: self.NeveType, owner: Symbol) extends Symbol {
     private var decls: List[Symbol] = Nil
     def declarations: List[Symbol] = decls
     def has(sym: Symbol): Boolean = decls.contains(sym) || owner.has(sym)
@@ -54,9 +53,21 @@ trait Symbols { self: dsl.Compiler =>
     def directlyHas(sym: Symbol): Boolean = ???
     def add(sym: Symbol): Boolean = ???
     def remove(sym: Symbol): Boolean = ???
+    def owner: Symbol = NoSymbol
   }
 
   case class TermSymbol(tpe: self.TermType) extends Symbol {
+    def declarations: List[Symbol] = ???
+    def has(sym: Symbol): Boolean  = ???
+    def directlyHas(sym: Symbol): Boolean = ???
+    def add(sym: Symbol): Boolean = ???
+    def remove(sym: Symbol): Boolean = ???
+    def owner: Symbol = NoSymbol
+  }
+
+
+  case class PackageSymbol(name: String, owner: Symbol) extends Symbol {
+    val tpe: self.Type = NoType
     def declarations: List[Symbol] = ???
     def has(sym: Symbol): Boolean  = ???
     def directlyHas(sym: Symbol): Boolean = ???
@@ -71,6 +82,7 @@ trait Symbols { self: dsl.Compiler =>
     def directlyHas(sym: Symbol): Boolean = ???
     def add(sym: Symbol): Boolean = ???
     def remove(sym: Symbol): Boolean = ???
+    def owner: Symbol = NoSymbol
   }
 
 }

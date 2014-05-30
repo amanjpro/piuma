@@ -7,6 +7,7 @@ package ch.usi.inf.l3.lombrello.dsl.typechecker
 
 import ch.usi.inf.l3.lombrello
 import lombrello.dsl._
+import lombrello.dsl.source._
 import scala.annotation.tailrec
 
 trait Namers {self: Compiler =>
@@ -15,17 +16,16 @@ trait Namers {self: Compiler =>
     type InputType = self.Tree
     type OutputType = self.Tree
     val name: String = "namer"
-    val runsAfter: Option[String] = Some("parser")
+    val runsAfter: Option[String] = Some("refcheck")
 
     def run(tree: InputType): OutputType = {
       tree match {
         case Program(packages) =>
-          combinePackages(packages)
-          tree
-          // Program(nameTypes(trees))
+          val combinedPackages = combinePackages(packages)
+          val organizedPackages = organizePackages(combinedPackages)
+          // val namedPackages = packagesNamer(combinedPackages)
+          Program(packages)
         case _ => 
-          println("HELLO")
-          println(tree)
           tree
       }
     }
@@ -67,8 +67,123 @@ trait Namers {self: Compiler =>
           combinePackages(rest, r :: computed)
       }
     }
+
+
+    // def findOwnerPackages(pkgs: Map[String, PackageDef], 
+    //       packages: List[PackageDef],
+    //       mainTree: PackageTree): 
+    //             (Map[String, PackageDef], List[PackageDef]) = {
+
+    //   packages match {
+    //     case x :: xs =>
+    //       val innerPackageIds = x.pidString.split('.')
+    //       pkgs
+    //     case Nil =>
+    //   }
+    // }
+
+    private def organizePackages(packages: List[PackageDef]): PackageDef = {
+      val pTree = new PackageTree(Names.ROOT_PACKAGE)
+
+      packages.foreach((x) => pTree.add(x.pidString, x))
+
+      pTree.traverse
+    }
+    private def topLevelNamer(tree: Tree, owner: Symbol): Tree = {
+      tree match {
+        case pkg @ PackageDef(pid, trees, pos, _) =>
+          val sym = PackageSymbol(pkg.pidString, owner)
+          owner.add(sym)
+          val trees2 = trees.map((x) => topLevelNamer(x, sym))
+          PackageDef(pid, trees2, pos, sym) 
+        case phase @ PhaseDef(name, _, _, _, _, _, _) =>
+          // val sym = TypeSymbol(name, )
+          phase
+        case _ => tree
+      }
+    }
+
+
+    private def typeNamer(owner: Symbol, tree: Tree): Tree = {
+      tree
+      // tree match {
+        // case 
+      // }
+    }
   }
+
+
+  private class PackageTree private (val value: String, 
+            private val pkg: PackageDef) { 
+    
+
+
+    def this(v: String) = {
+      this(v, PackageDef(Ident(Names.ROOT_PACKAGE, Position()), Nil, Position()))
+    }
+
+    private var children: List[PackageTree] = Nil
+
+    def traverse: PackageDef = {
+      @tailrec def helper(kids: List[PackageTree],
+            computed: PackageDef): PackageDef = {
+        kids match {
+          case Nil => computed
+          case x :: xs => 
+            val l = x.traverse
+            val temp = computed.copy(trees = l :: computed.trees)
+
+            helper(xs, temp)
+        }
+      }
+
+      helper(children, pkg)
+    }
+
+
+    def print(): Unit = {
+      print(children)
+    }
+
+    def print(trees: List[PackageTree]): Unit = {
+      trees match {
+        case x :: xs =>
+          println(x.pkg.pidString)
+          x.print
+          print(xs)
+        case Nil => ()
+      }
+    }
+
+    def add(elem: String, pkg: PackageDef): Unit = {
+      add(elem.split('.').toList, pkg, "")
+    }
+
+    private def add(elem: List[String], pkg: PackageDef,
+            path: String): Unit = {
+      elem match {
+        case x :: xs if !children.exists(_.value == x) => 
+          val pth = if(path == "") x else s"${path}.${x}"
+          val temp = xs match {
+            case Nil => new PackageTree(x, pkg)
+            case _ => 
+              val pid = Ident(pth, Position())
+              val p = PackageDef(pid, Nil, Position())
+              new PackageTree(x, p)
+          }
+          temp.add(xs, pkg, pth)
+          children = temp :: children
+        case x :: xs =>
+          val pth = if(path == "") x else s"${path}.${x}"
+          children.filter(_.value == x) match {
+            case c :: Nil => c.add(xs, pkg, pth)
+            case _ => ()
+          }
+        case _ => ()
+      }
+    }
+  }
+
+
+  
 }
-
-
-
