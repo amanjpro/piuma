@@ -6,17 +6,23 @@ import sbt._
 import Keys._
 
 object LombrelloBuildSettings {
-  val sversion = "2.10.2"
+  val paradiseVersion = "2.0.0"
+  val sversion = "2.11.1"
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := "ch.usi.inf.l3",
     version := "0.1-SNAPSHOT",
-    scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"), // s"-doc-external-doc:${scalaInstance.value.libraryJar}#http://www.scala-lang.org/api/${scalaVersion.value}/",  "-sourcepath"),
+    scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"), 
     scalaVersion := sversion,
+    crossScalaVersions := Seq("2.10.2", "2.10.3", "2.10.4", "2.11.0", "2.11.1"),
     resolvers += Resolver.sonatypeRepo("snapshots"),
-    licenses := ("BSD 3-Clause", new java.net.URL("http://opensource.org/licenses/BSD-3-Clause")) :: Nil,
+    resolvers += Resolver.sonatypeRepo("releases"),
     libraryDependencies ++= Seq("org.scala-lang" % "scala-reflect" % sversion,
         "org.scala-lang" % "scala-compiler" % sversion),
-    addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise" % "2.0.0-SNAPSHOT" cross CrossVersion.full)
+    libraryDependencies ++= (
+        if(sversion.startsWith("2.10"))
+          List("org.scalamacros" %% "quasiquotes" % paradiseVersion)
+        else Nil),
+    addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
         )
 }
 

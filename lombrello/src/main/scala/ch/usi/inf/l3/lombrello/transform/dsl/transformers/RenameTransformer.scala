@@ -254,18 +254,18 @@ trait RenameTransformerCake {
      */
     final def rename(tree: ValDef, newName: TermName): Tree = {
       val vsym = tree.symbol
-      val vname = nme.getterToLocal(newName)
-      val setterName = nme.getterToSetter(newName)
+      val vname = newName.getterName //nme.getterToLocal(newName)
+      val setterName = newName.setterName //nme.getterToSetter(newName)
       renameSanityCheck(tree, newName)
 
       // You cannot rename a variable and its accessors unless the new name is
       // unique within its bounds
 
       if (vsym.hasGetter) {
-        val gtr = vsym.getter(vsym.owner)
+        val gtr = vsym.getterIn(vsym.owner)
         gtr.name = newName
         if (vsym.isVar) {
-          val str = vsym.setter(vsym.owner)
+          val str = vsym.setterIn(vsym.owner)
           str.name = setterName
         }
       }
@@ -310,11 +310,12 @@ trait RenameTransformerCake {
           val vsym = tree.symbol
 
           val valid = if (vsym.hasGetter) {
-            val gtr = vsym.getter(vsym.owner)
+            val gtr = vsym.getterIn(vsym.owner)
             val getterExists = isAlreadyDefined(vsym, newSymbol(gtr, newName))
             val setterExists = if (vsym.isVar) {
-              val strName = nme.getterToSetter(newName)
-              val str = vsym.setter(vsym.owner)
+              val strName = newName.setterName 
+                   //nme.getterToSetter(newName.toTermName)
+              val str = vsym.setterIn(vsym.owner)
               isAlreadyDefined(vsym, newSymbol(str, strName))
             } else {
               true
@@ -325,7 +326,8 @@ trait RenameTransformerCake {
             true
           }
 
-          val vname = nme.getterToLocal(newName)
+          val vname = newName.getterName 
+          //nme.getterToLocal(newName.toTermName)
           val noDuplicate = !isAlreadyDefined(vsym, newSymbol(vsym, vname))
           valid && noDuplicate
         case x: ClassDef =>
