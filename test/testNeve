@@ -157,6 +157,8 @@ val actual = (s"${neve}" #| s"sed -f ${extractor}" !!<).split(
 // val expected: MapType = organizeInfo(expectedList)
 // val actual: MapType = organizeInfo(actualList, true)
 
+println(expected)
+
 val (missExpected, missFound) = findMismatches(normalize(expected), actual)
 
 

@@ -1,0 +1,6 @@
+package empty.pid.pi3
+
+
+plugin ID(ID) {
+  def b(a: Int): List[Int] = 2
+}

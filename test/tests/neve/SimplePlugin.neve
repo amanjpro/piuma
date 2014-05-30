@@ -7,7 +7,7 @@ plugin SimplePlugin(YesWay, NoWay) {
 phase NoWay("shitter") {
   runsAfter("namer")
 
-  transform = ""
+  transform = new List()
 }
 
 
@@ -22,6 +22,6 @@ phase YesWay("b\"\tphase") {
   def id(a: Any): Any = a
 
   // @fail(Unexpected token is found)
-  check = ""
+  /*check = ""*/
 
 }

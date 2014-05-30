@@ -1,0 +1,4 @@
+package empty.pid2.pid3
+
+plugin ID(ID) {
+}
