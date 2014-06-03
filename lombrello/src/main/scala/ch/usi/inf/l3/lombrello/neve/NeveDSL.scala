@@ -51,19 +51,71 @@ object NeveDSL {
           // Cannot extend anything except AnyRef, and you should
           // remove it
           checkParents(c)(clazz.impl.parents)
-          val nbody = clazz.impl.body.foldLeft(List[Tree]())((z, y) => {
+
+          val nameTree: Tree = c.prefix.tree match {
+            case Apply(_, x :: Nil) =>
+                x match {
+                  case str @ Literal(Constant(_)) =>
+                    q"val phaseName: java.lang.String = ${str}"
+                  case _ =>
+                    fail(c, "@phase should provide a name of type String")
+                    EmptyTree
+                }
+            case _ =>
+              fail(c, "@phase should provide a single name")
+              EmptyTree
+          }
+
+          val tbody1 = nameTree :: clazz.impl.body
+
+          val runsRightAfter = tbody1.foldLeft(None: Option[Tree])((z, y) => {
             y match {
-              // This case is to bypass the limitations of DefMacro
-              case Apply(Ident(TermName("name")), 
-                List(str @ (Literal(Constant(x: String))))) =>
-                q"val phaseName: java.lang.String = ${str}" :: z
+              case Apply(Ident(TermName("rightAfter")), List(x)) =>
+                Some(x)
+              case _ => z
+            }
+          })
+
+
+
+
+
+          // If rightAfter is declared, after won't be necessary
+          val hasRunsAfter = tbody1.foldLeft(false)((z, y) => {
+            y match {
+              case Apply(Ident(TermName("after")), List(x)) =>
+                true
+              case _ => z
+            }
+          })
+
+
+          val tbody2 = if(runsRightAfter != None && !hasRunsAfter) {
+                         q"after(List(${runsRightAfter.get}))" :: tbody1
+                       } else {
+                         tbody1
+                       }
+
+          val nbody = tbody2.foldLeft(List[Tree]())((z, y) => {
+            y match {
+              case Apply(Ident(TermName("rightAfter")), List(x)) =>
+                q"override val runsRightAfter: Option[String] = Some(${x})" :: z
+              case Apply(Ident(TermName("after")), List(x)) =>
+                q"val runsAfter: List[String] = ${x}" :: z
+              case Apply(Ident(TermName("before")), List(x)) =>
+                q"override val runsBefore: List[String] = ${x}" :: z
               case DefDef(_, n, _, _, _, _) if(n == termNames.CONSTRUCTOR) =>
                 z
               case _ =>
                 y :: z
             }
           })
-          // ClassDef(clazz.mods, clazz.name, clazz.tparams, nimpl)
+
+
+          
+
+
+         // ClassDef(clazz.mods, clazz.name, clazz.tparams, nimpl)
 
           q"""
           class ${clazz.name}
