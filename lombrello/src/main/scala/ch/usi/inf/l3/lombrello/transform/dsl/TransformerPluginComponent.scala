@@ -35,9 +35,8 @@ abstract class TransformerPluginComponent(val plugin: TransformerPlugin)
 
   import global._
 
-  def transform(cmpl: TransformerComponent, tree: Tree): Either[Tree, Tree]
 
-  def newTransformer(unit: CompilationUnit): Transformer = new TransformerComponent(unit)
+  def newTransformer(unit: CompilationUnit): Transformer 
   
   /**
    * The plugin framework should have a refactoring mode:
@@ -47,24 +46,17 @@ abstract class TransformerPluginComponent(val plugin: TransformerPlugin)
    * 2- If you add/remove a param in a method or constructor, the framework
    *    should automatically pass defaults/drop the arg for that param.
    */
-  class TransformerComponent(val unit: CompilationUnit)
+  abstract class TransformerComponent(val unit: CompilationUnit)
     extends TypingTransformer(unit)
     with RenameTransformer 
     with TreeGenTransformer
     with TreeDuplicator {
 
     val global: plugin.global.type = plugin.global
+
     
     protected def typed(tree: Tree): Tree = localTyper.typed(tree)
 
-    final override def transform(tree: Tree): Tree = {
-      val cntnu = TransformerPluginComponent.this.transform(this, tree)
-      cntnu match {
-        case Left(nTree) =>
-        	super.transform(nTree)
-        case Right(nTree) => nTree
-      }
-    }
   }
 
 }

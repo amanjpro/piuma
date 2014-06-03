@@ -35,11 +35,17 @@ object NeveDSL {
 
   // phase macro
   class phase extends StaticAnnotation {
-    def macroTransform(annottees: Any*): Any= macro phaseMacro.phaseImpl
+    def macroTransform(annottees: Any*): Any= macro Macros.phaseImpl
+  }
+
+  // plugin macro
+  class plugin(n: Any*) extends StaticAnnotation {
+    def macroTransform(annottees: Any*): Any = macro Macros.pluginImpl
   }
 
 
-  object phaseMacro {
+  
+  object Macros {
     
     def phaseImpl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
       import c.universe._
@@ -98,6 +104,15 @@ object NeveDSL {
 
           val nbody = tbody2.foldLeft(List[Tree]())((z, y) => {
             y match {
+              case DefDef(_, TermName("transform"), Nil,
+                  List(List(x)), tpt, rhs) =>
+                q"""
+                final override def newTransformer(unit: CompilationUnit):
+                    Transformer = new TransformerComponent(unit) {
+                  final override def transform(${x.name}: ${x.tpt}): 
+                        ${tpt} = ${rhs}
+                }
+                """ :: z
               case Apply(Ident(TermName("rightAfter")), List(x)) =>
                 q"override val runsRightAfter: Option[String] = Some(${x})" :: z
               case Apply(Ident(TermName("after")), List(x)) =>
@@ -111,12 +126,6 @@ object NeveDSL {
             }
           })
 
-
-          
-
-
-         // ClassDef(clazz.mods, clazz.name, clazz.tparams, nimpl)
-
           q"""
           class ${clazz.name}
           (val plgn: ch.usi.inf.l3.lombrello.transform.dsl.TransformerPlugin)
@@ -124,6 +133,7 @@ object NeveDSL {
           ch.usi.inf.l3.lombrello.transform.dsl.TransformerPluginComponent(
               plgn) {
             import global._
+            import plgn._
             ..${nbody}
           }
           """
@@ -135,15 +145,8 @@ object NeveDSL {
 
       c.Expr[Any](expandee)
     }
-  }
 
 
-  // plugin macro
-  class plugin(n: Any*) extends StaticAnnotation {
-    def macroTransform(annottees: Any*): Any = macro pluginMacro.pluginImpl
-  }
-
-  object pluginMacro {
     def pluginImpl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
       import c.universe._
 
@@ -199,8 +202,13 @@ object NeveDSL {
       }
 
 
-    c.Expr[Any](expandee)
+      c.Expr[Any](expandee)
     }
+
+    
   }
+
+
+  
 }
 
