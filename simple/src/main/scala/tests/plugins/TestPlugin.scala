@@ -36,8 +36,7 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
   before(List(plgn.utilities.PHASE_ICODE))
 
 
-  def transform(cmp: TransformerComponent, tree: Tree): Either[Tree, Tree] = {
-    import cmp._
+  def transform(tree: Tree): Tree = {
     tree match {
       //      case a @ ValDef(_, _, _, _) => null
       //      case a @ q"val" if true => null
@@ -49,33 +48,33 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
         val ntmplt = treeCopy.Template(x.impl, x.impl.parents, x.impl.self, vtree :: strgtr._1 :: strgtr._2 :: x.impl.body)
         val nclazz = treeCopy.ClassDef(x, x.mods, x.name, x.tparams, ntmplt)
 
-        Right(typer.typed(nclazz))
+        super.transform(typer.typed(nclazz))
       case x: ValDef if (x.name == newTermName("b")) =>
         val newName = newTermName("hello")
         if (canRename(tree, newName)) {
           println("hello1")
-          Right(rename(tree.asInstanceOf[ValDef], newName))
+          super.transform(rename(tree.asInstanceOf[ValDef], newName))
         } else {
-          Right(tree)
+          super.transform(tree)
         }
       case x: ValDef if (x.name == newTermName("c")) =>
         val newName = newTermName("local")
         if (canRename(tree, newName)) {
           println("hello1")
-          Right(rename(tree.asInstanceOf[ValDef], newName))
+          super.transform(rename(tree.asInstanceOf[ValDef], newName))
         } else {
-          Right(tree)
+          super.transform(tree)
         }
 
       case x: ValDef if (x.name == newTermName("d")) =>
         val newName = newTermName("param")
         if (canRename(tree, newName)) {
           println("hello1")
-          Right(rename(tree.asInstanceOf[ValDef], newName))
+          super.transform(rename(tree.asInstanceOf[ValDef], newName))
         } else {
-          Right(tree)
+          super.transform(tree)
         }
-      case x => Right(x)
+      case x => super.transform(x)
     }
   }
 }
@@ -90,13 +89,12 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
   // after(List(plgn.utilities.PHASE_INLINER))
 
 
-  def transform(cmp: TransformerComponent, tree: Tree) = {
-    import cmp._
+  def transform(tree: Tree): Tree = {
     tree match {
       case x: ValDef =>
         println("HERE HERE " + x.symbol.attachments)
-        Right(x)
-      case x => Right(x)
+        super.transform(x)
+      case x => super.transform(x)
     }
   }
 }
