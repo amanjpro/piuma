@@ -22,11 +22,18 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
 
 // class TestPluginComponent(plgn: TestPlugin) extends TransformerPluginComponent(plgn) {
 
-@phase class TestPluginComponent {
-  override val runsRightAfter = Some(plgn.utilities.PHASE_SUPERACCESSORS)
-  val runsAfter = List[String](plgn.utilities.PHASE_FLATTEN, plgn.utilities.PHASE_PATMAT, plgn.utilities.PHASE_TYPER)
-  override val runsBefore = List[String](plgn.utilities.PHASE_ICODE)
-  name("test")
+@phase("test") class TestPluginComponent {
+  // override val runsRightAfter = Some(plgn.utilities.PHASE_SUPERACCESSORS)
+  // val runsAfter = List[String](plgn.utilities.PHASE_FLATTEN, plgn.utilities.PHASE_PATMAT, plgn.utilities.PHASE_TYPER)
+  // override val runsBefore = List[String](plgn.utilities.PHASE_ICODE)
+
+
+  // between List(phases) and List(phases)
+  rightAfter(plgn.utilities.PHASE_SUPERACCESSORS)
+  after(List(plgn.utilities.PHASE_FLATTEN,
+              plgn.utilities.PHASE_PATMAT,
+              plgn.utilities.PHASE_TYPER))
+  before(List(plgn.utilities.PHASE_ICODE))
 
 
   def transform(cmp: TransformerComponent, tree: Tree): Either[Tree, Tree] = {
@@ -75,10 +82,12 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
 
 // class TestPluginComponent2(plgn: TestPlugin) extends TransformerPluginComponent(plgn) {
 
-@phase class TestPluginComponent2 {
-  override val runsRightAfter = Some(plgn.utilities.PHASE_INLINER)
-  override val runsAfter = List[String](plgn.utilities.PHASE_INLINER)
-  name("test2")
+@phase("test2") class TestPluginComponent2 {
+  // override val runsRightAfter = Some(plgn.utilities.PHASE_INLINER)
+  // override val runsAfter = List[String](plgn.utilities.PHASE_INLINER)
+
+  rightAfter(plgn.utilities.PHASE_INLINER)
+  // after(List(plgn.utilities.PHASE_INLINER))
 
 
   def transform(cmp: TransformerComponent, tree: Tree) = {
