@@ -5,26 +5,29 @@
 
 package tests.plugins
 
-import ch.usi.inf.l3.lombrello.transform.dsl._
+import ch.usi.inf.l3.lombrello.neve.NeveDSL._
 
-class TestPlugin(override val global: TGlobal) extends TransformerPlugin(global) {
+// @plugin class TestPlugin(override val global: TGlobal) extends TransformerPlugin(global) {
 
+@plugin(TestPluginComponent, TestPluginComponent2) class TestPlugin {
   val name: String = "test"
   val beforeFinder = utilities.PHASE_PATMAT
-  override val description: String = """A compiler plugin!""";
 
-  val pluginComponents: List[TransformerPluginComponent] = List(new TestPluginComponent(this),
-    new TestPluginComponent2(this))
+  describe("A compiler plugin!")
+  // override val description: String = """A compiler plugin!""";
+
+  // val pluginComponents: List[TransformerPluginComponent] = List(new TestPluginComponent(this),
+    // new TestPluginComponent2(this))
 }
 
-class TestPluginComponent(plgn: TestPlugin) extends TransformerPluginComponent(plgn) {
+// class TestPluginComponent(plgn: TestPlugin) extends TransformerPluginComponent(plgn) {
 
+@phase class TestPluginComponent {
   override val runsRightAfter = Some(plgn.utilities.PHASE_SUPERACCESSORS)
   val runsAfter = List[String](plgn.utilities.PHASE_FLATTEN, plgn.utilities.PHASE_PATMAT, plgn.utilities.PHASE_TYPER)
   override val runsBefore = List[String](plgn.utilities.PHASE_ICODE)
-  val phaseName = "test"
+  name("test")
 
-  import global._
 
   def transform(cmp: TransformerComponent, tree: Tree): Either[Tree, Tree] = {
     import cmp._
@@ -34,7 +37,7 @@ class TestPluginComponent(plgn: TestPlugin) extends TransformerPluginComponent(p
       case x: ClassDef =>
 
         val newName = newTypeName("YESS")
-        val vtree = mkVar(x.symbol, "xmass ", definitions.IntTpe)
+        val vtree = mkVar(x.symbol, TermName("xmass "), definitions.IntTpe)
         val strgtr = mkSetterAndGetter(vtree).get
         val ntmplt = treeCopy.Template(x.impl, x.impl.parents, x.impl.self, vtree :: strgtr._1 :: strgtr._2 :: x.impl.body)
         val nclazz = treeCopy.ClassDef(x, x.mods, x.name, x.tparams, ntmplt)
@@ -70,13 +73,13 @@ class TestPluginComponent(plgn: TestPlugin) extends TransformerPluginComponent(p
   }
 }
 
-class TestPluginComponent2(plgn: TestPlugin) extends TransformerPluginComponent(plgn) {
+// class TestPluginComponent2(plgn: TestPlugin) extends TransformerPluginComponent(plgn) {
 
+@phase class TestPluginComponent2 {
   override val runsRightAfter = Some(plgn.utilities.PHASE_INLINER)
   override val runsAfter = List[String](plgn.utilities.PHASE_INLINER)
-  val phaseName = "test2"
+  name("test2")
 
-  import global._
 
   def transform(cmp: TransformerComponent, tree: Tree) = {
     import cmp._
@@ -93,31 +96,43 @@ class TestPluginComponent2(plgn: TestPlugin) extends TransformerPluginComponent(
 
 
 /**
-It took me quite some time to figure out how to get it working. There are some hints in this thread and also some on the official page about plugins. I am writing this message in order to hopefully be of some help to anyone wrestling with this in the future. 
+It took me quite some time to figure out how to get it working. There are some 
+hints in this thread and also some on the official page about plugins. I am 
+writing this message in order to hopefully be of some help to anyone wrestling
+with this in the future. 
 
-I am running the Scala IDE plugin 2.0 in Eclipse 3.7.1. These were the steps I performed to be able to run a plugin using a 'launch configuration'. 
+I am running the Scala IDE plugin 2.0 in Eclipse 3.7.1. These were the steps 
+I performed to be able to run a plugin using a 'launch configuration'. 
 
 //Setting up the project 
 
 1. Create a new Scala project (for example 'testPlugin'). 
-2. Right click the 'testPlugin' project, go to 'Java Build Path', 'Libraries' and select 'Add Library'. Choose 'Scala Compiler'. 
+2. Right click the 'testPlugin' project, go to 'Java Build Path', 'Libraries'
+   and select 'Add Library'. Choose 'Scala Compiler'. 
 3. Create a directory called 'libs' in your project. 
-4. In the 'Package Explorer' open the 'Scala Library' element, right click the 'scala-library.jar', select 'Properties' and copy the directory you find there. 
-5. Navigate to the directory you copied and copy the 'scala-library.jar' and 'scala-library-src.jar' to the 'libs' directory. 
+4. In the 'Package Explorer' open the 'Scala Library' element, right click the 
+   'scala-library.jar', select 'Properties' and copy the directory you find 
+   there. 
+5. Navigate to the directory you copied and copy the 'scala-library.jar' and 
+   'scala-library-src.jar' to the 'libs' directory. 
 6. Repeat step 4 and 5 for the 'scala-compiler' related jars. 
-7. Open the project properties and 'Libraries' section again. Click 'Add JARs...' to add the 4 jars from the 'libs' directory. 
-8. Remove the 'Scala Compiler' and 'Scala Libary' entry. Apparently launch configurations do not work very good with these types of libraries. 
+7. Open the project properties and 'Libraries' section again. Click 'Add
+   JARs...' to add the 4 jars from the 'libs' directory. 
+8. Remove the 'Scala Compiler' and 'Scala Libary' entry. Apparently launch
+   configurations do not work very good with these types of libraries. 
 
 //Creating the plugin jar 
 
-9. Create a file named 'scalac-plugin.xml' and put the following information inside (replace the classname with the actual classname): 
+9. Create a file named 'scalac-plugin.xml' and put the following information 
+   inside (replace the classname with the actual classname): 
 
 <plugin>
   <name>testplugin</name>
   <classname>ee.test.TestPlugin</classname>
-</plugin 
+</plugin>
 
-10. Rightclick the project and select 'Export...' -> 'JAR file'. Make sure the plugin xml is selected and set 'testPlugin/plugin.jar' as destination. 
+10. Rightclick the project and select 'Export...' -> 'JAR file'. Make sure the
+    plugin xml is selected and set 'testPlugin/plugin.jar' as destination. 
 
 //Create the plugin 
 
@@ -176,3 +191,5 @@ class TestPlugin(val global:Global) extends Plugin {
         } 
 } 
 **/
+
+
