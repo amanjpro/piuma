@@ -3,9 +3,9 @@
  * All rights reserved.
  * */
 
-package ch.usi.inf.l3.lombrello.transform.dsl.transformers
+package ch.usi.inf.l3.lombrello.plugin.transformers
 
-import ch.usi.inf.l3.lombrello.transform.dsl.TransformerPluginComponent
+import ch.usi.inf.l3.lombrello.plugin.TransformerPluginComponent
 import scala.reflect.internal.Flags
 import ch.usi.inf.l3.lombrello.util.SymbolsUtil
 

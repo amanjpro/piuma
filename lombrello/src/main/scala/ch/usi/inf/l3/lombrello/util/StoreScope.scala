@@ -4,9 +4,9 @@
  * */
 package ch.usi.inf.l3.lombrello.util
 
-import ch.usi.inf.l3.lombrello.transform.dsl.TransformerPlugin
+import ch.usi.inf.l3.lombrello.plugin.LombrelloPlugin
 
-trait StoreScopeCake extends ScopeCake { self: TransformerPlugin =>
+trait StoreScopeCake extends ScopeCake { self: LombrelloPlugin =>
 
   class StoreScope[T] private (private val locations: Map[SSymbol, Int] = Map.empty[SSymbol, Int],
     private val values: Map[Int, T] = Map.empty[Int, T],

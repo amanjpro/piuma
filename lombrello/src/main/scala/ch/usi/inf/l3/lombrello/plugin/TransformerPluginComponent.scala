@@ -2,7 +2,7 @@
  * Copyright (c) <2013>, Amanj Sherwany <http://www.amanj.me>
  * All rights reserved.
  * */
-package ch.usi.inf.l3.lombrello.transform.dsl
+package ch.usi.inf.l3.lombrello.plugin
 
 import transformers._
 import scala.tools.nsc.transform.TypingTransformers
@@ -13,7 +13,7 @@ import scala.language.implicitConversions
 import scala.reflect.runtime.universe._
 import ch.usi.inf.l3.lombrello.util.SymbolsUtil
 
-abstract class TransformerPluginComponent(val plugin: TransformerPlugin)
+abstract class TransformerPluginComponent(val plugin: LombrelloPlugin)
   extends PluginComponent
   with Transform
   with TypingTransformers
@@ -24,13 +24,7 @@ abstract class TransformerPluginComponent(val plugin: TransformerPlugin)
 
   import plugin._
 
-  private var go_deeper = true
   
-  
-  def stop: Unit = go_deeper = false
-
-  
-
   val global: plugin.global.type = plugin.global
 
   import global._

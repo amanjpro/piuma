@@ -1,9 +1,9 @@
-package ch.usi.inf.l3.lombrello.transform.dsl
+package ch.usi.inf.l3.lombrello.plugin
 
 import scala.tools.nsc.plugins.PluginComponent
 import scala.tools.nsc.Phase
 
-abstract class ClassFinderComponent(val plugin: TransformerPlugin) 
+abstract class ClassFinderComponent(val plugin: LombrelloPlugin) 
 	extends PluginComponent {
   import plugin._
   

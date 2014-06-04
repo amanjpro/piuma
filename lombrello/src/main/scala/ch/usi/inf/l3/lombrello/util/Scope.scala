@@ -4,9 +4,9 @@
  * */
 package ch.usi.inf.l3.lombrello.util
 
-import ch.usi.inf.l3.lombrello.transform.dsl.TransformerPlugin
+import ch.usi.inf.l3.lombrello.plugin.LombrelloPlugin
 
-trait ScopeCake { self: TransformerPlugin =>
+trait ScopeCake { self: LombrelloPlugin =>
 
   type SSymbol = self.global.Symbol
 

@@ -1,8 +1,8 @@
 package ch.usi.inf.l3.lombrello.util
 
-import ch.usi.inf.l3.lombrello.transform.dsl.TransformerPlugin
+import ch.usi.inf.l3.lombrello.plugin.LombrelloPlugin
 
-trait SymbolsUtil { self: TransformerPlugin =>
+trait SymbolsUtil { self: LombrelloPlugin =>
   import self.global._
   def getAnnotation(qual: String) = rootMirror.getClassByName(newTypeName(qual))
   
