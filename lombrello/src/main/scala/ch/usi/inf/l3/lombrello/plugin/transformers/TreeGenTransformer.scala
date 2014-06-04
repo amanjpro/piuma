@@ -20,7 +20,7 @@ trait TreeGenTransformerCake {
 // ------ Generating Variables -------------------------------------------------------------------
     // Issue#4 is an open bug about default params, make sure to fix it
     private def mkValOrVar(isVal: Boolean, owner: Symbol, name: TermName, tpe: Type, rhs: Tree, pos: Position, newFlags: Long): ValDef = {
-      val newName = if(name.endsWith(' ')) name else nme.getterToLocal(name)
+      val newName = if(name.endsWith(' ')) name else name.localName
       val sym = if(isVal) {
         owner.newValue(newName, pos, newFlags)
       } else {
@@ -59,8 +59,8 @@ trait TreeGenTransformerCake {
       val owner = vsym.owner
       if(vsym.isVar) {
         val flags = accessorFlags(vsym)
-        val strSym = owner.newMethodSymbol(nme.getterToSetter(gtr.name), owner.pos.focus, flags)
-        val param = strSym.newSyntheticValueParam(vsym.info, "x$1")
+        val strSym = owner.newMethodSymbol(gtr.name.setterName, owner.pos.focus, flags)
+        val param = strSym.newSyntheticValueParam(vsym.info, TermName("x$1"))
         val tpe = MethodType(List(param), definitions.UnitTpe)
         strSym.setInfoAndEnter(tpe)
         val rhs = Assign(Select(This(owner), vsym.name), Ident(param))
