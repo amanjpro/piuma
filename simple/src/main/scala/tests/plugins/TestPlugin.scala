@@ -9,7 +9,9 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
 
 // @plugin class TestPlugin(override val global: TGlobal) extends TransformerPlugin(global) {
 
-@plugin(TestPluginComponent, TestPluginComponent2) class TestPlugin {
+@plugin(TestPluginComponent, 
+        TestPluginComponent3,
+        TestPluginComponent2) class TestPlugin {
   val name: String = "test"
   val beforeFinder = utilities.PHASE_PATMAT
 
@@ -29,11 +31,11 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
 
 
   // between List(phases) and List(phases)
-  rightAfter(plgn.utilities.PHASE_SUPERACCESSORS)
-  after(List(plgn.utilities.PHASE_FLATTEN,
-              plgn.utilities.PHASE_PATMAT,
-              plgn.utilities.PHASE_TYPER))
-  before(List(plgn.utilities.PHASE_ICODE))
+  rightAfter(PHASE_SUPERACCESSORS)
+  after(List(PHASE_FLATTEN,
+              PHASE_PATMAT,
+              PHASE_TYPER))
+  before(List(PHASE_ICODE))
 
 
   def transform(tree: Tree): Tree = {
@@ -85,7 +87,7 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
   // override val runsRightAfter = Some(plgn.utilities.PHASE_INLINER)
   // override val runsAfter = List[String](plgn.utilities.PHASE_INLINER)
 
-  rightAfter(plgn.utilities.PHASE_INLINER)
+  rightAfter(PHASE_INLINER)
   // after(List(plgn.utilities.PHASE_INLINER))
 
 
@@ -100,7 +102,17 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
 }
 
 
+@checker("test3") class TestPluginComponent3 {
+  rightAfter(PHASE_INLINER)
 
+  def check(unit: CompilationUnit): Unit = {
+    for ( tree @ Apply(Select(rcvr, nme.DIV), 
+            List(Literal(Constant(0)))) <- unit.body;
+      if rcvr.tpe <:< definitions.IntClass.tpe){
+          unit.error(tree.pos, "definitely division by zero")
+      }
+  }
+}
 
 /**
 It took me quite some time to figure out how to get it working. There are some 
