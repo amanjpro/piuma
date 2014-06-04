@@ -40,7 +40,7 @@ abstract class LombrelloPlugin(val global: Global)
 
   val description: String = """A compiler plugin!"""
 
-  val pluginComponents: List[TransformerPluginComponent]
+  val pluginComponents: List[PluginComponent]
   lazy final val components: List[PluginComponent] = finder :: pluginComponents
 
   private var treeBank = Map.empty[Symbol, Tree]
