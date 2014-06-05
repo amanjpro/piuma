@@ -1,5 +1,9 @@
-package ch.usi.inf.l3.lombrello.neve
+/*
+ * Copyright (c) <2014>, Amanj Sherwany <http://www.amanj.me>
+ * All rights reserved.
+ * */
 
+package ch.usi.inf.l3.lombrello.neve
 
 import scala.reflect.macros.whitebox.Context
 import scala.language.experimental.macros
@@ -9,12 +13,6 @@ import scala.reflect.runtime.universe._
 
 
 object NeveDSL {
-
-
-  
-
-
-
 
   // phase macro
   class phase extends StaticAnnotation {
