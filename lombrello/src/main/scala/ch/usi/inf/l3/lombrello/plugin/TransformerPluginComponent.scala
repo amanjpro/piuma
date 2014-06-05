@@ -13,7 +13,7 @@ import scala.language.implicitConversions
 import scala.reflect.runtime.universe._
 import ch.usi.inf.l3.lombrello.util.SymbolsUtil
 
-abstract class TransformerPluginComponent(val plugin: LombrelloPlugin)
+abstract class TransformerPluginComponent(val plgn: LombrelloPlugin)
   extends PluginComponent
   with Transform
   with TypingTransformers
@@ -22,12 +22,12 @@ abstract class TransformerPluginComponent(val plugin: LombrelloPlugin)
   with TreeGenTransformerCake 
   with TreeDuplicatorCake {
 
-  import plugin._
+  import plgn._
 
   
-  val global: plugin.global.type = plugin.global
+  val global: plgn.global.type = plgn.global
 
-  import global._
+  import plgn.global._
 
 
   def newTransformer(unit: CompilationUnit): Transformer 
@@ -46,7 +46,7 @@ abstract class TransformerPluginComponent(val plugin: LombrelloPlugin)
     with TreeGenTransformer
     with TreeDuplicator {
 
-    val global: plugin.global.type = plugin.global
+    val global: plgn.global.type = plgn.global
 
     
     protected def typed(tree: Tree): Tree = localTyper.typed(tree)

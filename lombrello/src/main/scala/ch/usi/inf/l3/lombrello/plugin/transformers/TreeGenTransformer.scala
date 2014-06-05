@@ -14,7 +14,7 @@ trait TreeGenTransformerCake {
   trait TreeGenTransformer {
     self: renamer.TransformerComponent =>
 
-    import renamer.global._
+    import renamer.plgn.global._
     
     
 // ------ Generating Variables -------------------------------------------------------------------

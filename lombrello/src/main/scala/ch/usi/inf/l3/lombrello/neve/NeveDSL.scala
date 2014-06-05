@@ -14,6 +14,7 @@ import scala.reflect.runtime.universe._
 
 object NeveDSL {
 
+  
   // phase macro
   class phase extends StaticAnnotation {
     def macroTransform(annottees: Any*): Any= macro Macros.phaseImpl
@@ -46,12 +47,12 @@ object NeveDSL {
                     
           q"""
           class ${clazz.name}
-          (val plgn: ch.usi.inf.l3.lombrello.plugin.LombrelloPlugin)
+          (override val plgn: ch.usi.inf.l3.lombrello.plugin.LombrelloPlugin)
           extends 
           ch.usi.inf.l3.lombrello.plugin.CheckerPluginComponent(
               plgn) {
-            import global._
             import plgn._
+            import plgn.global._
             import plgn.utilities._
             ..${nbody}
           }
@@ -79,18 +80,19 @@ object NeveDSL {
 
           val nbody = generateBody(c)(clazz.impl.body, false)
                     
-          q"""
+          val r = q"""
           class ${clazz.name}
-          (val plgn: ch.usi.inf.l3.lombrello.plugin.LombrelloPlugin)
+          (override val plgn: ch.usi.inf.l3.lombrello.plugin.LombrelloPlugin)
           extends 
           ch.usi.inf.l3.lombrello.plugin.TransformerPluginComponent(
               plgn) {
-            import global._
             import plgn._
+            import plgn.global._
             import plgn.utilities._
             ..${nbody}
           }
           """
+          r
         case x => 
           fail(c, "@phase can only be applied on classes")
           EmptyTree
@@ -223,39 +225,87 @@ object NeveDSL {
   }
 
 
-  private def bodyMacros(c: Context)(body: List[c.universe.Tree],
-        isChecker: Boolean): List[c.universe.Tree] = {
+  private def splitInnerAndOuterBody(c: Context)(body: List[c.universe.Tree],
+        isChecker: Boolean,
+        outerBody: List[c.universe.Tree],
+        innerBody: List[c.universe.Tree]): 
+        (List[c.universe.Tree], List[c.universe.Tree]) = {
+
     import c.universe._
-    body.foldLeft(List[Tree]())((z, y) => {
-      y match {
-        case DefDef(_, TermName("check"), Nil,
-          List(List(x)), tpt, rhs) if isChecker =>
-          q"""
-          final def newPhase(_prev: scala.tools.nsc.Phase): StdPhase = 
-            new CheckerComponent(_prev) {
-              final def apply(${x.name}: ${x.tpt}): ${tpt} = ${rhs}
-            }
-          """ :: z
-        case DefDef(_, TermName("transform"), Nil,
-          List(List(x)), tpt, rhs) if !isChecker =>
-          q"""
-          final override def newTransformer(unit: CompilationUnit):
-                      Transformer = new TransformerComponent(unit) {
-              final override def transform(${x.name}: ${x.tpt}): ${tpt} = ${rhs}
-            }
-          """ :: z
-        case Apply(Ident(TermName("rightAfter")), List(x)) =>
-          q"override val runsRightAfter: Option[String] = Some(${x})" :: z
-        case Apply(Ident(TermName("after")), List(x)) =>
-          q"val runsAfter: List[String] = ${x}" :: z
-        case Apply(Ident(TermName("before")), List(x)) =>
-          q"override val runsBefore: List[String] = ${x}" :: z
-        case DefDef(_, n, _, _, _, _) if(n == termNames.CONSTRUCTOR) =>
-          z
-        case _ =>
-          y :: z
-      }
-    })
+
+    body match {
+      case (x @ DefDef(_, TermName("check"), Nil,
+        List(List(_)), _, _)) :: xs if isChecker =>
+        splitInnerAndOuterBody(c)(xs, isChecker, x :: outerBody, innerBody)
+      case (x @ DefDef(_, TermName("transform"), Nil,
+        List(List(_)), _, _)) :: xs if !isChecker =>
+        splitInnerAndOuterBody(c)(xs, isChecker, x :: outerBody, innerBody)
+      case (x @ Apply(Ident(TermName("rightAfter")), List(_))) :: xs =>
+        splitInnerAndOuterBody(c)(xs, isChecker, x :: outerBody, innerBody)
+      case (x @ Apply(Ident(TermName("after")), List(_))) :: xs =>
+        splitInnerAndOuterBody(c)(xs, isChecker, x :: outerBody, innerBody)
+      case (x @ Apply(Ident(TermName("before")), List(_))) :: xs =>
+        splitInnerAndOuterBody(c)(xs, isChecker, x :: outerBody, innerBody)
+      case DefDef(_, n, _, _, _, _) :: xs if(n == termNames.CONSTRUCTOR) =>
+        splitInnerAndOuterBody(c)(xs, isChecker, outerBody, innerBody)
+      case (x @ DefDef(mods, _, _, _, _, _)) :: xs 
+                                              if !mods.hasFlag(Flag.PRIVATE) &&
+                                              !mods.hasFlag(Flag.PROTECTED) && 
+                                              !mods.hasFlag(Flag.OVERRIDE) =>
+        splitInnerAndOuterBody(c)(xs, isChecker, x :: outerBody, innerBody)
+      case (x @ ValDef(mods, _, _, _)) :: xs if !mods.hasFlag(Flag.PRIVATE) &&
+                                              !mods.hasFlag(Flag.PROTECTED) && 
+                                              !mods.hasFlag(Flag.OVERRIDE) =>
+        splitInnerAndOuterBody(c)(xs, isChecker, x :: outerBody, innerBody)
+      case x :: xs =>
+        splitInnerAndOuterBody(c)(xs, isChecker, outerBody, x :: innerBody)
+      case Nil =>
+        (outerBody.reverse, innerBody.reverse)
+    }
+  }
+
+  private def bodyMacros(c: Context)(body: List[c.universe.Tree],
+        isChecker: Boolean,
+        innerBody: List[c.universe.Tree],
+        collected: List[c.universe.Tree]): List[c.universe.Tree] = {
+    import c.universe._
+
+    body match {
+      case DefDef(_, TermName("check"), Nil,
+        List(List(x)), tpt, rhs) :: xs if isChecker =>
+        val translated = q"""
+        final def newPhase(_prev: scala.tools.nsc.Phase): StdPhase = 
+          new CheckerComponent(_prev) {
+            ..${innerBody}
+            final def apply(${x.name}: ${x.tpt}): ${tpt} = ${rhs}
+          }
+        """
+        bodyMacros(c)(xs, isChecker, Nil, translated :: collected)
+      case DefDef(_, TermName("transform"), Nil,
+        List(List(x)), tpt, rhs) :: xs if !isChecker =>
+        val translated = q"""
+        final override def newTransformer(unit: CompilationUnit):
+          Transformer = new TransformerComponent(unit) {
+            ..${innerBody}
+            final override def transform(${x.name}: ${x.tpt}): ${tpt} = ${rhs}
+          }
+        """
+        bodyMacros(c)(xs, isChecker, Nil, translated :: collected)
+      case Apply(Ident(TermName("rightAfter")), List(x)) :: xs =>
+        val translated = 
+          q"override val runsRightAfter: Option[String] = Some(${x})"
+        bodyMacros(c)(xs, isChecker, innerBody, translated :: collected)
+      case Apply(Ident(TermName("after")), List(x)) :: xs =>
+        val translated = q"val runsAfter: List[String] = ${x}"
+        bodyMacros(c)(xs, isChecker, innerBody, translated :: collected)
+      case Apply(Ident(TermName("before")), List(x)) :: xs =>
+        val translated = q"override val runsBefore: List[String] = ${x}"
+        bodyMacros(c)(xs, isChecker, innerBody, translated :: collected)
+      case Nil =>
+        collected.reverse
+      case x :: xs =>
+        bodyMacros(c)(xs, isChecker, innerBody, x :: collected)
+    }
   }
 
 
@@ -269,7 +319,10 @@ object NeveDSL {
     }
     val nameTree: Tree = getNameTree(c, kindStr)
 
-    val tbody1 = nameTree :: body
+    val (obody, ibody) = splitInnerAndOuterBody(c)(body, isChecker, Nil, Nil)
+
+
+    val tbody1 = nameTree :: obody
 
     val runsRightAfter = extractRightAfter(c)(tbody1)
 
@@ -286,7 +339,7 @@ object NeveDSL {
         tbody1
       }
 
-      bodyMacros(c)(tbody2, isChecker)
+      bodyMacros(c)(tbody2, isChecker, ibody, Nil)
   }
 }
 

@@ -13,11 +13,11 @@ trait TreeDuplicatorCake {
 
   duplicator: TransformerPluginComponent =>
 
-  import duplicator.plugin._
+  import duplicator.plgn._
   trait TreeDuplicator {
     self: duplicator.TransformerComponent =>
 
-    import duplicator.plugin.global._
+    import duplicator.plgn.global._
 
     def duplicate(x: Tree, newName: TermName): Tree = {
       duplicate(x, newName, x.symbol.owner)

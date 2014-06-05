@@ -28,7 +28,7 @@ trait RenameTransformerCake {
   trait RenameTransformer {
     self: renamer.TransformerComponent =>
 
-    import renamer.global._
+    import renamer.plgn.global._
 
     /**
      * A method to check the validity of a rename. Every rename is validate iff:

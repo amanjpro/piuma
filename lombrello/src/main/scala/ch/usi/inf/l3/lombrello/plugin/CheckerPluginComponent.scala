@@ -14,15 +14,15 @@ import scala.tools.nsc.Phase
 // import scala.reflect.runtime.universe._
 // import ch.usi.inf.l3.lombrello.util.SymbolsUtil
 
-abstract class CheckerPluginComponent(val plugin: LombrelloPlugin)
+abstract class CheckerPluginComponent(val plgn: LombrelloPlugin)
   extends PluginComponent {
 
-  import plugin._
+  import plgn._
 
   
-  val global: plugin.global.type = plugin.global
+  val global: plgn.global.type = plgn.global
 
-  import global._
+  import plgn.global._
 
 
   def newPhase(_prev: Phase): StdPhase
@@ -30,7 +30,7 @@ abstract class CheckerPluginComponent(val plugin: LombrelloPlugin)
   abstract class CheckerComponent(override val prev: Phase)
     extends StdPhase(prev) {
 
-    val global: plugin.global.type = plugin.global
+    val global: plgn.global.type = plgn.global
   }
 
 }
