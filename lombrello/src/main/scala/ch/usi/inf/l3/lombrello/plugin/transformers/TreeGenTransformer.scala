@@ -17,9 +17,10 @@ trait TreeGenTransformerCake {
     import renamer.plgn.global._
     
     
-// ------ Generating Variables -------------------------------------------------------------------
+// ------ Generating Variables -----------------------------------------------------
     // Issue#4 is an open bug about default params, make sure to fix it
-    private def mkValOrVar(isVal: Boolean, owner: Symbol, name: TermName, tpe: Type, rhs: Tree, pos: Position, newFlags: Long): ValDef = {
+    private def mkValOrVar(isVal: Boolean, owner: Symbol, name: TermName, 
+            tpe: Type, rhs: Tree, pos: Position, newFlags: Long): ValDef = {
       val newName = if(name.endsWith(' ')) name else name.localName
       val sym = if(isVal) {
         owner.newValue(newName, pos, newFlags)
@@ -31,11 +32,13 @@ trait TreeGenTransformerCake {
       vtree.asInstanceOf[ValDef]
     }
     
-    def mkVar(owner: Symbol, name: TermName, tpe: Type, rhs: Tree = EmptyTree, pos: Position = NoPosition, newFlags: Long = 0L): ValDef = {
+    def mkVar(owner: Symbol, name: TermName, tpe: Type, rhs: Tree = EmptyTree, 
+            pos: Position = NoPosition, newFlags: Long = 0L): ValDef = {
       mkValOrVar(false, owner, name, tpe, rhs, pos, newFlags)
     }
     
-    def mkVal(owner: Symbol, name: TermName, tpe: Type, rhs: Tree = EmptyTree, pos: Position = NoPosition, newFlags: Long = 0L): ValDef = {
+    def mkVal(owner: Symbol, name: TermName, tpe: Type, rhs: Tree = EmptyTree, 
+            pos: Position = NoPosition, newFlags: Long = 0L): ValDef = {
       mkValOrVar(true, owner, name, tpe, rhs, pos, newFlags)
     }
     
@@ -44,7 +47,7 @@ trait TreeGenTransformerCake {
 //      
 //      null
 //    }
-// ------ Generating Setters and Getters -------------------------------------------------------------------
+// ------ Generating Setters and Getters ------------------------------------------
     private def accessorFlags(vsym: Symbol): Long = {
       if(vsym.isParamAccessor) {
         Flags.STABLE | Flags.ACCESSOR | Flags.PARAMACCESSOR
@@ -59,7 +62,8 @@ trait TreeGenTransformerCake {
       val owner = vsym.owner
       if(vsym.isVar) {
         val flags = accessorFlags(vsym)
-        val strSym = owner.newMethodSymbol(gtr.name.setterName, owner.pos.focus, flags)
+        val strSym = owner.newMethodSymbol(gtr.name.setterName, owner.pos.focus, 
+                flags)
         val param = strSym.newSyntheticValueParam(vsym.info, TermName("x$1"))
         val tpe = MethodType(List(param), definitions.UnitTpe)
         strSym.setInfoAndEnter(tpe)

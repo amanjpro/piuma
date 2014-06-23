@@ -8,10 +8,11 @@ import ch.usi.inf.l3.lombrello.plugin.LombrelloPlugin
 
 trait StoreScopeCake extends ScopeCake { self: LombrelloPlugin =>
 
-  class StoreScope[T] private (private val locations: Map[SSymbol, Int] = Map.empty[SSymbol, Int],
-    private val values: Map[Int, T] = Map.empty[Int, T],
-    private val nextMemoryLocation: Int = 0,
-    private val outer: Option[Scope[T]] = None) extends Scope[T] {
+  class StoreScope[T] private (
+          private val locations: Map[SSymbol, Int] = Map.empty[SSymbol, Int],
+          private val values: Map[Int, T] = Map.empty[Int, T],
+          private val nextMemoryLocation: Int = 0,
+          private val outer: Option[Scope[T]] = None) extends Scope[T] {
 
     /** Enter a nested scope */
     def enterScope: Scope[T] = {
