@@ -20,7 +20,9 @@ abstract class TransformerPluginComponent(val plgn: LombrelloPlugin)
   with TreeDSL
   with RenameTransformerCake 
   with TreeGenTransformerCake 
-  with TreeDuplicatorCake {
+  with TreeDuplicatorCake 
+  with TreeTraversersCake 
+  with TreeTransformersCake {
 
   import plgn._
 
@@ -44,7 +46,9 @@ abstract class TransformerPluginComponent(val plgn: LombrelloPlugin)
     extends TypingTransformer(unit)
     with RenameTransformer 
     with TreeGenTransformer
-    with TreeDuplicator {
+    with TreeDuplicator
+    with TreeTraversers 
+    with TreeTransformers {
 
     val global: plgn.global.type = plgn.global
 
