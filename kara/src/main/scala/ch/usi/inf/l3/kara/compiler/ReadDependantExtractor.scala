@@ -39,6 +39,8 @@ import ch.usi.inf.l3.kara.KaraPlugin
   val runClosureName = newTermName("runClosure")
   val karaAnnotation = getAnnotation(karaAnnotationName)
 
+
+  // TODO: Can you generalize this?
   private def hasRead(x: Tree): Boolean = {
     // As for If and Match, shall I announce ``read'' if only the condition has
     // it? mmm makes sense to some extend, but not sure
@@ -536,6 +538,9 @@ import ch.usi.inf.l3.kara.KaraPlugin
       })
     (tparamSyms, newTargs)
   }
+
+
+  
   private def extractDefDef(mthd: DefDef): (DefDef, List[DefDef]) = {
     val vparamss = mthd.vparamss
     val rhs = mthd.rhs
