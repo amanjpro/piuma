@@ -177,24 +177,6 @@ trait ExtractorTransformerCake {
     }
 
     /**
-      * Returns the free symbols of the free type parameters 
-      * in a list of statements.
-      *
-      * @param stmts a list of statements that might contain
-      *        free variables
-      * @param captured captured variables used in the stmts
-      * @param acc free variables in stmts found so far
-      *
-      * @return a list of the symbols of the free typer parameters in stmts
-      */
-    final def findTparams(stmts: List[Tree],
-                          captured: List[Symbol],
-                          acc: List[Symbol]): List[Symbol] = {
-      // TODO: Implement this
-      acc
-    }
-
-    /**
       * Returns a list of parameter trees
       *
       * @param paramSyms a list of the symbols of the parameters
@@ -368,7 +350,7 @@ trait ExtractorTransformerCake {
       *         or None if the list is empty.
       */
     def extractMethod(stmts: List[Tree],
-                      owner: Symbol, 
+                      currentOwner: Symbol, 
                       methodName: TermName): Option[(DefDef, Option[Apply])] = {
       stmts match {
         case Nil => None
@@ -391,7 +373,13 @@ trait ExtractorTransformerCake {
 
           val params: List[ValDef] = generateParams(paramSyms)
 
-          val freeTparams = findTparams(stmts, Nil, Nil)
+          val freeTparams = currentOwner.tpe match {
+            case PolyType(tps, _) =>
+              // TODO you should also remove the unused type parameters
+              tps
+            case _ =>
+              Nil
+          }
           val (newTparamSyms, newTargs) = generateTParamSymsAndTArgs(
               freeTparams, msymbol, paramSyms)
           val tparams = generateTParams(newTparamSyms)
@@ -406,9 +394,19 @@ trait ExtractorTransformerCake {
                   fixMutatingParams(rhs)).setSymbol(msymbol)
 
 
-          localTyper.typed { mthd }.asInstanceOf[DefDef]
+          val mname = Ident(msymbol)
+          val tpapply = tparams match {
+            case Nil => mname
+            case _ => TypeApply(mname, newTargs)
+          }
 
-          None
+          val apply = Apply(tpapply, args)
+
+
+          localTyper.typed { mthd }.asInstanceOf[DefDef]
+          localTyper.typed { apply }.asInstanceOf[Apply]
+
+          Some(mthd, Some(apply))
       }
     }
   }
