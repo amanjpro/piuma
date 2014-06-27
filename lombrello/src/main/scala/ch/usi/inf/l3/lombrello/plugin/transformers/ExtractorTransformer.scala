@@ -344,6 +344,7 @@ trait ExtractorTransformerCake {
       *        and substituted with a method call
       * @param currentOwner the owner of the statements that need to be extracted
       *        to a method
+      * @param mowner the owner of the extracted method 
       * @param methodName the name of the extracted method
       *
       * @return Some tuple of the extracted method and a call to that method,
@@ -351,6 +352,7 @@ trait ExtractorTransformerCake {
       */
     def extractMethod(stmts: List[Tree],
                       currentOwner: Symbol, 
+                      mowner: Symbol,
                       methodName: TermName): Option[(DefDef, Option[Apply])] = {
       stmts match {
         case Nil => None
@@ -358,7 +360,6 @@ trait ExtractorTransformerCake {
         case xs =>
           // TODO: set proper flags
           val flags = 0
-          val mowner = currentOwner.owner
           val msymbol = mowner.newMethodSymbol(
             methodName, mowner.pos.focus, flags)
           val freeVars = findFreeVars(stmts, Nil, Nil)
@@ -408,6 +409,102 @@ trait ExtractorTransformerCake {
 
           Some(mthd, Some(apply))
       }
+    }
+
+    /**
+      * Extracts a method out of a list of statements, and replaces them
+      * with a call to the method.
+      *
+      * @param stmts the list of statements to be extracted to a method,
+      *        and substituted with a method call
+      * @param currentOwner the owner of the statements that need to be extracted
+      *        to a method
+      * @param methodName the name of the extracted method
+      *
+      * @return Some tuple of the extracted method and a call to that method,
+      *         or None if the list is empty.
+      */
+    def extractMethod(stmts: List[Tree],
+                      currentOwner: Symbol, 
+                      methodName: TermName): Option[(DefDef, Option[Apply])] = {
+      extractMethod(stmts, currentOwner, currentOwner.owner, methodName)
+    }
+
+    /**
+      * Splits a list of trees before a prediction is true.
+      *
+      * @param stmts a list of statements to be splitted
+      * @param p the prediction
+      * @param acc a list to accumulate the statements, Nil by default
+      *
+      * @return a tuple of a list of statements before p returns true and
+      *         a list of statements after that
+      */
+    @tailrec final def splitBefore(stmts: List[Tree], p: Tree => Boolean, 
+          acc: List[Tree] = Nil): (List[Tree], List[Tree]) = {
+      stmts match {
+        case x :: xs if p(x) =>
+          (acc.reverse, stmts)
+        case x :: xs =>
+          splitBefore(xs, p, x :: acc)
+        case Nil =>
+          (acc.reverse, Nil)
+      } 
+    }
+
+    /**
+      * Splits a list of trees after a prediction is true.
+      *
+      * @param stmts a list of statements to be splitted
+      * @param p the prediction
+      * @param acc a list to accumulate the statements, Nil by default
+      *
+      * @return a tuple of a list of statements after p returns true and
+      *         a list of statements after that
+      */
+    @tailrec final def splitAfter(stmts: List[Tree], p: Tree => Boolean, 
+          acc: List[Tree] = Nil): (List[Tree], List[Tree]) = {
+      stmts match {
+        case x :: xs if p(x) =>
+          val r = x :: acc
+          (r.reverse, xs)
+        case x :: xs =>
+          splitAfter(xs, p, x :: acc)
+        case Nil =>
+          (acc.reverse, Nil)
+      } 
+    }
+
+    /**
+      * Splits a list of trees after a prediction is true.
+      *
+      * @param block the block to be splitted
+      * @param p the prediction
+      *
+      * @return a tuple of a list of statements after p returns true and
+      *         a list of statements after that
+      * @see splitAfter(List[Tree], Tree => Boolean, List[Tree]): 
+      *      (List[Tree], List[Tree])
+      */
+    final def splitAfter(block: Block, p: Tree => Boolean):
+          (List[Tree], List[Tree]) = {
+      splitAfter(block.stats ++ List(block.expr), p)
+    }
+
+    /**
+      * Splits a list of trees before a prediction is true.
+      *
+      * @param block the block to be splitted
+      * @param p the prediction
+      *
+      * @return a tuple of a list of statements before p returns true and
+      *         a list of statements after that
+      * @see splitBefore(List[Tree], Tree => Boolean, List[Tree]): 
+      *      (List[Tree], List[Tree])
+      */
+    final def splitBefore(block: Block, p: Tree => Boolean):
+          (List[Tree], List[Tree]) = {
+      splitBefore(block.stats ++ List(block.expr), p)
     }
   }
 }
