@@ -15,7 +15,7 @@ import scala.language.postfixOps
 
 
 val sp = File.separator
-val scalaVersion = "2.10"
+val scalaVersion = "2.11"
 val lombrelloVersion = "0.1-SNAPSHOT"
 val targetPath = s"target${sp}scala-${scalaVersion}"
 
