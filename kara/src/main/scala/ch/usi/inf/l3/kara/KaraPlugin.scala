@@ -7,8 +7,9 @@ package ch.usi.inf.l3.kara
 
 import ch.usi.inf.l3.lombrello.neve.NeveDSL._
 import ch.usi.inf.l3.kara.compiler.ReadDependantExtractor
+import ch.usi.inf.l3.kara.compiler.ReadDependantExtractorNeve
 
-@plugin(ReadDependantExtractor) class KaraPlugin {
+@plugin(ReadDependantExtractorNeve) class KaraPlugin {
 
   val beforeFinder = "typer" //FIXME: why this fails? utilities.PHASE_TYPER
   val name: String = "kara"
