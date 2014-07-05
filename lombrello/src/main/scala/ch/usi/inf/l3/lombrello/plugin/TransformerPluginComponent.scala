@@ -22,6 +22,7 @@ abstract class TransformerPluginComponent(val plgn: LombrelloPlugin)
   with TreeGenTransformerCake 
   with TreeDuplicatorCake 
   with TreeTraversersCake 
+  with ExtractorTransformerCake
   with TreeTransformersCake {
 
   import plgn._
@@ -48,6 +49,7 @@ abstract class TransformerPluginComponent(val plgn: LombrelloPlugin)
     with TreeGenTransformer
     with TreeDuplicator
     with TreeTraversers 
+    with ExtractorTransformer 
     with TreeTransformers {
 
     val global: plgn.global.type = plgn.global
