@@ -11,6 +11,12 @@ import scala.annotation.tailrec
 
 /**
   * This trait, enables extracting various kinds of trees.
+  *
+  *
+  * @groupname Extractors ExtractorTransformer - Extraction
+  * @groupname Splitters ExtractorTransformer - Splitting
+  *
+  * @author Amanj Sherwany
   */
 trait ExtractorTransformerCake {
   extractor: TransformerPluginComponent =>
@@ -20,6 +26,56 @@ trait ExtractorTransformerCake {
     import extractor.plgn._
     import extractor.plgn.global._
 
+    /******************* extractors *******************/
+
+
+
+    /**
+      * Returns the bound variables in a pattern.
+      *
+      * @param app the pattern of the case. 
+      *
+      * @return a list of the symbols of the bound variables in tree
+      * @see extractMethod(List[Tree], Symbol, TermName): Option[(DefDef, 
+      *                       Option[Apply])]
+      * @group Extractors
+      */
+    private def boundSymbols(app: Apply): List[Symbol] = {
+      val args = app.args
+      val argSyms = args.foldLeft(Nil: List[Symbol])((z, y) => {
+        y match {
+          case bind: Bind => z ++ boundSymbols(bind)
+          case a @ Apply(_, _) => z ++ boundSymbols(a)
+          case _ =>
+            z
+        }
+      })
+      argSyms
+    }
+
+    /**
+      * Returns the bound variables in a pattern.
+      *
+      * @param app the pattern of the case. 
+      *
+      * @return a list of the symbols of the bound variables in tree
+      * @see extractMethod(List[Tree], Symbol, TermName): Option[(DefDef, 
+      *                       Option[Apply])]
+      * @group Extractors
+      */
+    private def boundSymbols(b: Bind): List[Symbol] = {
+      hasSymbol(b) match {
+        case true =>
+          val thisSym = b.symbol
+          b.body match {
+            case app @ Apply(_, _) =>
+              thisSym :: boundSymbols(app)
+            case _ => List(thisSym)
+          }
+        case false =>
+          Nil
+      }
+    }
 
     /**
       * Returns the free variables in a statement.
@@ -32,12 +88,22 @@ trait ExtractorTransformerCake {
       * @return a list of the symbols of the free variables in stmt
       * @see extractMethod(List[Tree], Symbol, TermName): Option[(DefDef, 
       *                       Option[Apply])]
+      * @group Extractors
       */
     private def findFreeVars(stmt: Tree,
                               captured: List[Symbol],
                               acc: List[Symbol]): List[Symbol] = {
       // TODO: Implement this
       stmt match {
+        case x: Ident 
+           if ! acc.contains(x.symbol) && 
+              ! captured.contains(x.symbol) &&
+              ( isVar(x.symbol) ||
+                isVal(x.symbol) ||
+                isParam(x.symbol)) =>
+          (x.symbol :: acc)
+        case x: Ident =>
+          acc
         case Alternative(trees) =>
           findFreeVars(trees, captured, acc)
         case Annotated(annot, arg) =>
@@ -55,13 +121,19 @@ trait ExtractorTransformerCake {
         case Bind(name, body) =>
           findFreeVars(body, captured, acc)
         case Block(stats, expr) =>
-          val temp = findFreeVars(stats, captured, acc)
-          findFreeVars(expr, captured, temp)
+          findFreeVars(stats ++ List(expr), captured, acc)
         case CaseDef(pat, guard, body) =>
           // TODO: What about binding new names?
-          val temp1 = findFreeVars(pat, captured, acc)
-          val temp2 = findFreeVars(guard, captured, temp1)
-          findFreeVars(body, captured, temp2)
+          val newDefinedVals = pat match {
+            case b @ Bind(_, body) if hasSymbol(b) =>
+              captured ++ boundSymbols(b)
+            case app @ Apply(_, _) =>
+              captured ++ boundSymbols(app)
+            case _ => captured
+          }
+          val temp1 = findFreeVars(pat, newDefinedVals, acc)
+          val temp2 = findFreeVars(guard, newDefinedVals, temp1)
+          findFreeVars(body, newDefinedVals, temp2)
         case ClassDef(mods, name, tparams, impl) =>
           findFreeVars(impl, captured, acc)
         case CompoundTypeTree(templ) =>
@@ -142,11 +214,7 @@ trait ExtractorTransformerCake {
           // {{{ findFreeVars(List[Tree], List[Symbol], 
           //       List[Symbol]): List[Symbol] }}}
           findFreeVars(rhs, captured, acc) 
-        case x: Ident 
-           if ! acc.contains(x.symbol) && 
-              ! captured.contains(x.symbol) =>
-          (x.symbol :: acc)
-        case x: Ident =>
+        case x =>
           acc
       }
     }
@@ -160,6 +228,8 @@ trait ExtractorTransformerCake {
       * @param acc free variables in stmts found so far
       *
       * @return a list of the symbols of the free variables in stmts
+      *
+      * @group Extractors
       */
     @tailrec final def findFreeVars(stmts: List[Tree],
                              captured: List[Symbol],
@@ -167,10 +237,10 @@ trait ExtractorTransformerCake {
       stmts match {
         case (x: ValDef) :: xs if goodSymbol(x.symbol) =>
           val frees = findFreeVars(x, captured, acc)
-          findFreeVars(xs, x.symbol :: captured, acc ++ frees)
+          findFreeVars(xs, x.symbol :: captured, frees)
         case x :: xs =>
           val frees = findFreeVars(x, captured, acc)
-          findFreeVars(xs, captured, acc ++ frees)
+          findFreeVars(xs, captured, frees)
         case Nil =>
           acc
       }
@@ -185,6 +255,8 @@ trait ExtractorTransformerCake {
       *         method.
       * @see extractMethod(List[Tree], Symbol, TermName): Option[(DefDef, 
       *                       Option[Apply])]
+      *
+      * @group Extractors
       */
     private def generateParams(paramSyms: List[Symbol]): List[ValDef] = {
       paramSyms.map((x) => ValDef(x, EmptyTree))
@@ -203,6 +275,8 @@ trait ExtractorTransformerCake {
       *         method.
       * @see extractMethod(List[Tree], Symbol, TermName): Option[(DefDef, 
       *                       Option[Apply])]
+      *
+      * @group Extractors
       */
     private def generateParamSymsAndArgs(extractedMethod: Symbol, 
           freeVars: List[Symbol]): (List[Symbol], List[Tree]) = {
@@ -233,6 +307,8 @@ trait ExtractorTransformerCake {
       *         the extracted method.
       * @see extractMethod(List[Tree], Symbol, TermName): Option[(DefDef, 
       *                       Option[Apply])]
+      *
+      * @group Extractors
       */
     private def generateTParams(tparamSyms: List[Symbol]): List[TypeDef] = {
       tparamSyms.map((x) => TypeDef(x))
@@ -250,6 +326,8 @@ trait ExtractorTransformerCake {
       *         method.
       * @see extractMethod(List[Tree], Symbol, TermName): Option[(DefDef, 
       *                       Option[Apply])]
+      *
+      * @group Extractors
       */
     private def generateTParamSymsAndTArgs(freeTParams: List[Symbol], 
         extractedMethod: Symbol, paramSyms: List[Symbol]): 
@@ -284,6 +362,8 @@ trait ExtractorTransformerCake {
       * @return the tpe of the extracted method
       * @see extractMethod(List[Tree], Symbol, TermName): Option[(DefDef, 
       *                       Option[Apply])]
+      *
+      * @group Extractors
       */
     private def generateTpe(newTparamSyms: List[Symbol], 
             paramSyms: List[Symbol], ret: Type): Type = {
@@ -301,6 +381,8 @@ trait ExtractorTransformerCake {
       * @return A tree that does not mutate parameters
       * @see extractMethod(List[Tree], Symbol, TermName): Option[(DefDef, 
       *                       Option[Apply])]
+      *
+      * @group Extractors
       */
     private def fixMutatingParams(tree: Block): Block = {
       var aliases: Map[Symbol, Symbol] = Map.empty
@@ -349,11 +431,13 @@ trait ExtractorTransformerCake {
       *
       * @return Some tuple of the extracted method and a call to that method,
       *         or None if the list is empty.
+      *
+      * @group Extractors
       */
     def extractMethod(stmts: List[Tree],
                       currentOwner: Symbol, 
                       mowner: Symbol,
-                      methodName: TermName): Option[(DefDef, Option[Apply])] = {
+                      methodName: TermName): Option[(DefDef, Apply)] = {
       stmts match {
         case Nil => None
         case xs if !goodSymbol(currentOwner) => None
@@ -370,6 +454,8 @@ trait ExtractorTransformerCake {
             case _ =>
               Block(stmts.dropRight(1), stmts.last)
           }
+
+
           fixOwner(rhs, currentOwner, msymbol, paramSyms)
 
           val params: List[ValDef] = generateParams(paramSyms)
@@ -407,7 +493,7 @@ trait ExtractorTransformerCake {
           localTyper.typed { mthd }.asInstanceOf[DefDef]
           localTyper.typed { apply }.asInstanceOf[Apply]
 
-          Some(mthd, Some(apply))
+          Some(mthd, apply)
       }
     }
 
@@ -423,12 +509,18 @@ trait ExtractorTransformerCake {
       *
       * @return Some tuple of the extracted method and a call to that method,
       *         or None if the list is empty.
+      *
+      * @group Splitters
       */
     def extractMethod(stmts: List[Tree],
                       currentOwner: Symbol, 
-                      methodName: TermName): Option[(DefDef, Option[Apply])] = {
+                      methodName: TermName): Option[(DefDef, Apply)] = {
       extractMethod(stmts, currentOwner, currentOwner.owner, methodName)
     }
+
+
+
+    /******************* splitters *******************/
 
     /**
       * Splits a list of trees before a prediction is true.
@@ -439,6 +531,8 @@ trait ExtractorTransformerCake {
       *
       * @return a tuple of a list of statements before p returns true and
       *         a list of statements after that
+      *
+      * @group Splitters
       */
     @tailrec final def splitBefore(stmts: List[Tree], p: Tree => Boolean, 
           acc: List[Tree] = Nil): (List[Tree], List[Tree]) = {
@@ -461,6 +555,8 @@ trait ExtractorTransformerCake {
       *
       * @return a tuple of a list of statements after p returns true and
       *         a list of statements after that
+      *
+      * @group Splitters
       */
     @tailrec final def splitAfter(stmts: List[Tree], p: Tree => Boolean, 
           acc: List[Tree] = Nil): (List[Tree], List[Tree]) = {
@@ -485,6 +581,8 @@ trait ExtractorTransformerCake {
       *         a list of statements after that
       * @see splitAfter(List[Tree], Tree => Boolean, List[Tree]): 
       *      (List[Tree], List[Tree])
+      *
+      * @group Splitters
       */
     final def splitAfter(block: Block, p: Tree => Boolean):
           (List[Tree], List[Tree]) = {
@@ -501,6 +599,8 @@ trait ExtractorTransformerCake {
       *         a list of statements after that
       * @see splitBefore(List[Tree], Tree => Boolean, List[Tree]): 
       *      (List[Tree], List[Tree])
+      *
+      * @group Splitters
       */
     final def splitBefore(block: Block, p: Tree => Boolean):
           (List[Tree], List[Tree]) = {
