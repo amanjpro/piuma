@@ -36,13 +36,13 @@ abstract class TransformerPluginComponent(val plgn: LombrelloPlugin)
   def newTransformer(unit: CompilationUnit): Transformer 
   
   /**
-   * The plugin framework should have a refactoring mode:
-   *
-   * 1- If you rename a field all its setters and getters (and of course uses
-   *    shall be renamed).
-   * 2- If you add/remove a param in a method or constructor, the framework
-   *    should automatically pass defaults/drop the arg for that param.
-   */
+    * The plugin framework should have a refactoring mode:
+    *
+    * 1- If you rename a field all its setters and getters (and of course uses
+    *    shall be renamed).
+    * 2- If you add/remove a param in a method or constructor, the framework
+    *    should automatically pass defaults/drop the arg for that param.
+    */
   abstract class TransformerComponent(val unit: CompilationUnit)
     extends TypingTransformer(unit)
     with RenameTransformer 
@@ -52,11 +52,32 @@ abstract class TransformerPluginComponent(val plgn: LombrelloPlugin)
     with ExtractorTransformer 
     with TreeTransformers {
 
+
     val global: plgn.global.type = plgn.global
 
     
+
+    
+    /**
+      * Types a tree and returns the typed tree
+      * 
+      * @param tree the tree to be typed
+      * 
+      * @return a typed tree
+      */
     protected def typed(tree: Tree): Tree = localTyper.typed(tree)
 
+
+    /**
+      * Returns a fresh and unique TermName based on a given TermName
+      *
+      * @param base the base TermName
+      * 
+      * @return a fresh and unique TermName
+      */
+    def freshName(base: TermName): TermName = {
+      unit.freshTermName(base.toString)
+    }
   }
 
 }
