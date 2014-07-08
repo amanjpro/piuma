@@ -482,16 +482,10 @@ trait ExtractorTransformerCake {
 
 
           val mname = Ident(msymbol)
-          val tpapply = tparams match {
-            case Nil => mname
-            case _ => TypeApply(mname, newTargs)
-          }
-
-          val apply = Apply(tpapply, args)
+          val apply = mkApply(mname, newTargs, args)
 
 
           localTyper.typed { mthd }.asInstanceOf[DefDef]
-          localTyper.typed { apply }.asInstanceOf[Apply]
 
           Some(mthd, apply)
       }
