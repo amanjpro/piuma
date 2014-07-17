@@ -20,7 +20,7 @@ val lombrelloVersion = "0.1-SNAPSHOT"
 val targetPath = s"target${sp}scala-${scalaVersion}"
 
 val mainProject = "lombrello"
-val plugins = List("kara", "simple")
+val plugins = List("kara", "atomicScala", "simple")
 val tasks = List("compile", "package", "clean", "test")
 
 
