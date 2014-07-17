@@ -42,10 +42,88 @@ trait TreeGenTransformerCake {
     /**
       * Creates a literal unit constant.
       *
-      * @return a Literal contant of the "Unit"
+      * @return a Literal constant of the "Unit"
       */
     def mkUnitLiteral: Literal = {
       Literal(Constant(()))
+    }
+
+    /**
+      * Creates a literal null constant.
+      *
+      * @return a Literal constant of the "null"
+      */
+    def mkNullLiteral: Literal = {
+      Literal(Constant(null))
+    }
+
+    // TODO: What about Selecting types not just terms?
+    /**
+      * Creates a Select tree.
+      *
+      * @param qual the symbol of the qualifier of the select.
+      * @param name the name of the selected tree
+      *
+      * @return a well-typed select tree.
+      */
+    def mkSelect(qual: Symbol, name: String): Select = {
+      mkSelect(Ident(qual), newTermName(name))
+    }
+    
+    /**
+      * Creates a Select tree.
+      *
+      * @param qual the tree of the qualifier of the select.
+      * @param name the name of the selected tree
+      *
+      * @return a well-typed select tree.
+      */
+    def mkSelect(qual: Tree, name: String): Select = {
+      mkSelect(qual, newTermName(name))
+    }
+
+    /**
+      * Creates a Select tree.
+      *
+      * @param qual the tree of the qualifier of the select.
+      * @param name the name of the selected tree
+      *
+      * @return a well-typed select tree.
+      */
+    def mkSelect(qual: Tree, name: Name): Select = {
+      localTyper.typed {Select(qual, name) }.asInstanceOf[Select]
+    }
+
+    /**
+      * Creates a Select tree.
+      *
+      * @param qual the symbol of the qualifier of the select.
+      * @param name the name of the selected tree
+      *
+      * @return a well-typed select tree.
+      */
+    def mkSelect(qual: Symbol, name: Name): Select = {
+      localTyper.typed {Select(Ident(qual), name) }.asInstanceOf[Select]
+    }
+
+
+    /**
+      * Creates a parameter tree.
+      *
+      * @param name the name of the parameter.
+      * @param tpe the type tree of the parameter.
+      * @param rhs the default value of the parameter
+      * @param owner the symbol of the owner method of the parameter
+      *
+      * @return a well-typed parameter.
+      */
+    def mkParam(name: String, tpe: TypeTree, 
+                  rhs: Tree, owner: Symbol): ValDef = {
+      // TODO: Implement this function
+      // owner.newSyntheticValueParam()
+      // ValDef(Modfiers(PARAM), newTermName(name), tpe, rhs)
+      // localTyper.typed {Select(Ident(qual), name) }.asInstanceOf[Select]
+      ???
     }
 
     /**
@@ -79,38 +157,180 @@ trait TreeGenTransformerCake {
 
       }
     }
+
+    /**
+      * Surrounds {{{body}}} with synchronized block.
+      *
+      * @param body the tree that needs to be syncrhonized
+      * @param on the tree on which the syncrhonized is called
+      * @param tpt the type tree of the body
+      *
+      * @return returns a tree that represend a call of synchronized on
+      *         the body.
+      */
+    def mkSynchronized(body: Tree, on: Tree, tpt: Tree): Apply = {
+      mkApply(mkSelect(on, "synchronized"), List(tpt), List(body))
+    }
     
-// ------ Generating Variables -----------------------------------------------------
-    // Issue#4 is an open bug about default params, make sure to fix it
+    
+    /**
+      * Creates a val or var, depending on isVal flag. And it is owned
+      * by the owner.
+      *
+      * @param isVal a flag, if true then the method returns val, and var
+      *        otherwise.
+      * @param owner the owner of the val/var
+      * @param name the name of the val/var
+      * @param tpe the type of the val/var
+      * @param rhs the right-hand side of the val/var
+      *
+      * @return returns a ValDef tree
+      */
     private def mkValOrVar(isVal: Boolean, owner: Symbol, name: TermName, 
-            tpe: Type, rhs: Tree, pos: Position, newFlags: Long): ValDef = {
+            tpe: Type, rhs: Tree): ValDef = {
+      // TODO: Issue#4 is an open bug about default params, make sure to fix it
       val newName = if(name.endsWith(' ')) name else name.localName
       val sym = if(isVal) {
-        owner.newValue(newName, pos, newFlags)
+        owner.newValue(newName, owner.pos.focus)
       } else {
-        owner.newVariable(newName, pos, newFlags)
+        owner.newVariable(newName, owner.pos.focus)
       }
       sym.setInfoAndEnter(tpe)
-      val vtree = typer.atOwner(owner) typed {ValDef(sym, rhs)}
+      val vtree = localTyper.typed {ValDef(sym, rhs)}
       vtree.asInstanceOf[ValDef]
     }
     
-    def mkVar(owner: Symbol, name: TermName, tpe: Type, rhs: Tree = EmptyTree, 
-            pos: Position = NoPosition, newFlags: Long = 0L): ValDef = {
-      mkValOrVar(false, owner, name, tpe, rhs, pos, newFlags)
+
+    /**
+      * Creates a val or var, depending on isVal flag. And it is owned
+      * by the owner.
+      *
+      * @param isVal a flag, if true then the method returns val, and var
+      *        otherwise.
+      * @param owner the owner of the val/var
+      * @param name the name of the val/var
+      * @param rhs the right-hand side of the val/var
+      *
+      * @return returns a ValDef tree
+      */
+    private def mkValOrVar(isVal: Boolean, owner: Symbol, name: TermName, 
+            rhs: Tree): ValDef = {
+      val tpe = localTyper.typed {rhs}.tpe
+      mkValOrVar(isVal, owner, name, tpe, rhs)
     }
-    
-    def mkVal(owner: Symbol, name: TermName, tpe: Type, rhs: Tree = EmptyTree, 
-            pos: Position = NoPosition, newFlags: Long = 0L): ValDef = {
-      mkValOrVar(true, owner, name, tpe, rhs, pos, newFlags)
+
+    /**
+      * Creates a var which is is owned by the owner.
+      *
+      * @param owner the owner of the var
+      * @param name the name of the var
+      * @param tpe the type of the var
+      * @param rhs the right-hand side of the var
+      *
+      * @return returns a ValDef tree
+      */
+    def mkVar(owner: Symbol, name: TermName, tpe: Type, 
+              rhs: Tree): ValDef = {
+      mkValOrVar(false, owner, name, tpe, rhs)
     }
-    
-//    def mkMethodParam(method: MethodSymbol, name: TermName, tpe: Type, rhs: Tree = EmptyTree): ValDef = {
-//      val param = mkVal(method, name, tpe, rhs, ) 
-//      
-//      null
-//    }
-// ------ Generating Setters and Getters ------------------------------------------
+
+    /**
+      * Creates a var which is is owned by the owner.
+      *
+      * @param owner the owner of the var
+      * @param name the name of the var
+      * @param rhs the right-hand side of the var
+      *
+      * @return returns a ValDef tree
+      */
+    def mkVar(owner: Symbol, name: TermName, rhs: Tree): ValDef = {
+      mkValOrVar(false, owner, name, rhs)
+    }
+
+    /**
+      * Creates a var which is is owned by the owner.
+      *
+      * @param owner the owner of the var
+      * @param name the name of the var
+      * @param tpe the type of the var
+      * @param rhs the right-hand side of the var
+      *
+      * @return returns a ValDef tree
+      */
+    def mkVar(owner: Symbol, name: String, tpe: Type, 
+              rhs: Tree): ValDef = {
+      mkValOrVar(false, owner, newTermName(name), tpe, rhs)
+    }
+
+    /**
+      * Creates a var which is is owned by the owner.
+      *
+      * @param owner the owner of the var
+      * @param name the name of the var
+      * @param rhs the right-hand side of the var
+      *
+      * @return returns a ValDef tree
+      */
+    def mkVar(owner: Symbol, name: String, rhs: Tree): ValDef = {
+      mkValOrVar(false, owner, newTermName(name), rhs)
+    }
+
+    /**
+      * Creates a val which is is owned by the owner.
+      *
+      * @param owner the owner of the val
+      * @param name the name of the val
+      * @param tpe the type of the val
+      * @param rhs the right-hand side of the val
+      *
+      * @return returns a ValDef tree
+      */
+    def mkVal(owner: Symbol, name: TermName, tpe: Type, 
+              rhs: Tree): ValDef = {
+      mkValOrVar(true, owner, name, tpe, rhs)
+    }
+
+    /**
+      * Creates a val which is is owned by the owner.
+      *
+      * @param owner the owner of the val
+      * @param name the name of the val
+      * @param rhs the right-hand side of the val
+      *
+      * @return returns a ValDef tree
+      */
+    def mkVal(owner: Symbol, name: TermName, rhs: Tree): ValDef = {
+      mkValOrVar(true, owner, name, rhs)
+    }
+
+    /**
+      * Creates a val which is is owned by the owner.
+      *
+      * @param owner the owner of the val
+      * @param name the name of the val
+      * @param tpe the type of the val
+      * @param rhs the right-hand side of the val
+      *
+      * @return returns a ValDef tree
+      */
+    def mkVal(owner: Symbol, name: String, tpe: Type, 
+              rhs: Tree): ValDef = {
+      mkValOrVar(true, owner, newTermName(name), tpe, rhs)
+    }
+
+    /**
+      * Creates a val which is is owned by the owner.
+      *
+      * @param owner the owner of the val
+      * @param name the name of the val
+      * @param rhs the right-hand side of the val
+      *
+      * @return returns a ValDef tree
+      */
+    def mkVal(owner: Symbol, name: String, rhs: Tree): ValDef = {
+      mkValOrVar(true, owner, newTermName(name), rhs)
+    }
+   // ------ Generating Setters and Getters ------------------------------------------
     private def accessorFlags(vsym: Symbol): Long = {
       if(vsym.isParamAccessor) {
         Flags.STABLE | Flags.ACCESSOR | Flags.PARAMACCESSOR
