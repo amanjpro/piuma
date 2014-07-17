@@ -1,0 +1,4 @@
+<plugin>
+  <name>as</name>
+  <classname>ch.usi.inf.l3.as.plugin.AtomicScala</classname>
+</plugin>
