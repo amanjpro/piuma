@@ -33,7 +33,7 @@ object LombrelloBuild extends Build {
     "root",
     file("."),
     settings = buildSettings ++ Seq(
-      run <<= run in Compile in main in simple in kara,
+      run <<= run in Compile in main in simple in kara in atomicScala,
       name := "root"
     )
    ) aggregate (main)
@@ -59,4 +59,13 @@ object LombrelloBuild extends Build {
       name := "kara"
     )
   ) dependsOn (main)
+
+  lazy val atomicScala: Project = Project(
+    "atomicScala",
+    base = file("atomicScala"),
+    settings = buildSettings ++ Seq(
+      name := "atomicScala"
+    )
+  ) dependsOn (main)
+
 }
