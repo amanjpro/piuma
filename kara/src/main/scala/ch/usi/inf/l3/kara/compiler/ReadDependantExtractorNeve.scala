@@ -11,10 +11,6 @@ import scala.reflect.internal.Flags._
 import scala.Option.option2Iterable
 import ch.usi.inf.l3.kara.KaraPlugin
 
-/*
- * TODO: There exist numerous methods and functionalities that need to be put
- * in the Lombrello framework. Do it ASAP -- Amanj
- */
 @phase("kara-mover") class ReadDependantExtractorNeve {
   //  override val runsRightAfter = Some("kara-typer")
   //  val runsAfter = List[String]("kara-typer")
@@ -40,55 +36,40 @@ import ch.usi.inf.l3.kara.KaraPlugin
   val karaAnnotation = getAnnotation(karaAnnotationName)
 
 
-  private def hasRead(x: Tree): Boolean = {
-    // As for If and Match, shall I announce ``read'' if only the condition has
-    // it? mmm makes sense to some extend, but not sure
-    val b = new TreeTraverserPredicator {
-      def traverseIdent(id: Ident): Boolean = {
-        hasAnnotation(id, karaAnnotation)
-      }
-
-      override def otherwise(t: Tree): Boolean = false
-
-      override def traverseAssign(t: Assign): Boolean = {
-        traverse(t.rhs)
-      }
-
-      override def traverseClassDef(t: ClassDef): Boolean = {
-        traverse(t.impl)
-      }
-
-      override def traverseModuleDef(t: ModuleDef): Boolean = {
-        traverse(t.impl)
-      }
-
-      override def traverseDefDef(t: DefDef): Boolean = {
-        traverse(t.rhs)
-      }
-
-      override def traverseFunction(t: Function): Boolean = {
-        traverse(t.body)
-      }
-
-      override def traverseLabelDef(t: LabelDef): Boolean = {
-        traverse(t.rhs)
-      }
-
-      override def traverseSelect(t: Select): Boolean = {
-        hasAnnotation(t, karaAnnotation) || traverse(t.qualifier)
-      }
-
-      override def traverseTemplate(t: Template): Boolean = {
-        traverse(t.body)
-      }
-
-      override def traverseValDef(t: ValDef): Boolean = {
-        traverse(t.rhs)
-      }
+  private val hasReadPredicator = new TreeTraverserPredicator {
+    def traverseIdent(id: Ident): Boolean = {
+      hasAnnotation(id, karaAnnotation)
     }
 
-    b(x)
+    override def otherwise(t: Tree): Boolean = false
 
+    override def traverseAssign(t: Assign): Boolean = {
+      traverse(t.rhs)
+    }
+
+   override def traverseDefDef(t: DefDef): Boolean = {
+      traverse(t.rhs)
+    }
+
+    override def traverseFunction(t: Function): Boolean = {
+      traverse(t.body)
+    }
+
+    override def traverseLabelDef(t: LabelDef): Boolean = {
+      traverse(t.rhs)
+    }
+
+    override def traverseSelect(t: Select): Boolean = {
+      hasAnnotation(t, karaAnnotation) || traverse(t.qualifier)
+    }
+
+    override def traverseTemplate(t: Template): Boolean = {
+      traverse(t.body)
+    }
+
+    override def traverseValDef(t: ValDef): Boolean = {
+      traverse(t.rhs)
+    }
   }
 
   private def doTransform(tree: Template): Template = {
@@ -98,7 +79,7 @@ import ch.usi.inf.l3.kara.KaraPlugin
         case x :: xs =>
           x.rhs match {
             case rhs: Block =>
-              val (fst, snd) = splitAfter(rhs, (y: Tree) => hasRead(y))
+              val (fst, snd) = splitAfter(rhs, hasReadPredicator)
               val r = extractMethod(snd, x.symbol, freshName(x.name))
 
               r match {
@@ -143,11 +124,11 @@ import ch.usi.inf.l3.kara.KaraPlugin
   }
   def transform(tree: Tree): Tree = {
     tree match {
-      case clazz @ ClassDef(mods, name, tparams, impl) if hasRead(clazz) =>
+      case clazz @ ClassDef(mods, name, tparams, impl) if hasReadPredicator(clazz) =>
         val newImpl = doTransform(impl)
         val newClazz = treeCopy.ClassDef(clazz, mods, name, tparams, newImpl)
         super.transform(localTyper.typed { newClazz })
-      case module @ ModuleDef(mods, name, impl) if hasRead(module)=>
+      case module @ ModuleDef(mods, name, impl) if hasReadPredicator(module)=>
         val newImpl = doTransform(impl)
         val newModule = treeCopy.ModuleDef(module, mods, name, newImpl)
         super.transform(localTyper.typed { newModule })
