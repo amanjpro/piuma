@@ -1,10 +1,8 @@
 import ch.usi.inf.l3.ascala._
 import ch.usi.inf.l3.as.plugin._
 
-object Test1 extends App {
-  new MyList(1, OrderedLock())
-  new MyOrderedList(4, OrderedLock())
-  new Node(3)
+object Test1 {
+  
 }
 class MyList(val b: Int, val lck: OrderedLock) {
   @atomic('a) var list_f1 = "f1 list"
