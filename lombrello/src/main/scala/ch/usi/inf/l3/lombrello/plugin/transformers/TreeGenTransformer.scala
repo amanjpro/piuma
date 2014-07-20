@@ -67,7 +67,7 @@ trait TreeGenTransformerCake {
       * @return a well-typed select tree.
       */
     def mkSelect(qual: Symbol, name: String): Select = {
-      mkSelect(Ident(qual), newTermName(name))
+      mkSelect(Ident(qual), TermName(name))
     }
     
     /**
@@ -79,7 +79,7 @@ trait TreeGenTransformerCake {
       * @return a well-typed select tree.
       */
     def mkSelect(qual: Tree, name: String): Select = {
-      mkSelect(qual, newTermName(name))
+      mkSelect(qual, TermName(name))
     }
 
     /**
@@ -91,7 +91,17 @@ trait TreeGenTransformerCake {
       * @return a well-typed select tree.
       */
     def mkSelect(qual: Tree, name: Name): Select = {
-      localTyper.typed {Select(qual, name) }.asInstanceOf[Select]
+      // FIXME:
+      /*
+        If the tree that is selected is a generic tree like for example
+        List class (or module), then for some reason the typed method 
+        returns a TypeApply, that is why I only return the select part
+        of it!
+      */
+      localTyper.typed { Select(qual, name) } match {
+        case x: Select => x
+        case _ => Select(qual, name)
+      }
     }
 
     /**
@@ -103,7 +113,7 @@ trait TreeGenTransformerCake {
       * @return a well-typed select tree.
       */
     def mkSelect(qual: Symbol, name: Name): Select = {
-      localTyper.typed {Select(Ident(qual), name) }.asInstanceOf[Select]
+      mkSelect(Ident(qual), name)
     }
 
 
@@ -121,7 +131,7 @@ trait TreeGenTransformerCake {
                   rhs: Tree, owner: Symbol): ValDef = {
       // TODO: Implement this function
       // owner.newSyntheticValueParam()
-      // ValDef(Modfiers(PARAM), newTermName(name), tpe, rhs)
+      // ValDef(Modfiers(PARAM), TermName(name), tpe, rhs)
       // localTyper.typed {Select(Ident(qual), name) }.asInstanceOf[Select]
       ???
     }
@@ -169,7 +179,7 @@ trait TreeGenTransformerCake {
       *         the body.
       */
     def mkSynchronized(body: Tree, on: Tree, tpt: Tree): Apply = {
-      mkApply(mkSelect(on, "synchronized"), List(tpt), List(body))
+      mkApply(Select(on, TermName("synchronized")), List(tpt), List(body))
     }
     
     
@@ -190,12 +200,23 @@ trait TreeGenTransformerCake {
             tpe: Type, rhs: Tree): ValDef = {
       // TODO: Issue#4 is an open bug about default params, make sure to fix it
       val newName = if(name.endsWith(' ')) name else name.localName
+
       val sym = if(isVal) {
         owner.newValue(newName, owner.pos.focus)
       } else {
         owner.newVariable(newName, owner.pos.focus)
       }
-      sym.setInfoAndEnter(tpe)
+
+
+      owner match {
+        case x: ClassSymbol =>
+          sym setInfoAndEnter tpe
+        case y: ModuleSymbol =>
+          sym setInfoAndEnter tpe
+        case _ =>
+          sym setInfo tpe
+      } 
+      
       val vtree = localTyper.typed {ValDef(sym, rhs)}
       vtree.asInstanceOf[ValDef]
     }
@@ -259,7 +280,7 @@ trait TreeGenTransformerCake {
       */
     def mkVar(owner: Symbol, name: String, tpe: Type, 
               rhs: Tree): ValDef = {
-      mkValOrVar(false, owner, newTermName(name), tpe, rhs)
+      mkValOrVar(false, owner, TermName(name), tpe, rhs)
     }
 
     /**
@@ -272,7 +293,7 @@ trait TreeGenTransformerCake {
       * @return returns a ValDef tree
       */
     def mkVar(owner: Symbol, name: String, rhs: Tree): ValDef = {
-      mkValOrVar(false, owner, newTermName(name), rhs)
+      mkValOrVar(false, owner, TermName(name), rhs)
     }
 
     /**
@@ -315,7 +336,7 @@ trait TreeGenTransformerCake {
       */
     def mkVal(owner: Symbol, name: String, tpe: Type, 
               rhs: Tree): ValDef = {
-      mkValOrVar(true, owner, newTermName(name), tpe, rhs)
+      mkValOrVar(true, owner, TermName(name), tpe, rhs)
     }
 
     /**
@@ -328,7 +349,7 @@ trait TreeGenTransformerCake {
       * @return returns a ValDef tree
       */
     def mkVal(owner: Symbol, name: String, rhs: Tree): ValDef = {
-      mkValOrVar(true, owner, newTermName(name), rhs)
+      mkValOrVar(true, owner, TermName(name), rhs)
     }
    // ------ Generating Setters and Getters ------------------------------------------
     private def accessorFlags(vsym: Symbol): Long = {
@@ -445,6 +466,47 @@ trait TreeGenTransformerCake {
       mkDefDef(rhs, symbol)
     }
 
+
+    /**
+      * Returns a well-typed DefDef (method) using an already exisiting
+      * DefDef as template.
+      *
+      * @param template the template method to be used
+      * @param name the name of the newly created method
+      * @param rhs the body of the newly created method
+      *
+      * @return a well typed method using an already existing method as
+      *         template (here template parameter)
+      */
+    def mkDefDef(template: DefDef, name: String, rhs: Tree): DefDef = {
+      val owner = template.symbol.owner
+      val symbol = owner.newMethodSymbol(
+            TermName(name), owner.pos.focus, template.symbol.flags)
+
+      val encClassSym = template.symbol.enclClass
+
+      val newMethodSym = encClassSym.newMethodSymbol(
+            TermName(name),
+            encClassSym.pos.focus,
+            template.symbol.flags)
+
+      val newParams = template.vparamss.map(_.map( x => {
+         val pSymbolType = x.symbol.tpe;
+         val newParamSym = 
+              newMethodSym.newSyntheticValueParam(pSymbolType, x.name)
+         localTyper.typed(ValDef(newParamSym, 
+              x.tpt.duplicate)).asInstanceOf[ValDef]
+        })) 
+
+
+      fixOwner(rhs, template.symbol, newMethodSym, newParams.flatten.map(_.symbol))
+
+      val m = DefDef(Modifiers(template.symbol.flags), 
+                      TermName(name), template.tparams,
+                      template.vparamss, template.tpt, 
+                      rhs).setSymbol(newMethodSym)
+      localTyper.typed(m).asInstanceOf[DefDef]
+    }
 
     
     /**
