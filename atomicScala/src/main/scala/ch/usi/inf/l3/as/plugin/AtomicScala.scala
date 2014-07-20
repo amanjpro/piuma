@@ -5,37 +5,6 @@ import scala.collection.mutable.Map
 import scala.reflect.internal.Flags._
 
 
-object Commons {
-  /**************************** Common Names ************************************/
-
-  /**
-   * base name for lock fields
-   */
-  val as_lock = "__as_lock"
-    
-  /**
-   * Fully qualified name of @atomic 
-   */
-  val atomic_anno = "ch.usi.inf.l3.ascala.atomic"
-    
-  /**
-   * Fully qualified name of @alias
-   */
-  val alias_anno = "ch.usi.inf.l3.ascala.alias"
-    
-  /**
-   * Fully qualified name of @unitfor
-   */
-  val unitfor_anno = "ch.usi.inf.l3.ascala.unitfor"
-    
-  /**
-   * Class of the lock object to be used
-   */
-  val lockClass = "ch.usi.inf.l3.as.plugin.OrderedLock"
-}
-
-import Commons._
-
 /**
  * A port of Vaziri's 2012 proposal of Atomic sets for Scala
  * @author Nosheen Zaza
@@ -86,6 +55,32 @@ import Commons._
    */
   val classSetsMap: Map[Symbol, List[String]] = Map.empty
   
+  /**************************** Common Names ************************************/
+
+  /**
+   * base name for lock fields
+   */
+  val as_lock = "__as_lock"
+    
+  /**
+   * Fully qualified name of @atomic 
+   */
+  val atomic_anno = "ch.usi.inf.l3.ascala.atomic"
+    
+  /**
+   * Fully qualified name of @alias
+   */
+  val alias_anno = "ch.usi.inf.l3.ascala.alias"
+    
+  /**
+   * Fully qualified name of @unitfor
+   */
+  val unitfor_anno = "ch.usi.inf.l3.ascala.unitfor"
+    
+  /**
+   * Class of the lock object to be used
+   */
+  val lockClass = "ch.usi.inf.l3.as.plugin.OrderedLock"
 
 }
 
@@ -102,8 +97,6 @@ import Commons._
   // so my stuff vanish after superaccessors
   rightAfter("typer")
   
-  def b(a: AtomicScala): AtomicScala = a
-
   plugin AtomicScala
 
   def check(unit: CompilationUnit) {
@@ -203,7 +196,6 @@ import Commons._
    */
   def check(unit: CompilationUnit) {
     unit.body.foreach(addMapping)
-    classSetsMap.foreach(println)
   }
 }
 
@@ -212,7 +204,7 @@ import Commons._
  * Find which classes have atomic sets, the next phase will add lock fields
  * based on this information.
  */
-@checker("class-sets-mapping") class ClassAncestorsSetsMapping {
+@checker("class-ancestor-sets-mapping") class ClassAncestorsSetsMapping {
 
   rightAfter("class-sets-mapping")
 
@@ -280,7 +272,6 @@ import Commons._
    */
   def check(unit: CompilationUnit) {
     unit.body.foreach(addMapping)
-    classSetsMap.foreach(println)
   }
 }
 
@@ -329,15 +320,13 @@ import Commons._
     // Notice how we ask the class Symbol to generate the new param 
     // symbol, NOT the method symbol!
     val parentClasses = old_construtcor.symbol.owner.ancestors;
-//        println("CLASS " + old_construtcor.symbol.owner)
-//        println("PARENTS: " + parentClasses)
     
     val hasLocksInSupers = hasLockFieldInParents(parentClasses)
 
     // I think the flags are not as important as I though, most 
     // important is to create the ValDef using the cass symbol
     // but will need to check that more.
-    val lock_sym = if (hasLocksInSupers) {println("HAS A SUPER " + old_construtcor.symbol)
+    val lock_sym = if (hasLocksInSupers) {
       old_construtcor.symbol.newValueParameter(
         newTermName(as_lock), old_construtcor.symbol.pos.focus)
         .setInfo(lockType)
@@ -546,25 +535,32 @@ import Commons._
    */
   private def getMethodWithSyncBody(mt: DefDef, nName: String) = { 
     val encClassSym = mt.symbol.enclClass
-
-    // TODO: remove this Amanj
+        
     val newMethodSym = encClassSym.newMethodSymbol(
-          newTermName(nName),
-          encClassSym.pos.focus,
-          mt.symbol.flags)
+      newTermName(nName),
+      encClassSym.pos.focus,
+      mt.symbol.flags)
 
-    // TODO: remove this Amanj
     val newParams = mt.vparamss.map(_.map( x => {
-         val pSymbolType = x.symbol.tpe;
-         val newParamSym = newMethodSym.newSyntheticValueParam(pSymbolType, x.name)
-         localTyper.typed(ValDef(newParamSym, x.tpt.duplicate)).asInstanceOf[ValDef]
-        })) 
+     val pSymbolType = x.symbol.tpe;
+     val newParamSym = newMethodSym.newSyntheticValueParam(pSymbolType, x.name)
+     localTyper.typed(ValDef(newParamSym, x.tpt.duplicate)).asInstanceOf[ValDef]
+    }))
 
-    val syncBody = addSyncBlock( mt.rhs.duplicate: Tree, newParams, 
-            newMethodSym: Symbol, mt.tpt.duplicate)
+    val newMethodTpe = MethodType(newParams.flatten.map(_.symbol), mt.tpt.tpe)
 
-    mkDefDef(mt.symbol.flags, newTermName(nName), mt.tparams,
-        mt.vparamss, mt.tpt.tpe, syncBody, encClassSym)
+    newMethodSym.setInfoAndEnter(newMethodTpe)
+    
+    val syncBody = addSyncBlock( mt.rhs.duplicate, 
+                    newParams, 
+                    newMethodSym, 
+                    mt.tpt.duplicate)
+
+    fixOwner(syncBody, mt.symbol, newMethodSym, newParams.flatten.map(_.symbol))
+
+    val methDef = DefDef(newMethodSym, newParams, syncBody)
+
+    localTyper.typed { (methDef).asInstanceOf[DefDef] }
   }
 
   // private def nonNullParamList(pListSym: Symbol) = {
@@ -605,7 +601,7 @@ import Commons._
       tpt: Tree, body: Tree): Tree = {
     // Neve
     if (n_locks > 0) {
-      val listApplyInt = mkSelect(locksList_sym, "apply")
+      val listApplyInt = Select(Ident(locksList_sym), TermName("apply"))
       val applyCall = mkApply(listApplyInt, List(mkLiteral(n_locks - 1)))
 
       val syncStmt = mkSynchronized(body, applyCall, tpt)
@@ -615,6 +611,7 @@ import Commons._
     }
   }
 
+  
   /**
    * given a method, takes the body and surrounds it with a synch block on
    * the lock object of the enclosing class.
@@ -657,7 +654,7 @@ import Commons._
      * local typer bound it correctly! */
     val sortedLockList = mkSelect(lockList, "sorted")
     
-    val locksList = mkVal(mbody.symbol, "locks", sortedLockList)
+    val locksList = mkVal(msymbol, "locks", sortedLockList)
     
         // It seems that calling duplicate is needed, otherwise I get an
     // exception.
@@ -686,8 +683,8 @@ import Commons._
                 })))
         }.asInstanceOf[ClassDef]
         super.transform(newClass)
-            
       case _ => super.transform(tree)
+
     }
   }
 
