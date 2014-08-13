@@ -1,0 +1,4 @@
+<plugin>
+  <name>scalaDyno</name>
+  <classname>dyno.plugin.Dyno</classname>
+</plugin>

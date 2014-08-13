@@ -20,7 +20,7 @@ val lombrelloVersion = "0.1-SNAPSHOT"
 val targetPath = s"target${sp}scala-${scalaVersion}"
 
 val mainProject = "lombrello"
-val plugins = List("kara", "atomicScala", "simple")
+val plugins = List("kara", "atomicScala", "scalaDyno", "simple")
 val tasks = List("compile", "package", "clean", "test")
 
 
@@ -86,7 +86,6 @@ def testPlugin(plgn: String) = {
   val tests = new File(s"test${sp}tests${sp}${plgn}").list
   s"mkdir test${sp}bin${sp}${plgn}".!
   tests.foreach((x: String) => if(x.endsWith(".scala")) {
-
     (s"scalac -d test${sp}bin${sp}${plgn} -Xplugin:test${sp}${plgn}.jar -cp test${sp}${plgn}.jar " +
       s"test${sp}tests${sp}${plgn}${sp}${x}").run(pio).exitValue
   })
