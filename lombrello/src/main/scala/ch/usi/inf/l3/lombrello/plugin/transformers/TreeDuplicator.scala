@@ -19,24 +19,81 @@ trait TreeDuplicatorCake {
 
     import duplicator.plgn.global._
 
-    def duplicate(x: Tree, newName: TermName): Tree = {
-      duplicate(x, newName, x.symbol.owner)
+    def duplicate(x: Tree): Tree = {
+      if(goodSymbol(x.symbol) && goodSymbol(x.symbol.owner))
+        duplicate(x, x.symbol.owner)
+      else
+        // TODO: Fix this error reporting
+        throw new Exception("Report an error")
     }
-    def duplicate(x: Tree, newName: TermName, newOwner: Symbol): Tree = {
+
+    def duplicate(x: Tree, newOwner: Symbol): Tree = {
+      // TODO: Implement this
+      duplicate(x, x.symbol.owner)
+    }
+
+    def duplicate(x: Tree, newName: Name): Tree = {
+      if(goodSymbol(x.symbol) && goodSymbol(x.symbol.owner))
+        duplicate(x, newName, x.symbol.owner)
+      else
+        // TODO: Fix this error reporting
+        throw new Exception("Report an error")
+    }
+    def duplicate(x: Tree, newName: Name, newOwner: Symbol): Tree = {
+      val newSym = x.symbol.cloneSymbol(newOwner).setName(newName)
       x match {
-        case ValDef(_, _, _, _) |
-          DefDef(_, _, _, _, _, _) |
-          ModuleDef(_, _, _) |
-          ClassDef(_, _, _, _) =>
-          val newTree = x.duplicate
-          val newSym = x.symbol.cloneSymbol(newOwner).setName(newName)
+        case ValDef(mods, name, tpt, rhs) =>
           newSym.setInfoAndEnter(x.symbol.tpe)
-          localTyper.atOwner(newOwner).typed(newTree.setSymbol(newSym))
+          val newTpt = duplicate(tpt, newSym) 
+          val newRhs = duplicate(rhs, newSym) 
+          localTyper.typed {
+            ValDef(mods, newName.toTermName, newTpt, newRhs).setSymbol(newSym)
+          }
+        case DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
+          val newTparams = tparams.foldLeft(Nil: List[TypeDef])((z, y) => {
+            (duplicate(y, y.name, newSym).asInstanceOf[TypeDef]) :: z
+          }).reverse
+          val newVparamss = vparamss.foldLeft(List[List[ValDef]]())((z1, y1) =>
+          {
+            (y1.foldLeft(List[ValDef]())((z2, y2) => {
+              (duplicate(y2, y2.symbol.name, newSym).asInstanceOf[ValDef]) :: z2
+            }).reverse) :: z1
+          }).reverse
+          val newTpt = duplicate(tpt, newSym)
+          val newRhs = duplicate(rhs, newSym)
+          val mtpe = MethodType(newVparamss.flatten.map(_.symbol), newTpt.tpe)
+          val newTpe = newTparams match {
+            case Nil => 
+              mtpe
+            case _ =>
+              PolyType(newTparams.map(_.symbol), mtpe)
+          }
+          newSym.setInfoAndEnter(x.symbol.tpe)
+          localTyper.typed {
+            DefDef(mods, newName.toTermName, newTparams, newVparamss, newTpt,
+                      newRhs).setSymbol(newSym)
+          }
+        case ModuleDef(mods, name, impl) =>
+          val newImpl = duplicate(impl, newSym).asInstanceOf[Template]
+          // TODO: Set info for newSym
+          localTyper.typed {
+            ModuleDef(mods, newName.toTermName, newImpl).setSymbol(newSym)
+          }
+        case ClassDef(mods, name, tparams, impl) =>
+          val newTparams = tparams.foldLeft(Nil: List[TypeDef])((z, y) => {
+            (duplicate(y, y.name, newSym).asInstanceOf[TypeDef]) :: z
+          }).reverse
+          val newImpl = duplicate(impl, newSym).asInstanceOf[Template]
+          // TODO: Set info for newSym
+          localTyper.typed {
+            ClassDef(mods, newName.toTypeName, newTparams, newImpl).setSymbol(newSym)
+          }
         case _ => x
       }
     }
 
-    def fixOwner(tree: Tree, oldOwner: Symbol, newOwner: Symbol, paramSyms: List[Symbol]): Unit = {
+    def fixOwner(tree: Tree, oldOwner: Symbol, 
+              newOwner: Symbol, paramSyms: List[Symbol]): Unit = {
       paramSyms match {
         case x :: xs =>
           changeParamSymbols(tree, oldOwner, paramSyms)
@@ -52,6 +109,7 @@ trait TreeDuplicatorCake {
         // I commented out this statement, because for generics types might change
         // One way to fix this is by passing a List of a pair of old and new symbols.
         // p <- paramSyms if (p.name == name && p.tpe =:= tpe)
+        // What about knowing if they have the same owner or not? -- Amanj?
         p <- paramSyms if (p.name == name)
       ) yield {
         p
