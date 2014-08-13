@@ -10,6 +10,93 @@ import ch.usi.inf.l3.lombrello.plugin.LombrelloPlugin
 trait SymbolsUtil { self: LombrelloPlugin =>
   import self.global._
 
+  // TODO: CHECK AGAINST SYMBOL NULL or NOSYMBOL throughout this class
+
+  //TODO: You should re-locate this method, it has nothing to do 
+  // with Symbol
+  /**
+    * Returns a list of applied arguments of an annotation.
+    *
+    * @param symbol the symbol that has annotation
+    * @param qual the fully qualified name of the intended annotation
+    *
+    * @return a list of applied arguments of an annotation.
+    */
+  def getAnnotationArguments(symbol: Symbol, qual: String): List[Tree] = {
+    val annoInfo = getAnnotationInfo(symbol, qual)
+    getAnnotationArguments(annoInfo)
+  }
+
+
+  /**
+    * Returns the symbol of the class that owns a tree. If the tree is not 
+    * owned by a class, then it returns None.
+    *
+    * Top level trees can be owned by no classes, like Packages, Classes,
+    * Modules (Objects).
+    *
+    * @param tree the tree that might be owned by a class
+    *
+    * @returns Some symbol of the class that owns the given tree, or None.
+    */
+  def getOwnerClass(tree: Tree): Option[ClassSymbol] = {
+    getOwnerClass(tree.symbol)
+  }
+
+  /**
+    * Returns the symbol of the class that owns a tree direcctly.
+    * If the tree is not directly owned by a class, then it returns
+    * None.
+    *
+    * @param tree the tree that might be owned by a class
+    *
+    * @returns Some symbol of the class that owns the given tree 
+    *          directly, or None.
+    */
+  def getOwnerIfClass(tree: Tree): Option[ClassSymbol] = {
+    getOwnerIfClass(tree.symbol)
+  }
+
+
+  /**
+    * Returns a list of applied arguments of an annotation.
+    *
+    * @param tree the tree that has annotation
+    * @param qual the fully qualified name of the intended annotation
+    *
+    * @return a list of applied arguments of an annotation.
+    */
+  def getAnnotationArguments(tree: Tree, qual: String): List[Tree] = {
+    getAnnotationArguments(tree.symbol, qual)
+  }
+
+  /**
+    * Returns a list of applied arguments of an annotation.
+    *
+    * @param annoInfo the optional annotation info of an annotation symbol
+    *
+    * @return a list of applied arguments of an annotation, if annoInfo is None
+    *         then return Nil.
+    */
+  def getAnnotationArguments(annoInfo: Option[AnnotationInfo]): List[Tree] = {
+    annoInfo match {
+      case None => Nil
+      case Some(info) => 
+        info.args
+    }
+  }
+
+  /**
+    * Returns a list of applied arguments of an annotation.
+    *
+    * @param annoInfo the annotation info of an annotation symbol
+    *
+    * @return a list of applied arguments of an annotation
+    */
+  def getAnnotationArguments(annoInfo: AnnotationInfo): List[Tree] = {
+    annoInfo.args
+  }
+
   /**
     * Returns the class symbol that represents an annotation
     *
@@ -94,6 +181,14 @@ trait SymbolsUtil { self: LombrelloPlugin =>
     */
   def isParam(x: Tree): Boolean = isParam(x.symbol)
 
+  /**
+    * Checks weather a Tree is constructor
+    *
+    * @param x the tree that represents a method
+    *
+    * @return true if x is constructor, and false otherwise
+    */
+  def isConstructor(x: Tree): Boolean = isConstructor(x.symbol)
 
   /**
     * Checks if a tree has an annotation
@@ -165,6 +260,15 @@ trait SymbolsUtil { self: LombrelloPlugin =>
     */
   def isParam(x: Symbol): Boolean = goodSymbol(x) && x.isValueParameter
 
+  /**
+    * Checks weather a Symbol is constructor
+    *
+    * @param x the symbol that represents a method
+    *
+    * @return true if x is constructor, and false otherwise
+    */
+  def isConstructor(x: Symbol): Boolean = goodSymbol(x) && x.isConstructor
+
 
   /**
     * Checks if a tree has an annotation
@@ -208,4 +312,48 @@ trait SymbolsUtil { self: LombrelloPlugin =>
     rootMirror.getClassByName(newTypeName(name))
 
 
+  /**
+    * Returns the symbol of the class that owns a symbol. If the symbol is not 
+    * owned by a class, then it returns None.
+    *
+    * Top level symbols can be owned by no classes, like Packages, Classes,
+    * Modules (Objects).
+    *
+    * @param symbol the symbol that might be owned by a class
+    *
+    * @returns Some symbol of the class that owns the given symbol, or None.
+    */
+  def getOwnerClass(symbol: Symbol): Option[ClassSymbol] = {
+    if(goodSymbol(symbol)) { //TODO: Is this enough?
+      symbol.owner match {
+        case s: ClassSymbol => Some(s)
+        case s: MethodSymbol if (s.isClassConstructor) => Some(s.owner.asClass)
+        case owner => getOwnerClass(owner)
+      }
+    } else {
+      None
+    }
+  }
+
+  /**
+    * Returns the symbol of the class that owns a symbol direcctly.
+    * If the symbol is not directly owned by a class, then it returns
+    * None.
+    *
+    * @param symbol the symbol that might be owned by a class
+    *
+    * @returns Some symbol of the class that owns the given symbol 
+    *          directly, or None.
+    */
+  def getOwnerIfClass(symbol: Symbol): Option[ClassSymbol] = {
+    if(goodSymbol(symbol)) {
+      symbol.owner match {
+        case s: ClassSymbol => Some(s)
+        case s: MethodSymbol if (s.isClassConstructor) => Some(s.owner.asClass)
+        case _ => None
+      }
+    } else {
+      None
+    }
+  }
 }
