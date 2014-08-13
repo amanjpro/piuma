@@ -21,6 +21,7 @@ abstract class TransformerPluginComponent(val plgn: LombrelloPlugin)
   with RenameTransformerCake 
   with TreeGenTransformerCake 
   with TreeDuplicatorCake 
+  with TreeModifiersCake 
   with TreeTraversersCake 
   with ExtractorTransformerCake
   with TreeTransformersCake {
@@ -48,6 +49,7 @@ abstract class TransformerPluginComponent(val plgn: LombrelloPlugin)
     with RenameTransformer 
     with TreeGenTransformer
     with TreeDuplicator
+    with TreeModifiers
     with TreeTraversers 
     with ExtractorTransformer 
     with TreeTransformers {
