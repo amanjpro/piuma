@@ -54,7 +54,19 @@ import scala.reflect.internal.Flags._
    * atomic sets.)
    */
   val classSetsMap: Map[Symbol, List[String]] = Map.empty
-  
+
+
+  /**
+   * This is Symbol to be compatible with what I get when I try to get
+   * the class symbol while transformation. In practice this should always
+   * be a class Symbol. The purpose is to relate classes to their atomic
+   * sets.
+   */
+  def addClassSetMapping(cs: Symbol, s: String) {
+    if (classSetsMap.contains(cs)) classSetsMap(cs) = s :: classSetsMap(cs)
+    else classSetsMap(cs) = s :: Nil
+  }
+
   /**************************** Common Names ************************************/
 
   /**
@@ -117,33 +129,11 @@ import scala.reflect.internal.Flags._
 
   plugin AtomicScala 
 
-  /**
-   * TODO this looks horrible, beautify, consider getOrElse. I am also
-   * inconsistent whether to test this condition here or by the caller.
-   * 
-   */
-  private def ownerClassSymbol(t: Tree) = {
-    if (hasSymbol(t))
-      t.symbol.owner match {
-        case s: ClassSymbol => Some(s)
-        case s: MethodSymbol if (s.isClassConstructor) => Some(s.owner)
-        case _ => None
-      }
-    else None
-  }
+  
 
   /**
-   * This is Symbol to be compatible with what I get when I try to get
-   * the class symbol while transformation. In practice this should always
-   * be a class Symbol. The purpose is to relate classes to their atomic
-   * sets.
-   */
-  private def addClassSetMapping(cs: Symbol, s: String) {
-    if (classSetsMap.contains(cs)) classSetsMap(cs) = s :: classSetsMap(cs)
-    else classSetsMap(cs) = s :: Nil
-  }
-
-  /**
+   * Returns the name of the atomic set.
+   *
    * Might need this if I decide to use java annotataions.
    *
    * TODO find a way to get the string value without using toString
@@ -151,20 +141,10 @@ import scala.reflect.internal.Flags._
    * TODO after changing my way of getting the methods, I need to change this 
    * too.
    */
-  private def j_atomicSetName(anno: AnnotationInfo) =
-    anno.javaArgs.head._2.toString()
 
-
-  /**
-   * Returns the name of the atomic set.
-   */
-  private def atomicSetName(annoOpt: Option[AnnotationInfo]) = {
-    annoOpt match {
-      case Some(anno) if anno.args != Nil =>
-        anno.args.head match {
-          case Apply(_, Literal(value) :: Nil) => value.stringValue
-          case _ => throw new Exception("Error getting atomic set name.")
-        }
+  private def atomicSetName(tree: Tree, qual: String) = {
+    getAnnotationArguments(tree, qual) match {
+      case Apply(_, Literal(value) :: Nil) :: xs => value.stringValue 
       case _ => throw new Exception("Error getting atomic set name.")
     }
   }
@@ -182,11 +162,11 @@ import scala.reflect.internal.Flags._
   private def addMapping(t: Tree) {  
     t match {
       case vt: ValDef if isVar(vt) &&
-                         ownerClassSymbol(t) != None && //TODO: Wat?
+                         getOwnerIfClass(t) != None && //TODO: Wat?
                          hasAnnotation(t, atomic_anno) =>
         addClassSetMapping(
-          ownerClassSymbol(t).get,
-          atomicSetName(getAnnotationInfo(t, atomic_anno)))
+          getOwnerIfClass(t).get,
+          atomicSetName(t, atomic_anno))
       case _ => None
     }
   }
@@ -209,16 +189,7 @@ import scala.reflect.internal.Flags._
   rightAfter("class-sets-mapping")
 
   plugin AtomicScala 
-  /**
-   * This is Symbol to be compatible with what I get when I try to get
-   * the class symbol while transformation. In practice this should always
-   * be a class Symbol. The purpose is to relate classes to their atomic
-   * sets.
-   */
-  private def addClassSetMapping(cs: Symbol, s: String) {
-    if (classSetsMap.contains(cs)) classSetsMap(cs) = s :: classSetsMap(cs)
-    else classSetsMap(cs) = s :: Nil
-  }
+  
 
   /**
    *  TODO I think I am mixing type checking with other things here,
@@ -324,52 +295,20 @@ import scala.reflect.internal.Flags._
     val hasLocksInSupers = hasLockFieldInParents(parentClasses)
 
     // I think the flags are not as important as I though, most 
-    // important is to create the ValDef using the cass symbol
+    // important is to create the ValDef using the class symbol
     // but will need to check that more.
-    val lock_sym = if (hasLocksInSupers) {
-      old_construtcor.symbol.newValueParameter(
-        newTermName(as_lock), old_construtcor.symbol.pos.focus)
-        .setInfo(lockType)
-        .setFlag(PARAMACCESSOR | PARAM | SYNTHETIC)
-    }
-    else
-      old_construtcor.symbol.owner.newValueParameter(
-        newTermName(as_lock), old_construtcor.symbol.pos.focus)
-        .setInfo(lockType)
-        .setFlag(PARAM | PARAMACCESSOR | SYNTHETIC)
-        
-    val param = localTyper.typed(ValDef(lock_sym).setType(lockType)).asInstanceOf[ValDef]
-    val newparamss = param :: old_construtcor.vparamss.head
-    val pList = newparamss :: old_construtcor.vparamss.drop(1)
-
-    val methDef = localTyper.typed(DefDef(old_construtcor.mods, old_construtcor.name, 
-        old_construtcor.tparams, pList, old_construtcor.tpt.duplicate, 
-        old_construtcor.rhs).setSymbol(old_construtcor.symbol))
-
-    val methodInfo = methDef.symbol.info.asInstanceOf[MethodType]
-
-    methDef.symbol.updateInfo(MethodType(
-      lock_sym :: methodInfo.params, methodInfo.resultType))
-      
-    // it is annoying that trees that are not linked correctly to owner
-    // symbols still generate bytecode, that is not usable.
-    // submit example with the proxy issue to Amanj
-    if(!hasLocksInSupers) methDef.symbol.owner.info.decls.enter(lock_sym)
-
-    methDef
+    val lockParam = mkConstructorParam(old_construtcor, as_lock, 
+                        lockType, hasLocksInSupers) 
+    addParam(lockParam, old_construtcor)
   }
 
   def transform(tree: Tree): Tree = {
     tree match {
-      case constructor: DefDef if (hasSymbol(constructor) &&
-        constructor.symbol.isConstructor &&
-        !constructor.symbol.owner.isModule &&
-        classSetsMap.contains(constructor.symbol.owner)) =>
-
+      case constructor: DefDef if isConstructor(constructor) &&
+                  classSetsMap.contains(constructor.symbol.owner) =>
         val newConstructor =
           getNewConstructor(constructor, getClassByName(lockClass).tpe)
         super.transform(newConstructor)
-
       case _ => super.transform(tree)
     }
   }
@@ -383,7 +322,6 @@ import scala.reflect.internal.Flags._
  * do here. We also update 'super' calls here. 
  */
 @phase("modify-new-stmts") class ModifyNewStmts {
-
 
   rightAfter("add-lock-fields")
 
@@ -408,91 +346,73 @@ import scala.reflect.internal.Flags._
 
     val newArg = reify { ch.usi.inf.l3.as.plugin.OrderedLock() }.tree
     val newArgs = newArg :: oldArgs
-    val newStmtM = localTyper.typed(
-        Apply(Select(New(ownerClassTpt), nme.CONSTRUCTOR), newArgs))
-    newStmtM
+    mkConstructorCall(ownerClassTpt, newArgs)
   }
 
   def transform(tree: Tree): Tree = {
     tree match {
-//          case s @DefDef(_,_,_,_,_,_) =>
-//            println("METHOD HERE in " + s.symbol.enclClass)
-//            println(s)
-//            println(showRaw(s))
-//            super.transform(tree)
         
       case valNewRHS @ ValDef(mods, name, tpt,
-        Apply(Select(New(ntpt), nme.CONSTRUCTOR), args)) 
+        apply @ Apply(Select(New(ntpt), nme.CONSTRUCTOR), args)) 
         if (classSetsMap.contains(ntpt.symbol)) =>
 
         val aliasA = getAnnotationInfo(valNewRHS, alias_anno) 
           
         aliasA match {
           case Some(_) =>
+            // TODO Remove this to Lombrello
             val ownerClass = valNewRHS.symbol.enclClass
             val lock_f = 
               ownerClass.info.findMember(newTermName(as_lock), 0, 0, false)
 
             // TODO this should move to a special typechecking phase.
-            if (lock_f == NoSymbol || lock_f == null)
+            if (!goodSymbol(lock_f))
               throw new Exception("Enclosing class does not have atomic sets")
             
-            val newArg = Select(This(ownerClass), newTermName(as_lock))
-
+            val newArg = mkSelect(This(ownerClass), newTermName(as_lock))
             val newArgs = newArg :: args
-
-            val newRHS = localTyper.typed(
-              Apply(Select(New(ntpt), nme.CONSTRUCTOR), newArgs))
-            val newvalDef = treeCopy.ValDef(valNewRHS, mods, name, tpt, newRHS)
-            
-            super.transform(localTyper.typed(newvalDef))
-
+            val newRHS = mkConstructorCall(ntpt, newArgs)
+            val newvalDef = updateRHS(valNewRHS, newRHS)
+            super.transform(newvalDef)
           case None =>
             val newRHS = passNewLock(args, ntpt)
-            val newvalDef = treeCopy.ValDef(valNewRHS, mods, name, tpt, newRHS)
-            super.transform(localTyper.typed(newvalDef))
+            val newvalDef = updateRHS(valNewRHS, newRHS)
+            super.transform(newvalDef)
         }
 
       case sc @ Apply(fn @ (Select(spr @ Super(ths @ This(klass), 
             m), nme.CONSTRUCTOR)), args) 
             // TODO this is fragile here without nullness checks, so do it later.
             if (classSetsMap.contains(spr.symbol.enclClass.parentSymbols.head)) =>
-          //TODO I am not sure of it is fine taking the param of primary 
-          // constructor here, or i need to select the exact surrounding 
-          // consructor
-          val lockValSym = ths.symbol.primaryConstructor.
-            asInstanceOf[MethodSymbol].paramss.head.head
-          
-          val newArg = Ident(lockValSym) 
-          val newArgs =  newArg :: args
-          
-          val newSelect = (Select(Super(This(klass), m), nme.CONSTRUCTOR))
+         //TODO I am not sure of it is fine taking the param of primary 
+         // constructor here, or i need to select the exact surrounding 
+         // consructor
+         val lockValSym = ths.symbol.primaryConstructor.
+           asInstanceOf[MethodSymbol].paramss.head.head
+        
+         val newArg = Ident(lockValSym) 
+         val newArgs =  newArg :: args
          
-          val newApply = localTyper.typed(Apply(newSelect, newArgs).setSymbol(sc.symbol))
+         val newApply = mkConstructorCall(This(klass), newArgs)
 
-          super.transform(newApply)
-           
-       case cnst @ DefDef(_, nme.CONSTRUCTOR, _, _, _, Block( lst @ List( 
+         super.transform(newApply)
+      case cnst @ DefDef(_, nme.CONSTRUCTOR, _, _, _, Block( lst @ List( 
            sc @ Apply( 
                fn @ Select( 
                    ths @ This(klass), nme.CONSTRUCTOR), args), _*), c)) 
 //           TODO this is fragile here without nullness checks, so do it later.
-      if (classSetsMap.contains(sc.symbol.enclClass.parentSymbols.head)) =>
-            val lockValSym = cnst.vparamss.head.head;
-            val newArg = Ident(lockValSym.symbol) //args.drop(1).head 
-            val newArgs =  newArg :: args
-            
-            val newSelect = (Select(This(klass), nme.CONSTRUCTOR))
-           
-            val newApply = localTyper.typed(Apply(newSelect, newArgs).setSymbol(sc.symbol))
-            
-            val newBlock = Block(newApply::lst.drop(1), c)
-            
-            val newCnst = treeCopy.DefDef(
-                cnst, cnst.mods, cnst.name, cnst.tparams, 
-                cnst.vparamss, cnst.tpt, newBlock)
-                
-            super.transform(newCnst)
+              if (classSetsMap.contains(sc.symbol.enclClass.parentSymbols.head)) =>
+        val lockValSym = cnst.vparamss.head.head;
+        val newArg = Ident(lockValSym.symbol) //args.drop(1).head 
+        val newArgs =  newArg :: args
+        
+        val newApply = mkConstructorCall(This(klass), newArgs)
+        
+        val newBlock = Block(newApply::lst.drop(1), c)
+        
+        val newCnst = updateRHS(cnst, newBlock)
+          
+        super.transform(newCnst)
       case _ => super.transform(tree)
     }
   }
