@@ -14,6 +14,7 @@ trait TreeGenTransformerCake {
   trait TreeGenTransformer {
     self: renamer.TransformerComponent =>
 
+    import renamer.plgn._
     import renamer.plgn.global._
     
 
@@ -118,6 +119,68 @@ trait TreeGenTransformerCake {
 
 
     /**
+      * Creates a constructor parameter tree, or a constructor field if neccessary
+      *
+      * @param constructor tree that represents the constructor
+      * @param name the name of the constructor parameter.
+      * @param info the type tree of the constructor parameter.
+      * @param isField a flag whether this parameter is needs a field or not
+      *
+      * @return a well-typed constructor parameterer owned by the constructor. If
+      *         the isField flag is true, then the parameter is owned by the owner
+      *         of the constructor.
+      */
+    def mkConstructorParam(constructor: DefDef, name: String,
+                          info: Type, 
+                          isField: Boolean): ValDef = {
+      mkConstructorParam(constructor, name, info, EmptyTree, isField) 
+    }
+
+
+    /**
+      * Creates a constructor parameter tree, or a constructor field if neccessary
+      *
+      * @param constructor tree that represents the constructor
+      * @param name the name of the constructor parameter.
+      * @param info the type tree of the constructor parameter.
+      * @param rhs the default value of the constructor parameter
+      * @param isField a flag whether this parameter is needs a field or not
+      *
+      * @return a well-typed constructor parameterer owned by the constructor. If
+      *         the isField flag is true, then the parameter is owned by the owner
+      *         of the constructor.
+      */
+    def mkConstructorParam(constructor: DefDef, name: String,
+                          info: Type, rhs: Tree,
+                          isField: Boolean): ValDef = {
+      val consSym = constructor.symbol
+      goodSymbol(consSym) match {
+        case true if isField =>
+          val psym = consSym.newValueParameter(
+            TermName(name), consSym.pos.focus)
+          psym setInfo info
+          psym.setFlag(Flag.PARAMACCESSOR | Flag.PARAM | Flag.SYNTHETIC)
+          localTyper.typed {
+            ValDef(psym, rhs)
+          }.asInstanceOf[ValDef]
+        case true if goodSymbol(consSym.owner) =>
+          val owner = consSym.owner
+          val psym = owner.newValueParameter(
+                      TermName(name), owner.pos.focus)
+          psym setInfoAndEnter info
+          psym.setFlag(Flag.PARAMACCESSOR | Flag.PARAM | Flag.SYNTHETIC)
+          localTyper.typed {
+            ValDef(psym, rhs)
+          }.asInstanceOf[ValDef]
+        case _ =>
+          // TODO what to do?
+          throw new Exception("")
+      }
+    }
+
+
+
+    /**
       * Creates a parameter tree.
       *
       * @param name the name of the parameter.
@@ -164,7 +227,6 @@ trait TreeGenTransformerCake {
         case _ =>
           val tpapply = TypeApply(fun, targs)
           mkApply(tpapply, args)
-
       }
     }
 
@@ -175,14 +237,40 @@ trait TreeGenTransformerCake {
       * @param on the tree on which the syncrhonized is called
       * @param tpt the type tree of the body
       *
-      * @return returns a tree that represend a call of synchronized on
+      * @return returns a tree that represents a call of synchronized on
       *         the body.
       */
     def mkSynchronized(body: Tree, on: Tree, tpt: Tree): Apply = {
       mkApply(Select(on, TermName("synchronized")), List(tpt), List(body))
     }
     
-    
+    /**
+      * Makes a constructor call for a class, i.e. a ``new'' expression
+      *
+      * @param tpt the symbol of the class that needs to be constructed
+      * @param args the list of arguments to be provided
+      *
+      * @return returns a tree that represents an expression to constructing
+      *         an instance of tpt.
+      */
+    def mkConstructorCall(tpt: Tree, args: List[Tree]): Apply = {
+      mkConstructorCall(tpt, Nil, args)
+    }
+
+    /**
+      * Makes a constructor call for a class, i.e. a ``new'' expression
+      *
+      * @param tpt the symbol of the class that needs to be constructed
+      * @param targs the list of type arguments to be applied
+      * @param args the list of arguments to be provided
+      *
+      * @return returns a tree that represents an expression to constructing
+      *         an instance of tpt.
+      */
+    def mkConstructorCall(tpt: Tree, targs: List[Tree], 
+                                  args: List[Tree]): Apply = {
+      mkApply(Select(New(tpt), nme.CONSTRUCTOR), targs, args)
+    }
     /**
       * Creates a val or var, depending on isVal flag. And it is owned
       * by the owner.
