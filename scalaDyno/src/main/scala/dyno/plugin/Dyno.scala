@@ -1,33 +1,37 @@
 package dyno.plugin
 
-import scala.tools.nsc.Global
-import scala.tools.nsc.plugins.Plugin
-import scala.tools.nsc.plugins.PluginComponent
+import ch.usi.inf.l3.lombrello.neve.NeveDSL._
+// import scala.tools.nsc.Global
+// import scala.tools.nsc.plugins.Plugin
+// import scala.tools.nsc.plugins.PluginComponent
 import transform._
+import metadata._
 import metadata._
 import scala.tools.nsc.reporters.AbstractReporter
 import scala.tools.nsc.reporters.Reporter
-import scala.reflect.internal.util.Position
+// import scala.reflect.internal.util.Position
 import dyno.plugin.transform.prepare.DynoPrepareTreeTransformer
 import collection.mutable.Map
-import scala.reflect.internal.Phase
+// import scala.reflect.internal.Phase
 
 object ErrorList {
 }
 
-/** Main scaladyno class */
-class Dyno(val global: Global) extends Plugin { plugin =>
-  import global._
 
+
+
+/** Main scaladyno class */
+@plugin(DynoPrepareTreeTransformer) class Dyno { 
+  // import global._
+
+  val beforeFinder = "typer"
   val errorList:Map[Position, String] = Map.empty //a maping which collects are erros which have been converted to warnings, their position is used as key
   var dynoPreparePhaseId:Int = 0
 
   val name = "dyno"
-  val description = "provides value class functionality"
+  describe("provides value class functionality")
 
-  val components = List[PluginComponent](
-    DynoPreparePhaseObj
-  )
+  var flag_passive = false
 
   /*
    *  Through reflection we change the default reporter of the compiler such that it only yields warnings and no errors for typing and naming errors.
@@ -59,43 +63,19 @@ class Dyno(val global: Global) extends Plugin { plugin =>
     }
   }
 
-  lazy val helper = new { val global: plugin.global.type = plugin.global } with DynoHelper
+  // lazy val helper = new { val global: plugin.global.type = plugin.global } with DynoHelper
+
+  
 
   override def processOptions(options: List[String], error: String => Unit) {
     for (option <- options) {
       if (option == "passive")
-        helper.flag_passive = true
+        flag_passive = true
       else
         error("Dyno: option not understood: " + option)
     }
   }
 
-  /*
-   * general setting for the compiler plugin
-   */
-  private object DynoPreparePhaseObj extends DynoPreparePhase { self =>
-    val global: Dyno.this.global.type = Dyno.this.global
-    val runsAfter = List("typer")
-    override val runsRightAfter = Some("typer")
-    val phaseName = Dyno.this.name + "-prepare"
-
-    import global._
-    val helper: plugin.helper.type = plugin.helper
-
-    var dynoPreparePhase : StdPhase = _
-    override def newPhase(prev: scala.tools.nsc.Phase): StdPhase = {
-      dynoPreparePhase = new Phase(prev)
-      dynoPreparePhaseId = dynoPreparePhase.id
-      dynoPreparePhase
-    }
-    def errorList:Map[Position, String] = Dyno.this.errorList
-
-    def revertReporter(): Unit = {
-      global.reporter match {
-        case rep: OurHackedReporter =>
-          global.reporter = rep.orig
-        case _ =>
-      }
-    }
-  }
+  
 }
+
