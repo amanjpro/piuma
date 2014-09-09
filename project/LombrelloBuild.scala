@@ -33,7 +33,9 @@ object LombrelloBuild extends Build {
     "root",
     file("."),
     settings = buildSettings ++ Seq(
-      run <<= run in Compile in main in simple in kara in atomicScala in scalaDyno,
+      run <<= run in Compile in main in simple in 
+                kara in atomicScala in scalaDyno in
+                miniboxing,
       name := "root"
     )
    ) aggregate (main)
@@ -73,6 +75,14 @@ object LombrelloBuild extends Build {
     base = file("scalaDyno"),
     settings = buildSettings ++ Seq(
       name := "scalaDyno"
+    )
+  ) dependsOn (main)
+
+  lazy val miniboxing: Project = Project(
+    "miniboxing",
+    base = file("miniboxing"),
+    settings = buildSettings ++ Seq(
+      name := "miniboxing"
     )
   ) dependsOn (main)
 

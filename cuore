@@ -20,7 +20,8 @@ val lombrelloVersion = "0.1-SNAPSHOT"
 val targetPath = s"target${sp}scala-${scalaVersion}"
 
 val mainProject = "lombrello"
-val plugins = List("kara", "atomicScala", "scalaDyno", "simple")
+val plugins = List("kara", "atomicScala", "miniboxing", 
+                    "scalaDyno", "simple")
 val tasks = List("compile", "package", "clean", "test")
 
 
@@ -238,7 +239,7 @@ def processOptions(opts: Array[String]): Unit = {
       
 
     case Array("compile", prjct) if (plugins.contains(prjct)) =>
-      print(prjct)
+      println(s"Now compiling $prjct")
       buildSBTProject(prjct)
       0
     case Array("package", prjct) if (plugins.contains(prjct)) =>
