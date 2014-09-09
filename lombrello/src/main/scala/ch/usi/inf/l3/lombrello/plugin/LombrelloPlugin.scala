@@ -19,6 +19,7 @@ import scala.tools.nsc.doc.model.TreeFactory
 import ch.usi.inf.l3.lombrello.util.Utilities
 import ch.usi.inf.l3.lombrello.util.SymbolsUtil
 import ch.usi.inf.l3.lombrello.util.StoreScopeCake
+// import scala.tools.nsc.symtab._
 import ch.usi.inf.l3.lombrello.util.ScopeCake
 
 abstract class LombrelloPlugin(val global: Global)
@@ -52,5 +53,10 @@ abstract class LombrelloPlugin(val global: Global)
   
   def getClassTree(sym: Symbol): Option[Tree] = {
     treeBank.get(sym)
+  }
+
+
+  def addAnnotationChecker(annotationChecker: AnnotationChecker): Unit = {
+    global.addAnnotationChecker(annotationChecker)
   }
 }
