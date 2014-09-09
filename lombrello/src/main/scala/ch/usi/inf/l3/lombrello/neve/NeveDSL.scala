@@ -12,6 +12,8 @@ import scala.annotation.tailrec
 import scala.reflect.runtime.universe._
 
 
+// TODO: Allow plugins to extends traits
+
 object NeveDSL {
 
     
@@ -47,7 +49,9 @@ object NeveDSL {
         case (clazz: ClassDef) :: Nil => 
          // Cannot extend anything except AnyRef, and you should
           // remove it
-          checkParents(c)(clazz.impl.parents)
+          val newParents = 
+            q"""ch.usi.inf.l3.lombrello.plugin.InfoTransformerPluginComponent(
+                plgn)""" :: checkParents(c)(clazz.impl.parents)
 
 
           val (nbody, plgnName) = generateBody(c)(clazz.impl.body, 
@@ -59,12 +63,12 @@ object NeveDSL {
             case false => Ident(TypeName(plgnName))
           }
 
+
           val b = q"""
             class ${clazz.name}
             (override val plgn: ${plgnType})
             extends 
-            ch.usi.inf.l3.lombrello.plugin.InfoTransformerPluginComponent(
-                plgn) {
+              ..${newParents} {
               import plgn._
               import plgn.global._
               import plgn.utilities._
@@ -91,7 +95,10 @@ object NeveDSL {
           
           // Cannot extend anything except AnyRef, and you should
           // remove it
-          checkParents(c)(clazz.impl.parents)
+          val newParents = q"""
+          ch.usi.inf.l3.lombrello.plugin.CheckerPluginComponent(
+              plgn)""" :: checkParents(c)(clazz.impl.parents)
+
 
 
           val (nbody, plgnName) = generateBody(c)(clazz.impl.body, CheckerPhase)
@@ -105,9 +112,7 @@ object NeveDSL {
           val b = q"""
           class ${clazz.name}
           (override val plgn: ${plgnType})
-          extends 
-          ch.usi.inf.l3.lombrello.plugin.CheckerPluginComponent(
-              plgn) {
+          extends ..${newParents} { 
             import plgn._
             import plgn.global._
             import plgn.utilities._
@@ -133,23 +138,25 @@ object NeveDSL {
           
           // Cannot extend anything except AnyRef, and you should
           // remove it
-          checkParents(c)(clazz.impl.parents)
+          val newParents =
+           q"""ch.usi.inf.l3.lombrello.plugin.TransformerPluginComponent(
+              plgn)""" :: checkParents(c)(clazz.impl.parents)
 
 
+          
           val (nbody, plgnName) = 
-            generateBody(c)(clazz.impl.body, TransformerPhase)
+          generateBody(c)(clazz.impl.body, TransformerPhase)
                     
           val plgnType = plgnName.equals("") match {
             case true => Select(q"ch.usi.inf.l3.lombrello.plugin", 
                                   TypeName("LombrelloPlugin"))
             case false => Ident(TypeName(plgnName))
           }
+
           val r = q"""
           class ${clazz.name}
           (override val plgn: ${plgnType})
-          extends 
-          ch.usi.inf.l3.lombrello.plugin.TransformerPluginComponent(
-              plgn) {
+          extends ..${newParents} {
             import plgn._
             import plgn.global._
             import plgn.utilities._
@@ -175,7 +182,9 @@ object NeveDSL {
         case (clazz: ClassDef) :: Nil => 
           // Cannot extend anything except AnyRef, and you should
           // remove it
-          checkParents(c)(clazz.impl.parents)
+          val newParents = 
+            q"ch.usi.inf.l3.lombrello.plugin.LombrelloPlugin(global)" ::
+            checkParents(c)(clazz.impl.parents)
 
           val params: List[Tree] = c.prefix.tree match {
             case Apply(_, xs) =>
@@ -211,7 +220,7 @@ object NeveDSL {
           q"""
             class ${clazz.name}(override val global: 
                       scala.tools.nsc.Global) extends 
-            ch.usi.inf.l3.lombrello.plugin.LombrelloPlugin(global) {
+              ..${newParents} {
               ..${nbody}
             }
           """
@@ -239,15 +248,17 @@ object NeveDSL {
 
 
   private def checkParents(c: Context)
-           (parents: List[c.universe.Tree]): Unit = {
+           (parents: List[c.universe.Tree]): List[c.universe.Tree] = {
     // I convert them to String, because pattern matching does not work
     // properly for Trees
-    parents.map(_.toString) match {
-      case "scala.AnyRef" :: Nil => ()
-      case _ => fail(c, "Phase classes cannot extend and/or "+
-                "mix in anything other than AnyRef\n" +
-                "       expected: List(scala.AnyRef)\n" +
+    parents match {
+      case q"scala.AnyRef" :: rest => rest
+      case q"java.lang.Object" :: rest => rest
+      case _ => 
+        fail(c, "Compiler Plugin classes cannot extend "+
+                "anything other than AnyRef\n" +
                 "          found: " + parents)
+        Nil
     }
   }
 
