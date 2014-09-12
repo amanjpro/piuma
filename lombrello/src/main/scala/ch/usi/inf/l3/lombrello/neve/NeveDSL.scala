@@ -196,14 +196,17 @@ object NeveDSL {
       val inputs = annottees.map(_.tree).toList
       val expandee = inputs match {
         case (clazz: ClassDef) :: Nil => 
+
           // Cannot extend anything except AnyRef, and you should
           // remove it
           val newParents = 
             Apply(Select(q"ch.usi.inf.l3.lombrello.plugin", 
                       TypeName("LombrelloPlugin")),
-                List(Ident(TermName("global")))) ::
-                  checkParents(c)(clazz.impl.parents)
+                List(Ident(TermName("global")))) :: 
+                checkParents(c)(clazz.impl.parents)
+                  
            
+
           // val newParents q"ch.usi.inf.l3.lombrello.plugin.LombrelloPlugin(global)" ::
           //   checkParents(c)(clazz.impl.parents)
 
@@ -275,12 +278,13 @@ object NeveDSL {
     import c.universe._
     val anyref = reify {scala.AnyRef}
     parents match {
-      case anyref :: rest => rest
-      case _ => 
-        fail(c, "Compiler Plugin classes cannot extend "+
-                "anything other than AnyRef\n" +
-                "          found: " + parents)
-        Nil
+      case `anyref` :: rest => rest
+      case xs => xs
+        // TODO: Do I need a check here? Probably not
+        // fail(c, "Compiler Plugin classes cannot extend "+
+                // "anything other than AnyRef\n" +
+                // "          found: " + parents)
+        // Nil
     }
   }
 
