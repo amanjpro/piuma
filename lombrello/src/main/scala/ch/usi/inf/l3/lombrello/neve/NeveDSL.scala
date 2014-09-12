@@ -152,6 +152,7 @@ object NeveDSL {
           //  q"""ch.usi.inf.l3.lombrello.plugin.TransformerPluginComponent(
           //     plgn)""" :: checkParents(c)(clazz.impl.parents)
 
+          val nparents = checkParents(c)(clazz.impl.parents)
           val newParents = 
             Apply(Select(q"ch.usi.inf.l3.lombrello.plugin", 
                     TypeName("TransformerPluginComponent")), 
@@ -159,6 +160,8 @@ object NeveDSL {
                   checkParents(c)(clazz.impl.parents)
 
 
+          println(nparents)
+          println(newParents)
           
           val (nbody, plgnName) = 
           generateBody(c)(clazz.impl.body, TransformerPhase)
@@ -276,9 +279,10 @@ object NeveDSL {
     // I convert them to String, because pattern matching does not work
     // properly for Trees
     import c.universe._
-    val anyref = reify {scala.AnyRef}
     parents match {
-      case `anyref` :: rest => rest
+      case Select(x, TypeName("AnyRef")) :: xs 
+                if x.symbol == definitions.ScalaPackage => 
+        xs
       case xs => xs
         // TODO: Do I need a check here? Probably not
         // fail(c, "Compiler Plugin classes cannot extend "+
