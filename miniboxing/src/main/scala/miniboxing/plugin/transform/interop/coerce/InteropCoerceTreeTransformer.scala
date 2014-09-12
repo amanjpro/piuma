@@ -21,6 +21,10 @@ import scala.tools.nsc.transform.TypingTransformers
 import scala.tools.nsc.transform.InfoTransform
 import scala.tools.nsc.typechecker.Analyzer
 
+
+// TODO: Delete candidate 
+
+
 trait InteropCoerceTreeTransformer extends InfoTransform with TypingTransformers {
   self: InteropCoerceComponent =>
 
