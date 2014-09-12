@@ -1,0 +1,4 @@
+<plugin>
+  <name>mina</name>
+  <classname>ch.usi.inf.l3.mina.eval.HPE</classname>
+</plugin>

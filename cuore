@@ -21,7 +21,7 @@ val targetPath = s"target${sp}scala-${scalaVersion}"
 
 val mainProject = "lombrello"
 val plugins = List("kara", "atomicScala", "miniboxing", 
-                    "scalaDyno", "simple")
+                    "scalaDyno", "simple", "mina")
 val tasks = List("compile", "package", "clean", "test")
 
 
