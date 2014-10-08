@@ -5,16 +5,17 @@
 package ch.usi.inf.l3.lombrello.plugin
 
 import transformers._
+import ch.usi.inf.l3.lombrello.util._
 import scala.tools.nsc.transform.TypingTransformers
 import scala.tools.nsc.ast.TreeDSL
 import scala.tools.nsc.transform.Transform
 import scala.tools.nsc.plugins.PluginComponent
 import scala.language.implicitConversions
 import scala.reflect.runtime.universe._
-import ch.usi.inf.l3.lombrello.util.SymbolsUtil
 
 abstract class TransformerPluginComponent(val plgn: LombrelloPlugin)
   extends PluginComponent
+  with LombrelloImplicitsCake
   with Transform
   with TypingTransformers
   with TreeDSL
@@ -46,7 +47,9 @@ abstract class TransformerPluginComponent(val plgn: LombrelloPlugin)
     */
   abstract class TransformerComponent(val unit: CompilationUnit)
     extends TypingTransformer(unit)
+    with LombrelloImplicits
     with RenameTransformer 
+    with TreeDSL
     with TreeGenTransformer
     with TreeDuplicator
     with TreeModifiers
