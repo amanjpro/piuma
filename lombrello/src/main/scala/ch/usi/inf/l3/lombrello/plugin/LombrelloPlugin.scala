@@ -18,6 +18,9 @@ import scala.tools.nsc.Settings
 import scala.tools.nsc.doc.model.TreeFactory
 import ch.usi.inf.l3.lombrello.util.Utilities
 import ch.usi.inf.l3.lombrello.util.SymbolsUtil
+import ch.usi.inf.l3.lombrello.util.TypesUtil
+import ch.usi.inf.l3.lombrello.util.TreesUtil
+import ch.usi.inf.l3.lombrello.util.SymbolsUtil
 import ch.usi.inf.l3.lombrello.util.StoreScopeCake
 // import scala.tools.nsc.symtab._
 import ch.usi.inf.l3.lombrello.util.ScopeCake
@@ -25,6 +28,8 @@ import ch.usi.inf.l3.lombrello.util.ScopeCake
 abstract class LombrelloPlugin(val global: Global)
   extends Plugin
   with SymbolsUtil 
+  with TreesUtil
+  with TypesUtil
   with StoreScopeCake
   with ScopeCake {
 
