@@ -16,7 +16,28 @@ trait TreeGenTransformerCake {
 
     import renamer.plgn._
     import renamer.plgn.global._
-    
+
+    /**
+      * Creates an AST node for Return
+      *
+      * @param expr the expression to be returned
+      * 
+      * @return a node that represents returning of expr
+      */
+    def mkReturn(expr: Tree): Return = {
+      localTyper.typed {Return(expr)}.asInstanceOf[Return]
+    }
+    /**
+      * Creates an AST node for Assignment
+      *
+      * @param lhs the tree to be assigned to
+      * @param rhs the tree taht represents the value
+      * 
+      * @return a node that represents assigning rhs to lhs
+      */
+    def mkAssign(lhs: Tree, rhs: Tree): Assign = {
+      localTyper.typed {Assign(lhs, rhs)}.asInstanceOf[Assign]
+    }
 
     /**
       * Creates a literal contant.
@@ -80,6 +101,7 @@ trait TreeGenTransformerCake {
       * @return a well-typed select tree.
       */
     def mkSelect(qual: Tree, name: String): Select = {
+      require(hasSymbol(qual))
       mkSelect(qual, TermName(name))
     }
 
@@ -99,7 +121,10 @@ trait TreeGenTransformerCake {
         returns a TypeApply, that is why I only return the select part
         of it!
       */
-      localTyper.typed { Select(qual, name) } match {
+
+      require(hasSymbol(qual)) 
+      val s = Select(qual, name).setSymbol(qual.symbol) 
+      localTyper.typed { s } match {
         case x: Select => x
         case _ => Select(qual, name)
       }
@@ -119,6 +144,87 @@ trait TreeGenTransformerCake {
 
 
     /**
+      * Creates a block of statements
+      *
+      * @param stmts the statements of a block
+      *
+      * @return a well-typed Block instance.
+      */
+    def mkBlock(stmts: List[Tree]): Tree = {
+      stmts match {
+        case Nil => mkBlock(Nil, mkUnitLiteral)
+        case l => mkBlock(l.take(l.size - 1), l.last)
+      }
+    }
+
+    /**
+      * Creates a block of statements
+      *
+      * @param stats all but last statements of a block
+      * @param ret the last statement of a block
+      *
+      * @return a well-typed Block instance.
+      */
+    def mkBlock(stats: List[Tree], ret: Tree): Tree = {
+      // FIXME: it is not safe to type-check block then
+      // cast it back to block, because of situations as 
+      // follows:
+      // typed {mkBlock(Nil, Literal(Constant(1))}
+      // returns Literal(Constant(1)) not a Block
+      typed { Block(stats, ret)}
+    }
+
+    /**
+      * Creates a Function expression
+      *
+      * @param params the list of parameters of the function value
+      * @param body the body of the function value
+      *
+      * @return a well-typed Function instance.
+      */
+    def mkFunction(params: List[ValDef], body: Tree): Function = {
+      localTyper.typed(Function(params, body)).asInstanceOf[Function]
+    }
+
+
+    /**
+      * Creates an if-else expression
+      *
+      * @param cond the condition of the if-else
+      * @param thenp then clause of the if-else
+      * @param elsep else clasue of the if-else
+      *
+      * @return a well-typed If instance.
+      */
+    def mkIf(cond: Tree, thenp: Tree, elsep: Tree): If = {
+      localTyper.typed(If(cond, thenp, elsep)).asInstanceOf[If]
+    }
+    /**
+      * Creates a CaseDef
+      *
+      * @param pat the pattern tree of the case
+      * @param guard the guard tree of the case
+      * @param body the body of the case
+      *
+      * @return a well-typed CaseDef instance.
+      */
+    def mkCaseDef(pat: Tree, guard: Tree, body: Tree): CaseDef = {
+      localTyper.typed(CaseDef(pat, guard, body)).asInstanceOf[CaseDef]
+    }
+
+    /**
+      * Creates a Match
+      *
+      * @param selector the selector of the match
+      * @param cases the cases of the match
+      *
+      * @return a well-typed CaseDef instance.
+      */
+    def mkMatch(selector: Tree, cases: List[CaseDef]): Match = {
+      localTyper.typed(Match(selector, cases)).asInstanceOf[Match]
+    }
+
+    /**
       * Creates a constructor parameter tree, or a constructor field if neccessary
       *
       * @param constructor tree that represents the constructor
@@ -136,6 +242,57 @@ trait TreeGenTransformerCake {
       mkConstructorParam(constructor, name, info, EmptyTree, isField) 
     }
 
+    /**
+      * Creates a constructor tree
+      *
+      * @param clazz a tree that represents the host class
+      * @param tparams the list of the type parameters of the constructor
+      *
+      * @return a tree that represents a constructor of class ``clazz''. Note
+      *         that the constructor does not have a body, and takes not parameter
+      *         to add them, use addParam and updateRhs.
+      */
+    def mkConstructor(clazz: ClassDef, tparams: List[TypeDef]): DefDef = {
+      require(hasSymbol(clazz))
+      mkConstructor(clazz.symbol.asClass, tparams)
+    }
+
+    /**
+      * Creates a constructor tree
+      *
+      * @param clazz a symbol that represents the host class/module
+      * @param tparams the list of the type parameters of the constructor
+      *
+      * @return a tree that represents a constructor of class ``clazz''. Note
+      *         that the constructor does not have a body, and takes not parameter
+      *         to add them, use addParam and updateRhs.
+      */
+    def mkConstructor(clazz: ClassSymbol, tparams: List[TypeDef]): DefDef = {
+      require(goodSymbol(clazz))
+
+      val constSym = clazz.newClassConstructor(clazz.pos.focus)
+      val mtpe = MethodType(Nil, constSym.tpe)
+
+      val tpe = tparams match {
+        case Nil => mtpe
+        case xs => PolyType(Nil, mtpe)
+      }
+      constSym.setInfoAndEnter(tpe)
+
+      typed {DefDef(constSym, Nil, mkBlock(List(mkUnitLiteral)))}.asInstanceOf[DefDef]
+    }
+    /**
+      * Creates a constructor tree
+      *
+      * @param clazz a tree ot represent the host class
+      *
+      * @return a tree that represents a constructor of class ``clazz''. Note
+      *         that the constructor does not have a body, and takes not parameter
+      *         to add them, use addParam and updateRhs.
+      */
+    def mkConstructor(clazz: ClassDef): DefDef = {
+      mkConstructor(clazz, Nil)
+    }
 
     /**
       * Creates a constructor parameter tree, or a constructor field if neccessary
@@ -144,7 +301,7 @@ trait TreeGenTransformerCake {
       * @param name the name of the constructor parameter.
       * @param info the type tree of the constructor parameter.
       * @param rhs the default value of the constructor parameter
-      * @param isField a flag whether this parameter is needs a field or not
+      * @param isField a flag whether this parameter needs a field or not
       *
       * @return a well-typed constructor parameterer owned by the constructor. If
       *         the isField flag is true, then the parameter is owned by the owner
@@ -197,6 +354,34 @@ trait TreeGenTransformerCake {
       // ValDef(Modfiers(PARAM), TermName(name), tpe, rhs)
       // localTyper.typed {Select(Ident(qual), name) }.asInstanceOf[Select]
       ???
+    }
+
+    /**
+      * Creates a tree for identifiers
+      *
+      * @param sym the symbol of the ident
+      *
+      * @return a tree for the identifier that points to sym.
+      */
+    def mkIdent(sym: Symbol): Ident = {
+      localTyper.typed { Ident(sym).setSymbol(sym) }.asInstanceOf[Ident]
+    }
+
+
+
+    /**
+      * Creates a tree for LabelDef.
+      *
+      * Labels are usually used for representing {{{while}}} loops.
+      *
+      * @param name the name of the label
+      * @param params the parameters of the label
+      * @param body the body of the label
+      *
+      * @return a tree of the label
+      */
+    def mkLabel(name: TermName, params: List[Ident], body: Tree): LabelDef = {
+      localTyper.typed { LabelDef(name, params, body) }.asInstanceOf[LabelDef]
     }
 
     /**
@@ -481,7 +666,45 @@ trait TreeGenTransformerCake {
     }
 
 
+    /**
+      * Returns a well-typed companion object of a class.
+      *
+      * @param clazz the symbol of the class that needs a companion object
+      *
+      * @return a well typed companion object of clazz
+      */
+    def mkCompanionObject(clazz: ClassSymbol): ModuleDef = {
+      val modname = clazz.name
+      val owner = clazz.owner
+      val symb = clazz.newModule(modname.toTermName,
+        clazz.pos.focus, Flags.MODULE)
+      val msymb = symb.moduleClass
+      symb.owner = owner
+      msymb.owner = owner
 
+      val parents = List(Ident(definitions.AnyRefClass))
+      val mtpe = ClassInfoType(parents.map(_.symbol.tpe), newScope, msymb)
+
+      msymb setInfo mtpe
+      symb setInfoAndEnter msymb.tpe
+
+      val const = msymb.newClassConstructor(symb.pos.focus)
+      const setInfoAndEnter (MethodType(Nil, symb.info))
+      
+      val spr = Select(Super(This(tpnme.EMPTY), tpnme.EMPTY), nme.CONSTRUCTOR)
+      val nbody = Block(List(Apply(spr, Nil)), mkUnitLiteral)
+      val cnstrct = DefDef(const, List(Nil), nbody)
+
+
+      typed {
+            ModuleDef(symb, Template(parents, 
+                  noSelfType, List(cnstrct)))}.asInstanceOf[ModuleDef]
+
+     
+
+
+    }
+ 
 
 
     /**
