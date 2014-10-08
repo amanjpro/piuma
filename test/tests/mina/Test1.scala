@@ -6,6 +6,7 @@ object Test1{
   def b(v: Int) = v + 2
   def k() = {
     val c = CT(~1)
+    c
     c match {
       case -2 => CT(3 + 3)
       case 3 => CT(~2 + 88)

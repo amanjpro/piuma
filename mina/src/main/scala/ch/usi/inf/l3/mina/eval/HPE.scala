@@ -41,7 +41,6 @@ import store._
   val finderPhase = s"mina-finder"
   val specializer = s"mina-specializer"
   val finalizer = s"mina-finalizer"
-  val aftr = "superaccessors"
   
   describe("""|This is a partial evaluator plugin based on Hybrid 
     |Partial Evaluation by W. Cook and A. Shali 

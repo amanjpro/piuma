@@ -10,15 +10,17 @@ import scala.language.implicitConversions
 import ch.usi.inf.l3.mina._
 import scala.reflect.internal.ModifierFlags
 
+
+
+  
+
+
 @phase("mina-specializer") class HPESpecializer {
 
   plugin HPE
 
-  import CODE._
   rightAfter(finderPhase)
   before(List(finalizer))
-
-
 
   // FIXME
   // Still no support for generic methods, but supporting them will be straight forward?!
@@ -30,9 +32,8 @@ import scala.reflect.internal.ModifierFlags
     super.transform(newTree)
   }
 
-  private def typeTree(tree: Tree): Tree = {
-    localTyper.typed { tree }
-  }
+  
+
   private val fevalError = "Blocks marked as CT shall be completely " +
     "known and available at compilation time."
 
@@ -57,15 +58,10 @@ import scala.reflect.internal.ModifierFlags
         val (rhs1, env1) = feval(rhs, env)
         (rhs1, env.addValue(lhs.symbol, rhs1))
       case Block(stats, expr) =>
-        var env2 = env
-        var tail = stats
-
-        while (tail != Nil) {
-          val head = tail.head
-          val (_, envTemp) = feval(head, env2)
-          env2 = envTemp
-          tail = tail.tail
-        }
+        val env2 = stats.foldLeft(env)((z, y) => {
+          val (_, envTemp) = feval(y, z)
+          envTemp
+        })
         feval(expr, env2)
       case If(cond, thenp, elsep) =>
         val (cond1, env1) = feval(cond, env)
@@ -75,6 +71,7 @@ import scala.reflect.internal.ModifierFlags
           case _ => fail(fevalError + " if " + cond)
         }
       case m @ Match(selector, cases) =>
+
         def matched(cse: CaseDef, env: Environment, mat: CTValue): Boolean = {
           cse.pat match {
             case a @ Alternative(alts) =>
@@ -90,26 +87,29 @@ import scala.reflect.internal.ModifierFlags
           }
         }
         val (r1, env2) = feval(selector, env)
-        var continue = true
-        val rs = for (cse <- cases; if continue && matched(cse, env2, r1)) yield {
-          continue = false
-          feval(cse.body, env2)
-        }
-        rs match {
-          case Nil =>
+
+        val (vOption, env3) = 
+          cases.foldLeft((None: Option[CTValue], env2))((z, y) => {
+          if(z._1 == None && matched(y, z._2, r1)) {
+            val t = feval(y.body, env2)
+            (Some(t._1), t._2)
+          }
+          else z
+        })
+        vOption match {
+          case None  =>
             val last = cases.last
             last.pat match {
               case Ident(nme.WILDCARD) => feval(last.body, env2)
               case _ => fail(fevalError + " match-wildcard " + m)
             }
-          case _ => rs.head
+          case Some(v) => (v, env3)
         }
-
       case Typed(exp, t2) => feval(exp, env)
       case Function(vparams, body) =>
         feval(body, env)
 
-      /**
+      /*
        * An extractor class to create and pattern match with syntax New(tpt).
        * This AST node corresponds to the following Scala code:
        *
@@ -117,7 +117,7 @@ import scala.reflect.internal.ModifierFlags
        *
        * This node always occurs in the following context:
        *
-       * (new tpt).<init>[targs](args)
+       * {{{(new tpt).<init>[targs](args)}}}
        *
        * For example, an AST representation of:
        *
@@ -131,7 +131,7 @@ import scala.reflect.internal.ModifierFlags
        *         			List(Literal(Constant(3))))
        */
 
-        
+
       case cnstrct @ Apply(Select(New(tpt), nme.CONSTRUCTOR), args) =>
         digraph.getClassRepr(tpt.tpe) match {
           case Some(clazz) =>
@@ -153,18 +153,18 @@ import scala.reflect.internal.ModifierFlags
 
       case Return(expr) => feval(expr, env)
 
-      /**
+      /*
        * An extractor class to create and pattern match with syntax
        * LabelDef(name, params, rhs).
        * This AST node does not have direct correspondence to Scala code.
        * It is used for tailcalls and like. For example, while/do are
        * desugared to label defs as follows:
        *
-       * while (cond) body ==> LabelDef($L, List(),
-       *                              if (cond) { body; L$() } else ())
+       * {{{while (cond) body ==> LabelDef($L, List(),
+       *                              if (cond) { body; L$() } else ())}}}
        *
-       * do body while (cond) ==> LabelDef($L, List(),
-       * 						body; if (cond) L$() else ())
+       * {{{do body while (cond) ==> LabelDef($L, List(),
+       * 						body; if (cond) L$() else ())}}}
        */
       case LabelDef(name, params, rhs) =>
         feval(rhs, env)
@@ -176,9 +176,9 @@ import scala.reflect.internal.ModifierFlags
       // Unary operations
       case select @ Select(qual, name) if (isUnary(select)) =>
         val (r1, env1) = feval(qual, env)
-        doUop(name, r1, env1)
+        doUnaryOperation(name, r1, env1)
       case select @ Select(qual, name) =>
-        if (!qual.symbol.hasPackageFlag) {
+        if (!isPackage(qual)) {
           val (r1, env1) = feval(qual, env)
           digraph.getClassRepr(qual.symbol.owner.tpe) match {
             case Some(repr) =>
@@ -201,19 +201,17 @@ import scala.reflect.internal.ModifierFlags
         feval(t.head, env)
       // Binary operations
       case apply @ Apply(fun @ Select(r, l), args) if (isBinary(apply)) =>
-        val arg1 = apply.args.head
+        val arg1 = args.head
         val (r1, env1) = feval(r, env)
         val (arg11, env2) = feval(arg1, env1)
 
-        val method = fun.symbol
-        val methodName = method.name
-        doBop(methodName, r1, arg11, env2)
+        doBinaryOperation(fun.symbol.name, r1, arg11, env2)
       // If {{{super}}} was {{{Object}}} then we just don't bother
       // executing its constructor
       // TODO once we build a framework to read binary classes to an AST tree
       // we can get rid of this
       case apply @ Apply(fun, args) if (isAnyConstructor(apply)) =>
-        val tr = typeTree(reify(new Object()).tree)
+        val tr = typed(q"new Object()")
         (CTValue(HPEObject(tr, tr.tpe, Environment.empty)), env)
       case apply @ Apply(fun @ Select(obj, m), args) =>
         val (obj2, env2) = feval(obj, env)
@@ -251,23 +249,21 @@ import scala.reflect.internal.ModifierFlags
     }
   }
 
+
   private def peval(tree: Tree, env: Environment): (Tree, Value, Environment) = {
     tree match {
       case clazz: ImplDef =>
         var newEnv = Environment.empty
-        var tail = clazz.impl.body
-        while (tail != Nil) {
-          val head = tail.head
-          val (pevaled, _, env2) = peval(head, newEnv)
-          newEnv = env2
-          tail = tail.tail
-        }
-        (clazz, Top, env)
+        var (newBody, _) = 
+          clazz.impl.body.foldLeft((Nil: List[Tree], env))((z, y) => {
+            val (p, _, e) = peval(y, z._2)
+            (z._1 ++ List(p), e)
+          })
+        (clazz.updateBody(newBody), Top, env)
       case method @ DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
         val (rhs1, _, temp) = peval(rhs, env)
-        val newMethod = typeTree(treeCopy.DefDef(method, mods, name, tparams,
-          vparamss, tpt, rhs1))
-        (newMethod, Top, temp)
+        val mthd = method.updateRHS(rhs1)
+        (mthd, Top, temp)
       case v: Literal =>
         (v, AbsValue(HPELiteral(v, v.tpe)), env)
       case v: Ident =>
@@ -285,24 +281,23 @@ import scala.reflect.internal.ModifierFlags
           case CTValue(_) =>
             (EmptyTree, r, env2.addValue(v.symbol, r))
           case _ =>
-            val treeToCopy = typeTree(treeCopy.ValDef(v, mods, name, tpt, rtree))
-            (treeToCopy, r, env2.addValue(v.symbol, r))
+            (v.updateRHS(rtree), r, env2.addValue(v.symbol, r))
         }
       case a @ Assign(lhs, rhs) =>
         env.getValue(lhs.symbol) match {
           case CTValue(_) =>
             val (r, env1) = feval(rhs, env)
             val env2 = env1.addValue(lhs.symbol, r)
-            val assgn = typeTree(treeCopy.Assign(a, lhs, r.v.tree))
+            val assgn = Assign(lhs, r.v.tree)
             (r.v.tree, r, env2)
           case AbsValue(_) =>
             val (rtree, rhs1, env1) = peval(rhs, env)
             val env2 = env1.addValue(lhs.symbol, rhs1)
-            val assgn = typeTree(treeCopy.Assign(a, lhs, rtree))
+            val assgn = Assign(lhs, rtree)
             (assgn, rhs1, env2)
           case Top =>
             val (rtree, rhs1, env1) = peval(rhs, env)
-            val assgn = typeTree(treeCopy.Assign(a, lhs, rtree))
+            val assgn = Assign(lhs, rtree)
             (assgn, Top, env1)
           case Bottom =>
             val (rtree, rhs1, env1) = peval(rhs, env)
@@ -311,7 +306,7 @@ import scala.reflect.internal.ModifierFlags
               case CTValue(x) =>
                 (x.tree, rhs1, env2)
               case _ =>
-                val assgn = typeTree(treeCopy.Assign(a, lhs, rtree))
+                val assgn = Assign(lhs, rtree)
                 (assgn, rhs1, env2)
             }
         }
@@ -351,39 +346,50 @@ import scala.reflect.internal.ModifierFlags
                 }
               case _ => rs.head
             }
+            // TODO: Why this doesn't work
+            // val rs = cases.foldLeft((EmptyTree: Tree, 
+            //         Bottom: Value, env2))((z, y) => {
+            //   (matched(y, env2, v), z._1, z._2) match {
+            //     case (true, EmptyTree, Bottom) => 
+            //       peval(y, env2)
+            //     case _ =>
+            //       z
+            //   }
+            // })
+            // rs match {
+            //   case (EmptyTree, Bottom, _) =>
+            //     val last = cases.last
+            //     last.pat match {
+            //       case Ident(nme.WILDCARD) => peval(last.body, env2)
+            //       case _ => fail("No match found exception " + m)
+            //     }
+            //   case _ => rs
+            // }
           case _ =>
             val rs = for (cse <- cases) yield {
               val (ncse, vncse, envt) = peval(cse.body, env2)
               vncse match {
                 case CTValue(_) | AbsValue(_) =>
                   val x = vncse.value.get
-
-                  (typeTree(treeCopy.CaseDef(cse, cse.pat,
-                    cse.guard, x.tree)).asInstanceOf[CaseDef], envt)
-
+                  (cse.updateBody(x.tree), envt)
                 case Top | Bottom =>
-                  (typeTree(treeCopy.CaseDef(cse, cse.pat,
-                    cse.guard, ncse)).asInstanceOf[CaseDef], envt)
+                  (cse.updateBody(ncse), envt)
               }
             }
             val (newCases, newEnvs) = rs.unzip
-            val newMatch = treeCopy.Match(typeTree(r1), selector, newCases)
-            (typeTree(newMatch), Top, env2.makeConsistent(newEnvs))
+            val newMatch = r1.asInstanceOf[Match].updateCases(newCases)
+            (newMatch, Top, env2.makeConsistent(newEnvs))
         }
-      case block @ Block(stats, expr) =>
-        var env2 = env
-        var tail = stats
-        var stats2: List[Tree] = Nil
-        while (tail != Nil) {
-          val head = tail.head
-          val (t, _, envTemp) = peval(head, env2)
-          stats2 = t :: stats2
-          env2 = envTemp
-          tail = tail.tail
-        }
-        val (expr2, v2, env3) = peval(expr, env2)
-        val block2 = treeCopy.Block(block, stats2.reverse, expr2)
-        (typeTree(block2), v2, env3)
+        case block @ Block(stats, expr) =>
+          val (stats2, env2) = stats.foldLeft((Nil: List[Tree], env))((z, y) => {
+            val (t, _, envTemp) = peval(y, z._2)
+            (z._1 ++ List(t), envTemp)
+          })
+          val (expr2, v2, env3) = peval(expr, env2)
+          // TODO: Why ths does not work???
+          // val block2 = mkBlock(stats2, expr2)
+          val block2 = treeCopy.Block(block, stats2, expr2)
+          (block2, v2, env3)
       case ifelse @ If(cond, thenp, elsep) =>
         val (r, v, env1) = peval(cond, env)
         v match {
@@ -397,12 +403,12 @@ import scala.reflect.internal.ModifierFlags
             val (tr, tv, tenv) = peval(thenp, env1)
             val (fr, fv, fenv) = peval(elsep, env1)
             val env2 = env1.makeConsistent(List(tenv, fenv))
-            val newIf = typeTree(treeCopy.If(ifelse, r, tr, fr))
+            val newIf = mkIf(r, tr, fr)
             (newIf, Top, env2)
         }
       case fnctn @ Function(vparams, body) =>
         val (r, _, env2) = peval(body, env)
-        val fnctn2 = typeTree(treeCopy.Function(fnctn, vparams, r))
+        val fnctn2 = mkFunction(vparams, r)
         (fnctn2, Top, env2)
       case cnstrct @ Apply(n @ Select(nw @ New(tpt), nme.CONSTRUCTOR), args) =>
         val (trees, vs, env2) = pevalArgs(args, env)
@@ -415,63 +421,41 @@ import scala.reflect.internal.ModifierFlags
                 meth.vparamss.flatten, vs)
               val rargs = getRuntimeArgs(trees, vs)
               val rparams = getRuntimeParams(meth.vparamss.flatten, vs)
-              val newnw = Apply(Select(New(Ident(memc.symbol)), nme.CONSTRUCTOR), rargs)
+              val newnw = mkConstructorCall(Ident(memc.symbol), rargs)
               val env3 = Environment(rparams.map(_.symbol) zip vs.filter(isNotCT(_)))
               val nobj = HPEObject(newnw, clazz.tpe, env3)
               (newnw, AbsValue(nobj), env)
             } else {
               val store = Environment.empty
-              val cnstrct2 = typeTree(treeCopy.Apply(cnstrct, n, trees))
+              val cnstrct2 = mkApply(n, trees)
               val obj = HPEObject(cnstrct2, tpt.tpe, store)
               (cnstrct2, AbsValue(obj), env2)
             }
           case None =>
-            val cnstrct2 = typeTree(treeCopy.Apply(cnstrct, n, trees))
+            val cnstrct2 = mkApply(n, trees)
             (cnstrct2, Top, env2)
         }
       case lbl @ LabelDef(name, params, rhs) =>
         val (r, _, env2) = peval(rhs, env)
-        val lbl2 = typeTree(treeCopy.LabelDef(lbl, name, params, r))
+        val lbl2 = mkLabel(name, params, r)
         (lbl2, Top, env2)
-      case select @ Select(New(tpt), name) =>
-        val obj = HPEObject(select, tpt.tpe, Environment.empty)
-        (select, AbsValue(obj), env)
-      case select @ Select(qual, name) if (qual.symbol != null &&
-        qual.symbol != NoSymbol &&
-        qual.symbol.hasPackageFlag) =>
-        (select, Top, env)
-      case select @ Select(ths @ This(n), name) =>
-        val tree = getMemberTree(ths.symbol.tpe, name, select.symbol.tpe)
-        if (!tree.symbol.isMethod) {
-          val v = env.getValue(select.symbol)
-          v match {
-            case x: CTValue => (x.toTree, x, env)
-            case x: AbsValue => (select, x, env)
-            case _ => (select, Top, env)
-          }
-        } else {
-          val mtree = tree.asInstanceOf[DefDef]
-          val (_, _, env2) = peval(mtree.rhs, env)
-          (select, Top, env2)
-        }
       // Unary operations
       case select @ Select(qual, name) if (isUnary(select)) =>
         val (r1, v1, env1) = peval(qual, env)
         v1 match {
           case x: CTValue =>
-            val (r, env2) = doUop(name, x, env)
+            val (r, env2) = doUnaryOperation(name, x, env)
             (r.toTree, r, env2)
           case x: AbsValue =>
-            val (r, env2) = doUop(name, x.toCTValue, env)
+            val (r, env2) = doUnaryOperation(name, x.toCTValue, env)
             (r.toTree, r, env2)
           case _ =>
-            val r = treeCopy.Select(select, r1, name)
-            (typeTree(r), Top, env1)
+            val r = mkSelect(r1, name)
+            (r, Top, env1)
         }
       case select @ Select(qual, name) =>
         val (r1, v, env1) = peval(qual, env)
-        if (qual.symbol != null && qual.symbol != NoSymbol &&
-          select.symbol != null && select.symbol != NoSymbol) {
+        if (hasSymbol(qual) && hasSymbol(select)) {
           digraph.getClassRepr(select.symbol.owner.tpe) match {
             case Some(repr) =>
               val member = repr.getMemberTree(name, select.symbol.tpe)
@@ -483,8 +467,11 @@ import scala.reflect.internal.ModifierFlags
                   peval(member, env1)
               }
               vl match {
-                case x: CTValue => (res, vl, envr)
+                case x: CTValue =>
+                  (res, vl, envr)
                 case _ =>
+                  // TODO: Why this does not work??
+                  // val ts = mkSelect(r1, name)
                   val ts = treeCopy.Select(select, r1, name)
                   (ts, Top, envr)
               }
@@ -516,28 +503,31 @@ import scala.reflect.internal.ModifierFlags
         val arg1 = apply.args.head
         val (r1, v1, env1) = peval(r, env)
         val (arg2, v2, env2) = peval(arg1, env1)
-
         val method = fun.symbol
         val methodName = method.name
         (v1, v2) match {
           case (x: CTValue, y: CTValue) =>
-            val (r, env3) = doBop(methodName, x, y, env)
+            val (r, env3) = doBinaryOperation(methodName, x, y, env)
             (r.toTree, r, env3)
           case (x: CTValue, y: AbsValue) =>
-            val (r, env3) = doBop(methodName, x, y.toCTValue, env)
+            val (r, env3) = doBinaryOperation(methodName, x, y.toCTValue, env)
             (r.toTree, r, env3)
           case (x: AbsValue, y: CTValue) =>
-            val (r, env3) = doBop(methodName, x.toCTValue, y, env)
+            val (r, env3) = doBinaryOperation(methodName, x.toCTValue, y, env)
             (r.toTree, r, env3)
           case (x: AbsValue, y: AbsValue) =>
-            val (r, env3) = doBop(methodName, x.toCTValue, y.toCTValue, env)
+            val (r, env3) = doBinaryOperation(methodName, x.toCTValue, y.toCTValue, env)
             (r.toTree, r, env3)
           case _ =>
+            // TODO: Fix this
             val rr = treeCopy.Select(fun, r1, l)
-            val r = typeTree(treeCopy.Apply(apply, rr, List(arg2)))
+            val r = typed(treeCopy.Apply(apply, rr, List(arg2)))
             (r, Top, env2)
+            // val rr = mkSelect(r1, l)
+            // val r = mkApply(rr, List(arg2))
+            // (r, Top, env2)
         }
-      case apply @ Apply(fun @ Select(qual @ Super(k, j), m), args) =>
+       case apply @ Apply(fun @ Select(qual @ Super(k, j), m), args) =>
         //          val tpe = qual.symbol.tpe
         //          digraph.getClassRepr(tpe) match {
         //            case Some(clazz) =>
@@ -556,7 +546,6 @@ import scala.reflect.internal.ModifierFlags
         val tpe = fun.symbol.owner.tpe
         digraph.getClassRepr(tpe) match {
           case Some(clazz) =>
-            val rcvr = clazz.tree
             val (obj, nv, env2) = fun match {
               case Select(This(c), m) => (This(c), Top, env)
               case Select(qual, m) => 
@@ -587,19 +576,20 @@ import scala.reflect.internal.ModifierFlags
         }
       case rtrn @ Return(t) =>
         val (r, v, env2) = peval(t, env)
-        val rtrn2 = treeCopy.Return(tree, r)
-        (typeTree(rtrn2), v, env2)
+        val rtrn2 = mkReturn(r)
+        (rtrn2, v, env2)
       case Typed(exp, t2) => peval(exp, env)
       case _ => (tree, Top, env)
     }
   }
 
-  private def noTreeApply(apply: Apply, env: Environment): (Tree, Value, Environment) = {
+  private def noTreeApply(apply: Apply, env: Environment): 
+                (Tree, Value, Environment) = {
     val tpe = apply.fun.symbol.owner.tpe
     val (pargs, vs, env2) = pevalArgs(apply.args, env)
     vs.filter(isCT(_)) match {
       case Nil =>
-        val app = typeTree(treeCopy.Apply(apply, apply.fun, pargs))
+        val app = mkApply(apply.fun, pargs)
         (app, Top, env2)
       case _ =>
         fail(s"${vs}\nTree not found for ${tpe} the " +
@@ -607,7 +597,11 @@ import scala.reflect.internal.ModifierFlags
           s"and the call is: ${apply}")
     }
   }
+
+
   def isCT(v: Value) = !isNotCT(v)
+
+
   def isNotCT(v: Value) = {
     v match {
       case x: CTValue => false
@@ -615,7 +609,8 @@ import scala.reflect.internal.ModifierFlags
     }
   }
 
-  private def getRuntimeArgs(exprs: List[Tree], values: List[Value]): List[Tree] = {
+  private def getRuntimeArgs(exprs: List[Tree], 
+        values: List[Value]): List[Tree] = {
 
     val pvTuple = values zip exprs
     val temp = for ((v, e) <- pvTuple if (isNotCT(v))) yield {
@@ -624,7 +619,8 @@ import scala.reflect.internal.ModifierFlags
     temp.reverse
   }
 
-  private def getCTArgs(exprs: List[ValDef], values: List[Value]): List[ValDef] = {
+  private def getCTArgs(exprs: List[ValDef], 
+              values: List[Value]): List[ValDef] = {
 
     val pvTuple = values zip exprs
     val temp = for ((v, e) <- pvTuple if (isCT(v))) yield {
@@ -633,7 +629,8 @@ import scala.reflect.internal.ModifierFlags
     temp.reverse
   }
 
-  private def getRuntimeParams(params: List[Tree], vals: List[Value]): List[ValDef] = {
+  private def getRuntimeParams(params: List[Tree], 
+                  vals: List[Value]): List[ValDef] = {
 
     val rparams = for ((param, v) <- (params zip vals) if (isNotCT(v))) yield {
       param.asInstanceOf[ValDef]
@@ -641,58 +638,11 @@ import scala.reflect.internal.ModifierFlags
     rparams.reverse
   }
 
-  private def changeOwner(tree: Tree, oldOwner: Symbol, newOwner: Symbol): Unit = {
-    var list: Map[Symbol, Symbol] = Map.empty
-    tree.foreach {
-      (x: Tree) =>
-        {
-          if (x.symbol != null && x.symbol != NoSymbol
-            && x.symbol.owner == oldOwner) {
-            x match {
-              case ident: Ident => ident.symbol = list(ident.symbol)
-              case _ =>
-                val ts = x.symbol
-                val ns = x.symbol.cloneSymbol(newOwner)
-                x.symbol = ns
-                list = list + (ts -> ns) 
-                changeOwner(x, ts, ns)
-            }
-          }
-        }
-    }
-  }
-
-  private def changeOwner(tree: Tree, oldSymb: Symbol, paramSyms: List[Symbol]): Unit = {
-    tree.foreach {
-      (x: Tree) =>
-        {
-          if (x.symbol != null && x.symbol != NoSymbol
-            && x.symbol.owner == oldSymb) {
-            val ns = findSymbol(x.symbol.name, x.symbol.tpe, paramSyms)
-            x.symbol = ns match {
-              case Some(s) => s
-              case None => x.symbol
-            }
-          }
-        }
-    }
-  }
-
-  private def findSymbol(name: Name, tpe: Type, paramSyms: List[Symbol]): Option[Symbol] = {
-    val r = for (
-      p <- paramSyms if (p.name == name && p.tpe =:= tpe)
-    ) yield {
-      p
-    }
-    r match {
-      case head :: Nil => Some(head)
-      case _ => None
-    }
-  }
-
   private def getSpecializedMethod(clazz: ClassRepr,
     method: DefDef, args: List[Value],
-    ctnames: List[Name], env: Environment, ret: Type): (DefDef, Environment) = {
+    ctnames: List[Name], 
+    env: Environment, 
+    ret: Type): (DefDef, Environment) = {
     clazz.getSpecializedOption(method.symbol.name, ctnames, args) match {
       case Some(mtree) => (mtree, env)
       case None =>
@@ -703,63 +653,79 @@ import scala.reflect.internal.ModifierFlags
         val ctvals = args.filter(isCT(_))
         val tmargs = method.vparamss.flatten
         val cargs = getCTArgs(tmargs, args)
-        val obody = method.rhs.duplicate
         val rparams = getRuntimeParams(tmargs, args)
         val sname = clazz.getNextMethod(method.symbol.name, ctnames, ctvals)
-        val symb = clazzSymb.newMethod(sname, clazzSymb.pos.focus, method.symbol.flags)
 
-        val (mbody, _, _) = peval(obody, env)
-        val paramSyms = map2(rparams.map(_.symbol.tpe), rparams.map(_.symbol)) {
-          (tp, param) => symb.newSyntheticValueParam(tp, param.name.toTermName)
-        }
-        val tpe = MethodType(paramSyms, ret)
 
-        val nrparams = for ((p, s) <- (rparams zip paramSyms)) yield {
-          s.setInfo(p.symbol.tpe)
-          ValDef(s, p.tpt)
-        }
+        val newMethod = method.duplicate(sname, clazzSymb).removeParams(cargs, 
+                    ctvals.map((x) => hpeAny2Tree(x.value)))
+        val (pevaledMethod, _, _) = peval(newMethod, env)
+        val temp = clazz.tree.addMember(pevaledMethod)
 
-        if (clazzSymb.info.decls.lookup(symb.name) == NoSymbol) {
-          symb setInfoAndEnter tpe
-        } else {
-          symb setInfo tpe
-        }
 
-        changeOwner(mbody, method.symbol, paramSyms)
-        
-        changeOwner(mbody, method.symbol, symb)
-
-        val tbody = localTyper.typedPos(symb.pos)(mbody)
-
-        val methDef = DefDef(symb, List(nrparams), tbody)
-
-        methDef.tpt setType localTyper.packedType(tbody, symb)
-        val mtree = typeTree(methDef).asInstanceOf[DefDef]
-
-        val temp = clazz.tree match {
-          case m: ModuleDef => typeTree {
-            treeCopy.ModuleDef(m, m.mods,
-              m.symbol.name,
-              treeCopy.Template(m.impl,
-                m.impl.parents,
-                m.impl.self,
-                mtree :: m.impl.body))
-          }.asInstanceOf[ImplDef]
-          case c: ClassDef => typeTree {
-            treeCopy.ClassDef(c, c.mods,
-              c.symbol.name, c.tparams,
-              treeCopy.Template(c.impl,
-                c.impl.parents,
-                c.impl.self,
-                mtree :: c.impl.body))
-          }.asInstanceOf[ImplDef]
-        }
-
-        clazz.addSpecialized(method.symbol.name, ctnames, args, mtree)
+        clazz.addSpecialized(method.symbol.name, ctnames, args, pevaledMethod)
         clazz.tree = temp
-        (mtree, env.remove(cargs.map(_.symbol)))
+        (pevaledMethod, env.remove(cargs.map(_.symbol)))
+
+        // TODO: A good use-case for Lombrello, heavily refactorable
+
+
+
+
+
+        // val symb = clazzSymb.newMethod(sname, clazzSymb.pos.focus, method.symbol.flags)
+        // val obody = method.rhs.duplicate
+        // val (mbody, _, _) = peval(obody, env)
+        // val paramSyms = map2(rparams.map(_.symbol.tpe), rparams.map(_.symbol)) {
+        //   (tp, param) => symb.newSyntheticValueParam(tp, param.name.toTermName)
+        // }
+        // val tpe = MethodType(paramSyms, ret)
+
+        // val nrparams = for ((p, s) <- (rparams zip paramSyms)) yield {
+        //   s.setInfo(p.symbol.tpe)
+        //   ValDef(s, p.tpt)
+        // }
+
+        // if (clazzSymb.info.decls.lookup(symb.name) == NoSymbol) {
+        //   symb setInfoAndEnter tpe
+        // } else {
+        //   symb setInfo tpe
+        // }
+
+        // fixOwner(mbody, method.symbol, symb, paramSyms)
+
+        // val tbody = localTyper.typedPos(symb.pos)(mbody)
+
+        // val methDef = DefDef(symb, List(nrparams), tbody)
+
+        // methDef.tpt setType localTyper.packedType(tbody, symb)
+        // val mtree = typed(methDef).asInstanceOf[DefDef]
+
+        // val temp = clazz.tree match {
+        //   case m: ModuleDef => typed {
+        //     treeCopy.ModuleDef(m, m.mods,
+        //       m.symbol.name,
+        //       treeCopy.Template(m.impl,
+        //         m.impl.parents,
+        //         m.impl.self,
+        //         mtree :: m.impl.body))
+        //   }.asInstanceOf[ImplDef]
+        //   case c: ClassDef => typed {
+        //     treeCopy.ClassDef(c, c.mods,
+        //       c.symbol.name, c.tparams,
+        //       treeCopy.Template(c.impl,
+        //         c.impl.parents,
+        //         c.impl.self,
+        //         mtree :: c.impl.body))
+        //   }.asInstanceOf[ImplDef]
+        // }
+
+        // clazz.addSpecialized(method.symbol.name, ctnames, args, mtree)
+        // clazz.tree = temp
+        // (mtree, env.remove(cargs.map(_.symbol)))
     }
   }
+
   private def getSpecializedClass(name: TypeName, tpe: Type,
     args: List[ValDef], vals: List[Value]): ClassDef = {
     val ctargs = getCTArgs(args, vals)
@@ -775,105 +741,137 @@ import scala.reflect.internal.ModifierFlags
             val classSymb = clazz.tree.symbol
             val newName = classBank.getNextClassName(name, ctnames, ctvals)
             val clazzArgs = getRuntimeParams(args, vals)
-            val otemp = clazz.tree.impl.duplicate
-            val omembers = otemp.body.filter(_.symbol.name != nme.CONSTRUCTOR)
-            val nparents = List(classSymb.tpe) // :: clazz.tree.impl.parents.map(_.symbol.info)
-            val nsymb = classSymb.owner.newClass(newName, classSymb.pos.focus, classSymb.flags)
 
-            val ntpe = ClassInfoType(nparents, newScope, nsymb)
-            nsymb.setInfoAndEnter(ntpe)
-            // TODO: This line does not work any more Scala 2.11
-            // nsymb.setTypeSignature(ntpe)
-            omembers.foreach(changeOwner(_, classSymb, nsymb))
 
-            val spr = Select(Super(This(nsymb), tpnme.EMPTY), nme.CONSTRUCTOR)
-            val sapply = Apply(spr, Nil)
 
-            val constSymb = nsymb.newClassConstructor(nsymb.pos.focus)
+            val duplicated = clazz.tree.duplicate(newName).removeMember((x) => 
+              {
+                isConstructor(x) || isVal(x) || isVar(x) || 
+                          x.symbol.isSetter || x.symbol.isGetter
+              })
 
-            val paramSyms = map2(clazzArgs.map(_.symbol.tpe), clazzArgs.map(_.symbol)) {
-              (tp, param) => constSymb.newSyntheticValueParam(tp, param.name.toTermName)
-            }
-            val nrparams = for ((p, s) <- (clazzArgs zip paramSyms)) yield {
-              s.setInfo(p.symbol.tpe)
-              ValDef(s, p.tpt)
-            }
+            val clazzL = 
+              duplicated.updateParents(List(Ident(clazz.tree.symbol))).asInstanceOf[ClassDef]
 
-            val nctargs = for (ct <- ctargs) yield {
-              val s = nsymb.newValue(newTermName(ct.name + " "), nsymb.pos.focus, ct.symbol.flags)
-              s.setInfo(ct.symbol.tpe)
-              ValDef(s, ct.tpt)
-            }
-            val env = Environment(nctargs.map(_.symbol) zip ctvals)
 
-            val constType = MethodType(paramSyms, nsymb.tpe)
-            constSymb.setInfoAndEnter(constType)
+            val const = clazzL.mkConstructor
 
-            val ocbody = mtree.rhs.duplicate match {
-              case block @ Block(stats, ret) =>
-                stats match {
-                  case x :: xs =>
-                    Block(sapply :: xs, ret)
-                  case Nil =>
-                    Block(List(sapply), ret)
 
-                }
-              case x => x
-            }
+            val nConst = clazzArgs.foldLeft(const)((z, y) => {
+                addConstructorParam(y.symbol.name.toString, y.symbol.info, z)
+            })
 
-            val allsyms = paramSyms ++ nctargs.map(_.symbol)
-            changeOwner(ocbody, mtree.symbol, allsyms)
+            val nimpl = clazzL.addMember(nConst.addSuperConstructorCall)
 
-            changeOwner(ocbody, classSymb, nsymb)
-            changeOwner(ocbody, mtree.symbol, constSymb)
 
-            val ths = This(nsymb)
-            ths.setType(ntpe)
 
-            val nomembers = omembers.map(_.substituteThis(classSymb, ths))
+            // TODO: A good use-case for Lombrello, heavily refactorable
+            // val otemp = clazz.tree.impl.duplicate
+            // val omembers = otemp.body.filter(_.symbol.name != nme.CONSTRUCTOR)
+            // val nparents = List(classSymb.tpe) 
+            // val nsymb = classSymb.owner.newClass(newName, 
+            //           classSymb.pos.focus, classSymb.flags)
 
-            nomembers.foreach {
-              (x: Tree) =>
-                {
-                  changeOwner(x, classSymb, nsymb)
+            // val ntpe = ClassInfoType(nparents, newScope, nsymb)
+            // nsymb.setInfoAndEnter(ntpe)
+            // // TODO: This line does not work any more Scala 2.11
+            // // nsymb.setTypeSignature(ntpe)
+            // omembers.foreach(fixOwner(_, classSymb, nsymb))
 
-                  changeOwner(x, nsymb, allsyms)
-                }
-            }
-            val const = DefDef(constSymb, List(nrparams), ocbody)
+            // val spr = Select(Super(This(nsymb), tpnme.EMPTY), nme.CONSTRUCTOR)
+            // val sapply = Apply(spr, Nil)
 
-            var nimpl = typeTree(ClassDef(nsymb,
-              Template(otemp.parents, otemp.self, const :: nomembers))).asInstanceOf[ClassDef]
+            // val constSymb = nsymb.newClassConstructor(nsymb.pos.focus)
 
-            val clazzrepr = new ClassRepr(nsymb.tpe, nimpl)
+            // val paramSyms = map2(
+            //       clazzArgs.map(_.symbol.tpe), clazzArgs.map(_.symbol)) {
+            //   (tp, param) => 
+            //     constSymb.newSyntheticValueParam(tp, param.name.toTermName)
+            // }
+            // val nrparams = for ((p, s) <- (clazzArgs zip paramSyms)) yield {
+            //   s.setInfo(p.symbol.tpe)
+            //   ValDef(s, p.tpt)
+            // }
+
+            // val nctargs = for (ct <- ctargs) yield {
+            //   val s = nsymb.newValue(newTermName(ct.name + " "), 
+            //           nsymb.pos.focus, ct.symbol.flags)
+            //   s.setInfo(ct.symbol.tpe)
+            //   ValDef(s, ct.tpt)
+            // }
+            // val env = Environment(nctargs.map(_.symbol) zip ctvals)
+
+            // val constType = MethodType(paramSyms, nsymb.tpe)
+            // constSymb.setInfoAndEnter(constType)
+
+            // val ocbody = mtree.rhs.duplicate match {
+            //   case block @ Block(stats, ret) =>
+            //     stats match {
+            //       case x :: xs =>
+            //         Block(sapply :: xs, ret)
+            //       case Nil =>
+            //         Block(List(sapply), ret)
+
+            //     }
+            //   case x => x
+            // }
+
+            // val allsyms = paramSyms ++ nctargs.map(_.symbol)
+            // fixOwner(ocbody, mtree.symbol, constSymb, allsyms)
+            // // fixOwner(ocbody, classSymb, nsymb)
+
+
+
+            // val ths = This(nsymb)
+            // ths.setType(ntpe)
+
+            // val nomembers = omembers.map(_.substituteThis(classSymb, ths))
+
+            // nomembers.foreach {
+            //   (x: Tree) =>
+            //     {
+            //       fixOwner(x, classSymb, nsymb, allsyms)
+            //     }
+            // }
+            // val const = DefDef(constSymb, List(nrparams), ocbody)
+
+            // var nimpl = typed(ClassDef(nsymb,
+            //   Template(otemp.parents, otemp.self, 
+            //         const :: nomembers))).asInstanceOf[ClassDef]
+
+            // val nbody = {
+            //   var tail = const :: nomembers
+            //   var accum: List[Tree] = Nil
+            //   var tenv = env
+            //   while (tail != Nil) {
+            //     val head = tail.head
+            //     val sym = head.symbol
+            //     if ((!sym.isMethod) && (sym.isValue || sym.isVariable)) {
+            //       nctargs.filter(_.symbol.name.toString == sym.name.toString) match {
+            //         case param :: _ =>
+            //           accum
+            //         case Nil => accum = head :: accum
+            //       }
+            //     } else {
+            //       val (t, _, temp) = peval(head, tenv)
+            //       tenv = temp
+            //       accum = t :: accum
+            //     }
+            //     tail = tail.tail
+            //   }
+            //   accum
+            // }
+
+            // nimpl = typed(ClassDef(nsymb,
+            //   Template(otemp.parents, otemp.self, nbody))).asInstanceOf[ClassDef]
+
+
+
+
+
+            val clazzrepr = new ClassRepr(nimpl.symbol.tpe, nimpl)
             digraph.addClass(clazzrepr)
             classBank.add(name, tpe, ctnames, ctvals, clazzrepr)
-            val nbody = {
-              var tail = const :: nomembers
-              var accum: List[Tree] = Nil
-              var tenv = env
-              while (tail != Nil) {
-                val head = tail.head
-                val sym = head.symbol
-                if ((!sym.isMethod) && (sym.isValue || sym.isVariable)) {
-                  nctargs.filter(_.symbol.name.toString == sym.name.toString) match {
-                    case param :: _ =>
-                      accum
-                    case Nil => accum = head :: accum
-                  }
-                } else {
-                  val (t, _, temp) = peval(head, tenv)
-                  tenv = temp
-                  accum = t :: accum
-                }
-                tail = tail.tail
-              }
-              accum
-            }
-
-            nimpl = typeTree(ClassDef(nsymb,
-              Template(otemp.parents, otemp.self, nbody))).asInstanceOf[ClassDef]
-
             clazzrepr.tree = nimpl
             clazzrepr.isSpecialized = true
             digraph.addSubclass(clazz, clazzrepr)
@@ -902,7 +900,8 @@ import scala.reflect.internal.ModifierFlags
     if (vs == Nil) false
     else check(vs)
   }
-  private def pevalArgs(args: List[Tree], store: Environment): (List[Tree], List[Value], Environment) = {
+  private def pevalArgs(args: List[Tree], 
+        store: Environment): (List[Tree], List[Value], Environment) = {
     var pevaled: List[Value] = Nil
     var trees: List[Tree] = Nil
     var env = store
@@ -917,7 +916,8 @@ import scala.reflect.internal.ModifierFlags
     }
     (trees.reverse, pevaled.reverse, env)
   }
-  private def fevalArgs(args: List[Tree], store: Environment): (List[CTValue], Environment) = {
+  private def fevalArgs(args: List[Tree], 
+        store: Environment): (List[CTValue], Environment) = {
     var fevaled: List[CTValue] = Nil
     var env = store
     var tail = args
@@ -935,17 +935,21 @@ import scala.reflect.internal.ModifierFlags
     throw new HPEError(msg)
   }
 
-  private implicit def zip2Lists(list: (List[TermName], List[Value])): List[(TermName, Value)] = {
+  private implicit def zip2Lists(list: (List[TermName], 
+          List[Value])): List[(TermName, Value)] = {
     list._1 zip list._2
   }
 
   private def pevalApply(rcvr: Tree,
     nv: Value, rcvrtpe: Type,
     m: Name, apply: Apply, fun: Tree,
-    args: List[Tree], store: Environment, cntxt: Environment): (Tree, Value, Environment) = {
+    args: List[Tree], store: Environment, 
+            cntxt: Environment): (Tree, Value, Environment) = {
     val (pargs, pvals, env3) = pevalArgs(args, cntxt)
     digraph.getClassRepr(rcvrtpe) match {
       case Some(rcvclass) =>
+
+        // TODO: A good use-case for Lombrello, heavily refactorable
         val mtree = rcvclass.getMemberTree(m, apply.symbol.tpe).asInstanceOf[DefDef]
         val tmargs = mtree.vparamss.flatten
         val cargs = getCTArgs(tmargs, pvals)
@@ -964,21 +968,27 @@ import scala.reflect.internal.ModifierFlags
 
               val module = getCompanionObject(rcvclass)
 
-              val (specialized, renv) = getSpecializedMethod(module, mtree, pvals, ctnames, menv, apply.tpe)
-              val sapply = Apply(REF(module.tree.symbol) DOT specialized.symbol.name, rargs).setSymbol(specialized.symbol)
-              (typeTree(sapply), Top, env3)
+              val (specialized, renv) = getSpecializedMethod(module, mtree, 
+                      pvals, ctnames, menv, apply.tpe)
+              val sapply = mkApply(Select(Ident(module.tree.symbol), 
+                                  specialized.symbol.name), 
+                                  rargs)//.setSymbol(specialized.symbol)
+              (typed(sapply), Top, env3)
             }
           case x: AbsValue =>
             if (hasCT(pvals)) {
               val rargs = getRuntimeArgs(args, pvals)
-              val mname = rcvclass.getNextMethod(mtree.symbol.name, ctnames, ctvals)
-              val (specialized, envr) = getSpecializedMethod(rcvclass, mtree, pvals, ctnames, menv, apply.tpe)
-              val sapply = Apply(rcvr DOT specialized.symbol.name, rargs).setSymbol(specialized.symbol)
-              val tapply = typeTree(sapply)
+              val mname = rcvclass.getNextMethod(mtree.symbol.name, 
+                        ctnames, ctvals)
+              val (specialized, envr) = getSpecializedMethod(rcvclass, mtree, 
+                        pvals, ctnames, menv, apply.tpe)
+              val sapply = mkApply(Select(rcvr, specialized.symbol.name), 
+                                  rargs)//.setSymbol(specialized.symbol)
+              val tapply = typed(sapply)
               (tapply, Top, envr)
             } else {
 
-              val tapply = typeTree(treeCopy.Apply(apply,
+              val tapply = typed(treeCopy.Apply(apply,
                 apply.fun, pargs))
               (tapply, Top, env3)
             }
@@ -986,20 +996,23 @@ import scala.reflect.internal.ModifierFlags
             if (hasCT(pvals) && closed) {
               val rargs = getRuntimeArgs(args, pvals)
               val clazzes = rcvclass :: digraph.getSubclasses(rcvclass)
-              val mname = rcvclass.getNextMethod(mtree.symbol.name, ctnames, ctvals)
+              val mname = rcvclass.getNextMethod(mtree.symbol.name, 
+                        ctnames, ctvals)
               for (c <- clazzes) {
-                val (specialized, envr) = getSpecializedMethod(c, mtree, pvals, ctnames, menv, apply.tpe)
+                val (specialized, envr) = getSpecializedMethod(c, mtree, pvals, 
+                        ctnames, menv, apply.tpe)
               }
               val mthd = rcvclass.getSpecialized(mname, ctnames, pvals)
-              val tapply = typeTree(Apply(rcvr DOT mname, rargs).setSymbol(mthd.symbol))
+              val tapply = typed(mkApply(Select(rcvr, mname), 
+                          rargs))//.setSymbol(mthd.symbol))
               (tapply, Top, env3)
             } else {
-              val tapply = typeTree(treeCopy.Apply(apply, fun, pargs))
+              val tapply = typed(treeCopy.Apply(apply, fun, pargs))
               (tapply, Top, env3)
             }
         }
       case _ =>
-        val tapply = typeTree(treeCopy.Apply(apply, fun, pargs))
+        val tapply = typed(treeCopy.Apply(apply, fun, pargs))
         (tapply, Top, env3)
     }
   }
@@ -1022,39 +1035,45 @@ import scala.reflect.internal.ModifierFlags
   }
 
   private def getCompanionObject(rcvclass: ClassRepr): ClassRepr = {
+
+    // TODO: A good use-case for Lombrello, heavily refactorable
     digraph.findCompanionModule(rcvclass.tree.symbol) match {
       case None =>
-        val csymbol = rcvclass.tree.symbol.asInstanceOf[ClassSymbol]
+        val clazz = rcvclass.tree.asInstanceOf[ClassDef]
 
-        val modname = csymbol.name
-        val owner = csymbol.owner
-        val symb = csymbol.newModule(modname.toTermName,
-          csymbol.pos.focus, MODULE)
-        val msymb = symb.moduleClass
-        symb.owner = owner
-        msymb.owner = owner
-        val parents = rcvclass.tree.impl.parents
-        val tparents = parents.map(_.tpe)
 
-        val mtpe = ClassInfoType(tparents, newScope, msymb)
+        val module = clazz.mkCompanionObject
+        // val csymbol = rcvclass.tree.symbol.asInstanceOf[ClassSymbol]
 
-        msymb setInfo mtpe
-        symb setInfoAndEnter msymb.tpe
+        // val modname = csymbol.name
+        // val owner = csymbol.owner
+        // val symb = csymbol.newModule(modname.toTermName,
+        //   csymbol.pos.focus, MODULE)
+        // val msymb = symb.moduleClass
+        // symb.owner = owner
+        // msymb.owner = owner
+        // val parents = rcvclass.tree.impl.parents
+        // val tparents = parents.map(_.tpe)
 
-        val csymb = msymb.newClassConstructor(symb.pos.focus)
-        csymb setInfoAndEnter (MethodType(Nil, symb.info))
+        // val mtpe = ClassInfoType(tparents, newScope, msymb)
 
-        val spr = Select(Super(This(tpnme.EMPTY), tpnme.EMPTY), nme.CONSTRUCTOR)
-        val sapply = Apply(spr, Nil)
-        val cnsrct = DefDef(csymb, List(Nil),
-          Block(List(sapply), Literal(Constant(()))))
+        // msymb setInfo mtpe
+        // symb setInfoAndEnter msymb.tpe
 
-        val module = ModuleDef(symb, Template(parents,
-          noSelfType,
-          List(cnsrct)))
+        // val csymb = msymb.newClassConstructor(symb.pos.focus)
+        // csymb setInfoAndEnter (MethodType(Nil, symb.info))
 
-        val tmodule = typeTree(module).asInstanceOf[ModuleDef]
-        val modrepr = new ClassRepr(tmodule.symbol.tpe, tmodule)
+        // val spr = Select(Super(This(tpnme.EMPTY), tpnme.EMPTY), nme.CONSTRUCTOR)
+        // val sapply = Apply(spr, Nil)
+        // val cnsrct = DefDef(csymb, List(Nil),
+        //   Block(List(sapply), Literal(Constant(()))))
+
+        // val module = ModuleDef(symb, Template(parents,
+        //   noSelfType,
+        //   List(cnsrct)))
+
+        // val tmodule = typed(module).asInstanceOf[ModuleDef]
+        val modrepr = new ClassRepr(module.symbol.tpe, module)
         digraph.addClass(modrepr)
         digraph.addCompanion(rcvclass.tree.tpe, modrepr)
         modrepr
@@ -1068,7 +1087,7 @@ import scala.reflect.internal.ModifierFlags
       case Some(HPEObject(x: Tree, _, _)) => x
       case Some(HPETree(t)) => t
       case _ =>
-        typeTree(treeBuilder.makeBlock(Nil))
+        typed(treeBuilder.makeBlock(Nil))
     }
   }
 
@@ -1107,184 +1126,6 @@ import scala.reflect.internal.ModifierFlags
       case x => fail(s"Unexpected method definition ${x}")
     }
   }
-
-  private def isAnyConstructor(a: Apply): Boolean = {
-    a.symbol.fullName == "java.lang.Object.<init>" ||
-      a.symbol.fullName == "scala.lang.Any.<init>"
-  }
-
-  private def isUnary(select: Select): Boolean = {
-    if (select.symbol == null || select.symbol == NoSymbol) {
-      false
-    } else {
-      val rcvr = select.symbol.owner.tpe
-      val c = isAnyVal(rcvr)
-      val methodName = select.symbol.name.toTermName
-      if (c && isUop(methodName)) {
-        true
-      } else false
-    }
-  }
-
-  private def isBinary(apply: Apply): Boolean = {
-    isBinary(apply, apply.args.size == 1, isBop)
-  }
-  private def isBinary(apply: Apply, check: Boolean,
-    f: TermName => Boolean): Boolean = {
-    if (apply.fun.symbol == null || apply.fun.symbol == NoSymbol) {
-      false
-    } else {
-      val args = apply.args
-      val fun = apply.fun
-      val rcvr = fun.symbol.owner.tpe
-      val c = isAnyVal(rcvr)
-      val method = fun.symbol
-      val methodName = method.name.toTermName
-      if (c && check && f(methodName)) {
-        true
-      } else false
-    }
-  }
-
-  private def isAnyVal(tpe: Type) = {
-    if (tpe <:< definitions.BooleanClass.tpe ||
-      tpe <:< definitions.ByteClass.tpe ||
-      tpe <:< definitions.ShortClass.tpe ||
-      tpe <:< definitions.IntClass.tpe ||
-      tpe <:< definitions.LongClass.tpe ||
-      tpe <:< definitions.DoubleClass.tpe ||
-      tpe <:< definitions.FloatClass.tpe ||
-      tpe <:< definitions.CharClass.tpe ||
-      tpe <:< definitions.StringClass.tpe) true
-    else false
-  }
-
-  private def isUop(name: TermName): Boolean = {
-    name match {
-      case nme.UNARY_~ | nme.UNARY_+ | nme.UNARY_- | nme.UNARY_! => true
-      case _ => false
-    }
-  }
-
-  private def isBop(name: TermName): Boolean = {
-    name match {
-      case nme.OR | nme.XOR | nme.AND | nme.EQ | nme.NE | nme.ADD |
-        nme.SUB | nme.MUL | nme.DIV | nme.MOD | nme.LSL | nme.LSR |
-        nme.ASR | nme.LT | nme.LE | nme.GE | nme.GT | nme.ZOR |
-        nme.ZAND | nme.MINUS | nme.PLUS => true
-      case _ => false
-    }
-  }
-
-  private def toVal(lit: Literal): Any = {
-    val v = lit.value
-    if (lit.tpe <:< definitions.BooleanClass.tpe) v.booleanValue
-    else if (lit.tpe <:< definitions.ByteClass.tpe) v.byteValue
-    else if (lit.tpe <:< definitions.ShortClass.tpe) v.shortValue
-    else if (lit.tpe <:< definitions.IntClass.tpe) v.intValue
-    else if (lit.tpe <:< definitions.LongClass.tpe) v.longValue
-    else if (lit.tpe <:< definitions.FloatClass.tpe) v.floatValue
-    else if (lit.tpe <:< definitions.DoubleClass.tpe) v.doubleValue
-    else if (lit.tpe <:< definitions.CharClass.tpe) v.charValue
-    else if (lit.tpe <:< definitions.StringClass.tpe) v.stringValue
-    else fail(s"${lit.tpe} is not a builtin value class")
-  }
-
-  private def doUop(methodName: Name, 
-            v: CTValue, env: Environment): (CTValue, Environment) = {
-    v.value match {
-      case Some(HPELiteral(x, _)) =>
-        val x1 = toVal(x)
-        val lit = doUop(x1, methodName)
-        val tlit = typeTree(lit)
-        val r = CTValue(HPELiteral(tlit, tlit.tpe))
-        (r, env)
-      case _ => fail(fevalError)
-    }
-  }
-
-  private def doBop(methodName: Name, v1: CTValue,
-    v2: CTValue, env: Environment): (CTValue, Environment) = {
-    (v1.value, v2.value) match {
-      case (Some(HPELiteral(x, _)), Some(HPELiteral(y, _))) =>
-        val x1 = toVal(x)
-        val y1 = toVal(y)
-        val lit = doBop(x1, y1, methodName)
-        val tlit = typeTree(lit)
-        val r = CTValue(HPELiteral(tlit, tlit.tpe))
-        (r, env)
-      case _ => fail(s"${fevalError} BOP ${v1.value} and ${v2.value}")
-    }
-  }
-
-  private def doUop(x: Boolean, name: Name): Literal = {
-    name match {
-      case nme.UNARY_! => Literal(Constant(x.unary_!))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-
-  private def doUop(x: Byte, name: Name): Literal = {
-    name match {
-      case nme.UNARY_~ => Literal(Constant(x.unary_~))
-      case nme.UNARY_+ => Literal(Constant(x.unary_+))
-      case nme.UNARY_- => Literal(Constant(x.unary_-))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-
-  private def doUop(x: Short, name: Name): Literal = {
-    name match {
-      case nme.UNARY_~ => Literal(Constant(x.unary_~))
-      case nme.UNARY_+ => Literal(Constant(x.unary_+))
-      case nme.UNARY_- => Literal(Constant(x.unary_-))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-
-  private def doUop(x: Int, name: Name): Literal = {
-    name match {
-      case nme.UNARY_~ => Literal(Constant(x.unary_~))
-      case nme.UNARY_+ => Literal(Constant(x.unary_+))
-      case nme.UNARY_- => Literal(Constant(x.unary_-))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-
-  private def doUop(x: Long, name: Name): Literal = {
-    name match {
-      case nme.UNARY_~ => Literal(Constant(x.unary_~))
-      case nme.UNARY_+ => Literal(Constant(x.unary_+))
-      case nme.UNARY_- => Literal(Constant(x.unary_-))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-
-  private def doUop(x: Float, name: Name): Literal = {
-    name match {
-      case nme.UNARY_+ => Literal(Constant(x.unary_+))
-      case nme.UNARY_- => Literal(Constant(x.unary_-))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-
-  private def doUop(x: Double, name: Name): Literal = {
-    name match {
-      case nme.UNARY_+ => Literal(Constant(x.unary_+))
-      case nme.UNARY_- => Literal(Constant(x.unary_-))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-
-  private def doUop(x: Char, name: Name): Literal = {
-    name match {
-      case nme.UNARY_~ => Literal(Constant(x.unary_~))
-      case nme.UNARY_+ => Literal(Constant(x.unary_+))
-      case nme.UNARY_- => Literal(Constant(x.unary_-))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-
   private def getMemberTree(tpe1: Type, m: Name, mType: Type): Tree = {
     digraph.getClassRepr(tpe1) match {
       case Some(repr) =>
@@ -1293,240 +1134,28 @@ import scala.reflect.internal.ModifierFlags
     }
   }
 
-  private def doUop(v: Any, name: Name): Literal = {
-    v match {
-      case x: Boolean => doUop(x, name)
-      case x: Byte => doUop(x, name)
-      case x: Short => doUop(x, name)
-      case x: Int => doUop(x, name)
-      case x: Long => doUop(x, name)
-      case x: Float => doUop(x, name)
-      case x: Double => doUop(x, name)
-      case x: Char => doUop(x, name)
-      case _ =>
-        fail(s"${name} is not a binary operation of " +
-          "${fst.getClass} and ${snd.getClass}")
+
+  private def doUnaryOperation(methodName: Name, 
+            v: CTValue, env: Environment): (CTValue, Environment) = {
+    v.value match {
+      case Some(HPELiteral(x, _)) =>
+        val lit = doUop(x, methodName)
+        val tlit = typed(lit)
+        val r = CTValue(HPELiteral(tlit, tlit.tpe))
+        (r, env)
+      case _ => fail(fevalError)
     }
   }
 
-  private def doBop(fst: Boolean, snd: Boolean, name: Name): Literal = {
-    name match {
-      case nme.OR => Literal(Constant(fst | snd))
-      case nme.XOR => Literal(Constant(fst ^ snd))
-      case nme.AND => Literal(Constant(fst & snd))
-      case nme.EQ => Literal(Constant(fst == snd))
-      case nme.NE => Literal(Constant(fst != snd))
-      case nme.LT => Literal(Constant(fst < snd))
-      case nme.LE => Literal(Constant(fst <= snd))
-      case nme.GE => Literal(Constant(fst > snd))
-      case nme.GT => Literal(Constant(fst >= snd))
-      case nme.ZOR => Literal(Constant(fst || snd))
-      case nme.ZAND => Literal(Constant(fst && snd))
-      case _ => fail(s"${name} is not a binary operation")
+  private def doBinaryOperation(methodName: Name, v1: CTValue,
+    v2: CTValue, env: Environment): (CTValue, Environment) = {
+    (v1.value, v2.value) match {
+      case (Some(HPELiteral(x, _)), Some(HPELiteral(y, _))) =>
+        val lit = doBop(x, y, methodName)
+        val tlit = typed(lit)
+        val r = CTValue(HPELiteral(tlit, tlit.tpe))
+        (r, env)
+      case _ => fail(s"${fevalError} BOP ${v1.value} and ${v2.value}")
     }
   }
-  private def doBop(fst: String, snd: String, name: Name): Literal = {
-    name match {
-      case nme.EQ => Literal(Constant(fst == snd))
-      case nme.NE => Literal(Constant(fst != snd))
-      case nme.ADD | nme.PLUS => Literal(Constant(fst + snd))
-      case nme.LT => Literal(Constant(fst < snd))
-      case nme.LE => Literal(Constant(fst <= snd))
-      case nme.GE => Literal(Constant(fst > snd))
-      case nme.GT => Literal(Constant(fst >= snd))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-  private def doBop(fst: Float, snd: Float, name: Name): Literal = {
-    name match {
-      case nme.EQ => Literal(Constant(fst == snd))
-      case nme.NE => Literal(Constant(fst != snd))
-      case nme.ADD | nme.PLUS => Literal(Constant(fst + snd))
-      case nme.SUB | nme.MINUS => Literal(Constant(fst - snd))
-      case nme.MUL => Literal(Constant(fst * snd))
-      case nme.DIV => Literal(Constant(fst / snd))
-      case nme.MOD => Literal(Constant(fst % snd))
-      case nme.LT => Literal(Constant(fst < snd))
-      case nme.LE => Literal(Constant(fst <= snd))
-      case nme.GE => Literal(Constant(fst > snd))
-      case nme.GT => Literal(Constant(fst >= snd))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-  private def doBop(fst: Double, snd: Double, name: Name): Literal = {
-    name match {
-      case nme.EQ => Literal(Constant(fst == snd))
-      case nme.NE => Literal(Constant(fst != snd))
-      case nme.ADD | nme.PLUS => Literal(Constant(fst + snd))
-      case nme.SUB | nme.MINUS => Literal(Constant(fst - snd))
-      case nme.MUL => Literal(Constant(fst * snd))
-      case nme.DIV => Literal(Constant(fst / snd))
-      case nme.MOD => Literal(Constant(fst % snd))
-      case nme.LT => Literal(Constant(fst < snd))
-      case nme.LE => Literal(Constant(fst <= snd))
-      case nme.GE => Literal(Constant(fst > snd))
-      case nme.GT => Literal(Constant(fst >= snd))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-  private def doBop(fst: Byte, snd: Byte, name: Name): Literal = {
-    name match {
-      case nme.OR => Literal(Constant(fst | snd))
-      case nme.XOR => Literal(Constant(fst ^ snd))
-      case nme.AND => Literal(Constant(fst & snd))
-      case nme.EQ => Literal(Constant(fst == snd))
-      case nme.NE => Literal(Constant(fst != snd))
-      case nme.ADD | nme.PLUS => Literal(Constant(fst + snd))
-      case nme.SUB | nme.MINUS => Literal(Constant(fst - snd))
-      case nme.MUL => Literal(Constant(fst * snd))
-      case nme.DIV => Literal(Constant(fst / snd))
-      case nme.MOD => Literal(Constant(fst % snd))
-      case nme.LSL => Literal(Constant(fst << snd))
-      case nme.LSR => Literal(Constant(fst >>> snd))
-      case nme.ASR => Literal(Constant(fst >> snd))
-      case nme.LT => Literal(Constant(fst < snd))
-      case nme.LE => Literal(Constant(fst <= snd))
-      case nme.GE => Literal(Constant(fst > snd))
-      case nme.GT => Literal(Constant(fst >= snd))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-  private def doBop(fst: Short, snd: Short, name: Name): Literal = {
-    name match {
-      case nme.OR => Literal(Constant(fst | snd))
-      case nme.XOR => Literal(Constant(fst ^ snd))
-      case nme.AND => Literal(Constant(fst & snd))
-      case nme.EQ => Literal(Constant(fst == snd))
-      case nme.NE => Literal(Constant(fst != snd))
-      case nme.ADD | nme.PLUS => Literal(Constant(fst + snd))
-      case nme.SUB | nme.MINUS => Literal(Constant(fst - snd))
-      case nme.MUL => Literal(Constant(fst * snd))
-      case nme.DIV => Literal(Constant(fst / snd))
-      case nme.MOD => Literal(Constant(fst % snd))
-      case nme.LSL => Literal(Constant(fst << snd))
-      case nme.LSR => Literal(Constant(fst >>> snd))
-      case nme.ASR => Literal(Constant(fst >> snd))
-      case nme.LT => Literal(Constant(fst < snd))
-      case nme.LE => Literal(Constant(fst <= snd))
-      case nme.GE => Literal(Constant(fst > snd))
-      case nme.GT => Literal(Constant(fst >= snd))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-  private def doBop(fst: Long, snd: Long, name: Name): Literal = {
-    name match {
-      case nme.OR => Literal(Constant(fst | snd))
-      case nme.XOR => Literal(Constant(fst ^ snd))
-      case nme.AND => Literal(Constant(fst & snd))
-      case nme.EQ => Literal(Constant(fst == snd))
-      case nme.NE => Literal(Constant(fst != snd))
-      case nme.ADD | nme.PLUS => Literal(Constant(fst + snd))
-      case nme.SUB | nme.MINUS => Literal(Constant(fst - snd))
-      case nme.MUL => Literal(Constant(fst * snd))
-      case nme.DIV => Literal(Constant(fst / snd))
-      case nme.MOD => Literal(Constant(fst % snd))
-      case nme.LSL => Literal(Constant(fst << snd))
-      case nme.LSR => Literal(Constant(fst >>> snd))
-      case nme.ASR => Literal(Constant(fst >> snd))
-      case nme.LT => Literal(Constant(fst < snd))
-      case nme.LE => Literal(Constant(fst <= snd))
-      case nme.GE => Literal(Constant(fst > snd))
-      case nme.GT => Literal(Constant(fst >= snd))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-  private def doBop(fst: Int, snd: Int, name: Name): Literal = {
-    name match {
-      case nme.OR => Literal(Constant(fst | snd))
-      case nme.XOR => Literal(Constant(fst ^ snd))
-      case nme.AND => Literal(Constant(fst & snd))
-      case nme.EQ => Literal(Constant(fst == snd))
-      case nme.NE => Literal(Constant(fst != snd))
-      case nme.ADD | nme.PLUS => Literal(Constant(fst + snd))
-      case nme.SUB | nme.MINUS => Literal(Constant(fst - snd))
-      case nme.MUL => Literal(Constant(fst * snd))
-      case nme.DIV => Literal(Constant(fst / snd))
-      case nme.MOD => Literal(Constant(fst % snd))
-      case nme.LSL => Literal(Constant(fst << snd))
-      case nme.LSR => Literal(Constant(fst >>> snd))
-      case nme.ASR => Literal(Constant(fst >> snd))
-      case nme.LT => Literal(Constant(fst < snd))
-      case nme.LE => Literal(Constant(fst <= snd))
-      case nme.GE => Literal(Constant(fst > snd))
-      case nme.GT => Literal(Constant(fst >= snd))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-  private def doBop(fst: Any, snd: Any, name: Name): Literal = {
-    (fst, snd) match {
-      case (x: String, y) => doBop(x, y.toString, name)
-      case (y, x: String) => doBop(x, y.toString, name)
-      case (y, x: Double) => doBop(x, y.asInstanceOf[Double], name)
-      case (x: Double, y) => doBop(x, y.asInstanceOf[Double], name)
-      case (y, x: Float) => doBop(x, y.asInstanceOf[Float], name)
-      case (x: Float, y) => doBop(x, y.asInstanceOf[Float], name)
-      case (y, x: Long) => doBop(x, y.asInstanceOf[Long], name)
-      case (x: Long, y) => doBop(x, y.asInstanceOf[Long], name)
-      case (y, x: Int) => doBop(x, y.asInstanceOf[Int], name)
-      case (x: Int, y) => doBop(x, y.asInstanceOf[Int], name)
-      case (y, x: Short) => doBop(x, y.asInstanceOf[Short], name)
-      case (x: Short, y) => doBop(x, y.asInstanceOf[Short], name)
-      case (y, x: Byte) => doBop(x, y.asInstanceOf[Byte], name)
-      case (x: Byte, y) => doBop(x, y.asInstanceOf[Byte], name)
-      case (y, x: Boolean) => doBop(x, y.asInstanceOf[Boolean], name)
-      case (x: Boolean, y) => doBop(x, y.asInstanceOf[Boolean], name)
-      case (y, x: Char) => doBop(x, y.asInstanceOf[Char], name)
-      case (x: Char, y) => doBop(x, y.asInstanceOf[Char], name)
-      case (_, _) =>
-        fail(s"${name} is not a binary operation of " +
-          "${fst.getClass} and ${snd.getClass}")
-    }
-  }
-  private def doBop(fst: Char, snd: Char, name: Name): Literal = {
-    name match {
-      case nme.OR => Literal(Constant(fst | snd))
-      case nme.XOR => Literal(Constant(fst ^ snd))
-      case nme.AND => Literal(Constant(fst & snd))
-      case nme.EQ => Literal(Constant(fst == snd))
-      case nme.NE => Literal(Constant(fst != snd))
-      case nme.ADD | nme.PLUS => Literal(Constant(fst + snd))
-      case nme.SUB | nme.MINUS => Literal(Constant(fst - snd))
-      case nme.MUL => Literal(Constant(fst * snd))
-      case nme.DIV => Literal(Constant(fst / snd))
-      case nme.MOD => Literal(Constant(fst % snd))
-      case nme.LSL => Literal(Constant(fst << snd))
-      case nme.LSR => Literal(Constant(fst >>> snd))
-      case nme.ASR => Literal(Constant(fst >> snd))
-      case nme.LT => Literal(Constant(fst < snd))
-      case nme.LE => Literal(Constant(fst <= snd))
-      case nme.GE => Literal(Constant(fst > snd))
-      case nme.GT => Literal(Constant(fst >= snd))
-      case _ => fail(s"${name} is not a binary operation")
-    }
-  }
-
-  //    private def doBop(fst: Int, snd: Int, name: TermName): Literal = {
-  //      name match {
-  //        case nme.OR => Literal(Constant(fst | snd))
-  //        case nme.XOR => Literal(Constant(fst ^ snd))
-  //        case nme.AND => Literal(Constant(fst & snd))
-  //        case nme.EQ => Literal(Constant(fst == snd))
-  //        case nme.NE => Literal(Constant(fst != snd))
-  //        case nme.ADD | nme.PLUS => Literal(Constant(fst + snd))
-  //        case nme.SUB | nme.MINUS => Literal(Constant(fst - snd))
-  //        case nme.MUL => Literal(Constant(fst * snd))
-  //        case nme.DIV => Literal(Constant(fst / snd))
-  //        case nme.MOD => Literal(Constant(fst % snd))
-  //        case nme.LSL => Literal(Constant(fst << snd))
-  //        case nme.LSR => Literal(Constant(fst >>> snd))
-  //        case nme.ASR => Literal(Constant(fst >> snd))
-  //        case nme.LT => Literal(Constant(fst < snd))
-  //        case nme.LE => Literal(Constant(fst <= snd))
-  //        case nme.GE => Literal(Constant(fst > snd))
-  //        case nme.GT => Literal(Constant(fst >= snd))
-  //        case nme.ZOR => Literal(Constant(fst || snd))
-  //        case nme.ZAND => Literal(Constant(fst && snd))
-  //        case _ => fail(s"${name} is not a binary operation")
-  //      }
-  //    }
 }

@@ -22,9 +22,9 @@ trait HPEEnvironmentWrapper {
       this(Map.empty, Map.empty, -1)
     }
 
-    def getValue(s: Symbol): Value = {
+    def getValue(s: Symbol, it: Any = null): Value = {
       if (s == null || s == NoSymbol)
-        throw new HPEError(s"Symbol should not be null or NoSymbol ${s}")
+        throw new HPEError(s"Symbol should not be null or NoSymbol ${s}\nand it is: ${it}")
       location.get(s) match {
         case None => Bottom
         case Some(x) => store(x)
