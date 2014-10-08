@@ -160,9 +160,6 @@ object NeveDSL {
                   checkParents(c)(clazz.impl.parents)
 
 
-          println(nparents)
-          println(newParents)
-          
           val (nbody, plgnName) = 
           generateBody(c)(clazz.impl.body, TransformerPhase)
                     
@@ -357,11 +354,7 @@ object NeveDSL {
       case (x @ DefDef(_, TermName("transformInfo"), Nil,
         List(List(_, _)), _, _)) :: xs if kind == InfoTransformerPhase =>
         splitInnerAndOuterBody(c)(xs, kind, x :: outerBody, innerBody)
-        // Select(Apply(Select(Ident(TermName("from")), TermName("AtomicScala")), List(Ident(TermName("use")))), TermName("classSetsMap"))
-    // from.AtomicScala(use).classSetsMap
       case (x @ Select(Ident(TermName("plugin")), _)) :: xs =>
-      //case (x @ Select(Apply(Select(Ident(TermName("from")), a), 
-            //List(Ident(TermName("use")))), b)) :: xs =>
         splitInnerAndOuterBody(c)(xs, kind, x :: outerBody, innerBody)
       case (x @ Apply(Ident(TermName("rightAfter")), List(_))) :: xs =>
         splitInnerAndOuterBody(c)(xs, kind, x :: outerBody, innerBody)
