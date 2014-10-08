@@ -20,76 +20,124 @@ trait TreeDuplicatorCake {
     import duplicator.plgn.global._
 
     def duplicate(x: Tree): Tree = {
-      if(goodSymbol(x.symbol) && goodSymbol(x.symbol.owner))
-        duplicate(x, x.symbol.owner)
-      else
-        // TODO: Fix this error reporting
-        throw new Exception("Report an error")
+      require(hasSymbol(x))
+      val owner = x.symbol.owner match {
+        case s: Symbol if goodSymbol(s) && s.isModule =>
+          s.moduleClass
+        case s => s
+      }
+      duplicate(x, owner)
     }
 
     def duplicate(x: Tree, newOwner: Symbol): Tree = {
-      // TODO: Implement this
-      duplicate(x, x.symbol.owner)
+      duplicate(x, x.symbol.name, newOwner)
     }
 
     def duplicate(x: Tree, newName: Name): Tree = {
-      if(goodSymbol(x.symbol) && goodSymbol(x.symbol.owner))
-        duplicate(x, newName, x.symbol.owner)
-      else
-        // TODO: Fix this error reporting
-        throw new Exception("Report an error")
+      require(hasSymbol(x))
+      val owner = x.symbol.owner match {
+        case s: Symbol if goodSymbol(s) && s.isModule =>
+          s.moduleClass
+        case s => s
+      }
+      duplicate(x, newName, owner)
     }
     def duplicate(x: Tree, newName: Name, newOwner: Symbol): Tree = {
       val newSym = x.symbol.cloneSymbol(newOwner).setName(newName)
       x match {
         case ValDef(mods, name, tpt, rhs) =>
-          newSym.setInfoAndEnter(x.symbol.tpe)
-          val newTpt = duplicate(tpt, newSym) 
-          val newRhs = duplicate(rhs, newSym) 
+          val newTpt = tpt.duplicate
+          val newRhs = rhs.duplicate
+
+          fixOwner(newRhs, x.symbol, newSym, Nil)
+          fixOwner(newTpt, x.symbol, newSym, Nil)
+
+          // try {
+          //   newSym.setInfoAndEnter(.tpe)
+          // } catch {
+          //   case ex: Exception => newSym.setInfo(x.symbol.tpe)
+          // }
           localTyper.typed {
             ValDef(mods, newName.toTermName, newTpt, newRhs).setSymbol(newSym)
           }
         case DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
-          val newTparams = tparams.foldLeft(Nil: List[TypeDef])((z, y) => {
-            (duplicate(y, y.name, newSym).asInstanceOf[TypeDef]) :: z
-          }).reverse
-          val newVparamss = vparamss.foldLeft(List[List[ValDef]]())((z1, y1) =>
-          {
-            (y1.foldLeft(List[ValDef]())((z2, y2) => {
-              (duplicate(y2, y2.symbol.name, newSym).asInstanceOf[ValDef]) :: z2
-            }).reverse) :: z1
-          }).reverse
-          val newTpt = duplicate(tpt, newSym)
-          val newRhs = duplicate(rhs, newSym)
-          val mtpe = MethodType(newVparamss.flatten.map(_.symbol), newTpt.tpe)
-          val newTpe = newTparams match {
+          val newVparamss = vparamss.map((vparams) => {
+            vparams.map((vparam) => {
+              val sym = 
+                newSym.newSyntheticValueParam(vparam.tpe, vparam.name.toTermName)
+              sym.setInfo(vparam.symbol.tpe)
+              ValDef(sym, vparam.tpt)
+            })
+          })
+          val newParamSyms = newVparamss.flatten.map(_.symbol)
+
+          val newTpt = tpt.duplicate
+          val newRhs = rhs.duplicate
+
+
+          val mtpe = MethodType(newParamSyms, newTpt.tpe)
+          val newTpe = tparams match {
             case Nil => 
               mtpe
             case _ =>
-              PolyType(newTparams.map(_.symbol), mtpe)
+              PolyType(tparams.map(_.symbol), mtpe)
           }
-          newSym.setInfoAndEnter(x.symbol.tpe)
+
+          if(newOwner.info.decls.lookup(newSym.name) == NoSymbol) {
+            newSym.setInfoAndEnter(newTpe)
+          } else {
+            newSym.setInfo(newTpe)
+          }
+
+
+          fixOwner(newRhs, x.symbol, newSym, newParamSyms)
+          
+          val typedRhs = typed { newRhs } 
           localTyper.typed {
-            DefDef(mods, newName.toTermName, newTparams, newVparamss, newTpt,
-                      newRhs).setSymbol(newSym)
+            val methdef = DefDef(newSym, newVparamss, typedRhs)
+            methdef.tpt setType localTyper.packedType(typedRhs, newSym)
+            methdef
           }
+
+
         case ModuleDef(mods, name, impl) =>
           val newImpl = duplicate(impl, newSym).asInstanceOf[Template]
           // TODO: Set info for newSym
           localTyper.typed {
             ModuleDef(mods, newName.toTermName, newImpl).setSymbol(newSym)
           }
-        case ClassDef(mods, name, tparams, impl) =>
-          val newTparams = tparams.foldLeft(Nil: List[TypeDef])((z, y) => {
-            (duplicate(y, y.name, newSym).asInstanceOf[TypeDef]) :: z
-          }).reverse
-          val newImpl = duplicate(impl, newSym).asInstanceOf[Template]
-          // TODO: Set info for newSym
+        case clazz @ ClassDef(mods, name, tparams, impl) =>
+          // val newTparams = tparams.foldLeft(Nil: List[TypeDef])((z, y) => {
+          //   (duplicate(y, y.name, newSym).asInstanceOf[TypeDef]) :: z
+          // }).reverse
+
+          val dbody = impl.duplicate.body
+          val nparents = impl.parents.map(_.symbol.tpe)
+          val ntpe = ClassInfoType(nparents, newScope, newSym)
+
+          if(newOwner.info.decls.lookup(newSym.name) == NoSymbol) {
+            newSym.setInfoAndEnter(ntpe)
+          } else {
+            newSym.setInfo(ntpe)
+          }
+
+
+          val ths = This(newSym)
+          ths.setType(ntpe)
+
+          val newBody = dbody.map(_.substituteThis(clazz.symbol, ths))
+
+
+          newBody.foreach(fixOwner(_, clazz.symbol, newSym))
           localTyper.typed {
-            ClassDef(mods, newName.toTypeName, newTparams, newImpl).setSymbol(newSym)
+            ClassDef(newSym, Template(impl.parents, impl.self, newBody))
           }
         case _ => x
       }
+    }
+
+    def fixOwner(tree: Tree, oldOwner: Symbol, newOwner: Symbol): Unit = {
+      fixOwner(tree, oldOwner, newOwner, Nil)
     }
 
     def fixOwner(tree: Tree, oldOwner: Symbol, 
@@ -103,7 +151,8 @@ trait TreeDuplicatorCake {
     }
 
     // This method is stolen from Mina
-    private def findSymbol(name: Name, tpe: Type, paramSyms: List[Symbol]): Option[Symbol] = {
+    private def findSymbol(name: Name, tpe: Type, 
+      paramSyms: List[Symbol]): Option[Symbol] = {
       val r = for (
         // FIXME: 
         // I commented out this statement, because for generics types might change
@@ -130,7 +179,8 @@ trait TreeDuplicatorCake {
               && x.symbol.owner == oldOwner) {
               x match {
                 case ident: Ident =>
-                  assert(list.contains(ident.symbol), s"${ident.symbol} could not be found. ${ident.pos}")
+                  assert(list.contains(ident.symbol), 
+                        s"${ident.symbol} could not be found. ${ident.pos}")
                   ident.symbol = list(ident.symbol)
                 case _ =>
                   val ts = x.symbol
@@ -151,7 +201,8 @@ trait TreeDuplicatorCake {
     }
 
     // This method is stolen from Mina
-    private def changeParamSymbols(tree: Tree, oldOwner: Symbol, paramSyms: List[Symbol]): Unit = {
+    private def changeParamSymbols(tree: Tree, oldOwner: Symbol, 
+            paramSyms: List[Symbol]): Unit = {
       tree.foreach {
         (x: Tree) =>
           {
