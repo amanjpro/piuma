@@ -152,7 +152,7 @@ trait SymbolsUtil { self: LombrelloPlugin =>
     *
     * @return true if x is var, and false otherwise
     */
-  def isVar(x: ValDef): Boolean = isVar(x.symbol)
+  def isVar(x: Tree): Boolean = isVar(x.symbol)
 
   /**
     * Checks weather a ValDef is val
@@ -161,7 +161,7 @@ trait SymbolsUtil { self: LombrelloPlugin =>
     *
     * @return true if x is val, and false otherwise
     */
-  def isVal(x: ValDef): Boolean = isVal(x.symbol)
+  def isVal(x: Tree): Boolean = isVal(x.symbol)
 
   /**
     * Checks weather a ValDef is final
@@ -180,6 +180,24 @@ trait SymbolsUtil { self: LombrelloPlugin =>
     * @return true if x is parameter, and false otherwise
     */
   def isParam(x: Tree): Boolean = isParam(x.symbol)
+
+  /**
+    * Checks weather a tree is pacakge
+    *
+    * @param x the tree to be checked
+    *
+    * @return true if x is package, and false otherwise
+    */
+  def isPackage(x: Tree): Boolean = isPackage(x.symbol)
+
+  /**
+    * Checks weather a Tree represents a method 
+    *
+    * @param x the tree to be checked
+    *
+    * @return true if x is method, and false otherwise
+    */
+  def isMethod(x: Tree): Boolean = isMethod(x.symbol)
 
   /**
     * Checks weather a Tree is constructor
@@ -226,7 +244,7 @@ trait SymbolsUtil { self: LombrelloPlugin =>
   /**
     * Checks weather a ValDef is var
     *
-    * @param x the tree that represents ValDef
+    * @param x the symbol that represents ValDef
     *
     * @return true if x is var, and false otherwise
     */
@@ -235,7 +253,7 @@ trait SymbolsUtil { self: LombrelloPlugin =>
   /**
     * Checks weather a ValDef is val
     *
-    * @param x the tree that represents ValDef
+    * @param x the symbol that represents ValDef
     *
     * @return true if x is val, and false otherwise
     */
@@ -244,7 +262,7 @@ trait SymbolsUtil { self: LombrelloPlugin =>
   /**
     * Checks weather a ValDef is final
     *
-    * @param x the tree that represents ValDef
+    * @param x the symbol that represents ValDef
     *
     * @return true if x is final, and false otherwise
     */
@@ -254,11 +272,30 @@ trait SymbolsUtil { self: LombrelloPlugin =>
   /**
     * Checks weather a ValDef is parameter
     *
-    * @param x the tree that represents ValDef
+    * @param x the symbol that represents ValDef
     *
     * @return true if x is parameter, and false otherwise
     */
   def isParam(x: Symbol): Boolean = goodSymbol(x) && x.isValueParameter
+
+
+  /**
+    * Checks weather a symbol represents a package
+    *
+    * @param x the symbol to be checked
+    *
+    * @return true if x represents a package, and false otherwise
+    */
+  def isPackage(x: Symbol): Boolean = goodSymbol(x) && x.hasPackageFlag
+
+  /**
+    * Checks weather a Symbol represents a method
+    *
+    * @param x the symbol to be checked
+    *
+    * @return true if x is method, and false otherwise
+    */
+  def isMethod(x: Symbol): Boolean = goodSymbol(x) && x.isMethod
 
   /**
     * Checks weather a Symbol is constructor
