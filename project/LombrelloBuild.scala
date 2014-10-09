@@ -35,7 +35,8 @@ object LombrelloBuild extends Build {
     settings = buildSettings ++ Seq(
       run <<= run in Compile in main in simple in 
                 kara in atomicScala in scalaDyno in
-                miniboxing in mina,
+                miniboxing in mina in avro,
+      run <<= run in Test in avro,
       name := "root"
     )
    ) aggregate (main)
@@ -93,5 +94,19 @@ object LombrelloBuild extends Build {
       name := "mina"
     )
   ) dependsOn (main)
+
+  lazy val avro: Project = Project(
+    "avro",
+    base = file("avro"),
+    settings = buildSettings ++ Seq(
+      name := "avro",
+      libraryDependencies ++= Seq("org.apache.avro" % "avro" % "1.7.5",
+        "org.apache.avro" % "avro-compiler" % "1.7.5",
+        "log4j" % "log4j" % "1.2.14")
+        // "com.novocode" % "junit-interface" % "0.8",
+        // "junit" % "junit" % "4.11")
+    )
+  ) dependsOn (main)
+
 
 }
