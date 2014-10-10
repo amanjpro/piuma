@@ -79,15 +79,6 @@ import scala.reflect.internal.Flags._
 
         val constructor = mkConstructor(cd, Nil)
 
-        // val pos = ctors.last.pos
-
-        // // make new default ctor symbmol
-        // val ctorSym = cd.symbol.newConstructor(pos.withPoint(pos.point + 1))
-        // ctorSym setFlag METHOD
-        // ctorSym setInfo MethodType(ctorSym.newSyntheticValueParams(List()), cd.symbol.tpe)
-        // cd.symbol.info.decls enter ctorSym
-
-
         debug("clazz.caseFieldAccessors: " + cd.symbol.caseFieldAccessors)
         debug("clazz.primaryConstructor.tpe.paramTypes: " + cd.symbol.primaryConstructor.tpe.paramTypes)
         debug("clazz.primaryConstructor.tpe.resultType: " + cd.symbol.primaryConstructor.tpe.resultType)
@@ -124,13 +115,11 @@ import scala.reflect.internal.Flags._
         toTypedSelectTree("com.googlecode.avro.runtime.HasAvroConversions")
 
       val (car, cdr) = impl.parents.splitAt(1)
-      // val newImpl = treeCopy.Template(impl, List(specificRecordBase, avroConversions) ::: cdr, impl.self, impl.body ::: ctor.toList)
       val newParents = List(specificRecordBase, avroConversions) ++ cdr
       ctor match {
         case Some(x) => cd.updateParents(newParents).addMember(x)
         case _ => cd.updateParents(newParents)
       }
-      // treeCopy.ClassDef(tree, mods, name, tparams, newImpl)
     case _ => tree
   }
 
