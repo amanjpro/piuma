@@ -26,7 +26,7 @@ import org.apache.avro.Schema
   }
 
   private def construct(tpe: Type, args: List[Type]) = tpe match {
-   case TypeRef(pre, sym, _) => TypeRef(pre, sym, args)
+    case TypeRef(pre, sym, _) => TypeRef(pre, sym, args)
   }
 
   private def toAvroType(tpe: Type): Type = {
@@ -75,16 +75,16 @@ import org.apache.avro.Schema
       case _ => false
     })
 
-  private def generateGetMethod(templ: Template, clazz: Symbol, instanceVars: List[Symbol]) = {
-    val newSym = clazz.newMethod(newTermName("get"), clazz.pos.focus)
-    newSym setFlag SYNTHETIC | OVERRIDE 
-    newSym setInfo MethodType(newSym.newSyntheticValueParams(List(/*Boxed*/ IntClass.tpe)), /*Any*/ObjectClass.tpe)
-    clazz.info.decls enter newSym 
-
-    val arg = localTyper.typed {Ident(newSym.paramss.head(0))}//List(0)//newSym ARG 0
+  private def generateGetMethod(impl: ImplDef, clazz: Symbol, instanceVars: List[Symbol]) = {
+    val getMethod0 = mkDefDef(OVERRIDE, newTermName("get"), Nil, Nil,
+                            ObjectClass.tpe, mkLiteral(null), clazz)
+    val getMethod = addParam(mkParam(IntClass.tpe, getMethod0.symbol), getMethod0)
+    val arg = mkIdent(getMethod.symbol.paramss.head(0))
     // TODO: throw the avro bad index exception here
-    val newTree = Select(New(Ident(IndexOutOfBoundsExceptionClass)), nme.CONSTRUCTOR)
-    val default = List(CaseDef(Ident(nme.WILDCARD), Throw(Apply(newTree, List(arg)))))
+    val newTree = mkConstructorCall(Ident(IndexOutOfBoundsExceptionClass), 
+                List(q"${arg}.toString"))
+      
+    val default = List(CaseDef(Ident(nme.WILDCARD), Throw(newTree)))
     val cases = for ((sym, i) <- instanceVars.zipWithIndex) yield {
       CaseDef(Literal(Constant(i)), {
         if (canInline(sym.tpe)) // trivial ones where no conversions are necessary
@@ -93,90 +93,84 @@ import org.apache.avro.Schema
           val avroTpe = toAvroType(sym.tpe)
           val schema: Tree = 
             if (needsSchemaToConvert(sym.tpe))
-              Apply(
-                Apply(
+              mkApply(
+                mkApply(
                   q"getSchema.getFields.get",
-                  List(Select(Literal(Constant(i)), newTermName("schema")))),
+                  List(mkSelect(mkLiteral(i), newTermName("schema")))),
                 Nil)
             else 
-              Literal(Constant(null))
+              mkNullLiteral
             val ths = This(clazz)
             val clazzThis: Tree = Select(ths, sym)
-            clazzThis.substituteThis(clazz, ths)
-            val app = Apply(
-                        TypeApply(
-                          Select(This(clazz), newTermName("convert")),
+            val app = mkApply(
+                          Select(ths, newTermName("convert")),
                           List(
                             TypeTree(sym.tpe),
-                            TypeTree(avroTpe))),
+                            TypeTree(avroTpe)),
                       List(schema, clazzThis)) 
             q"${app}.asInstanceOf[Object]"
           }
       })
     }
 
-    val m = localTyper.typed {Match(arg, cases ++ default)}
-    DefDef(newSym, m)
+    val m = mkMatch(arg, cases ++ default)
+    getMethod.updateRHS(m)
   }
 
-  private def generateSetMethod(templ: Template, clazz: Symbol, instanceVars: List[Symbol]) = {
-    val newSym = clazz.newMethod(newTermName("put"), clazz.pos.focus)
-    newSym setFlag SYNTHETIC | OVERRIDE
-    newSym setInfo MethodType(newSym.newSyntheticValueParams(List(IntClass.tpe, AnyClass.tpe)), UnitClass.tpe)
-    clazz.info.decls enter newSym 
-
-    // TODO: throw avro bad index class
-    val newTree = Select(New(Ident(IndexOutOfBoundsExceptionClass)), nme.CONSTRUCTOR)
-    val default = List(CaseDef(Ident(nme.WILDCARD),  
-                      Ident(newSym.paramss.head(0))))
+  private def generateSetMethod(impl: ImplDef, clazz: Symbol, instanceVars: List[Symbol]) = {
+    val putMethod0 = mkDefDef(OVERRIDE, newTermName("put"), Nil, Nil,
+                            UnitClass.tpe, mkUnitLiteral, clazz)
+    val params = List(mkParam(IntClass.tpe, putMethod0.symbol),
+                      mkParam(AnyClass.tpe, putMethod0.symbol))
+    val putMethod = params.foldLeft(putMethod0)((z, y) => addParam(y, z))
+    val arg = mkIdent(putMethod.symbol.paramss.head(0))
+    // TODO: throw the avro bad index exception here
+    val newTree = mkConstructorCall(Ident(IndexOutOfBoundsExceptionClass), 
+                List(q"${arg}.toString"))
+      
+    val default = List(CaseDef(Ident(nme.WILDCARD), Throw(newTree)))
 
     val byteBufferTpe = byteBufferClass.tpe
     val utf8Tpe = utf8Class.tpe
 
     val cases = for ((sym, i) <- instanceVars.zipWithIndex) yield {
       val rhs = if (canInline(sym.tpe)){
-          val id = Ident((newSym.paramss.head(1)))
+          val id = Ident((putMethod.symbol.paramss.head(1)))
           q"${id}.asInstanceOf[${Ident(sym)}]"
         } else {
           val avroTpe = toAvroType(sym.tpe)
           val schema = if (needsSchemaToConvert(sym.tpe))
-              Apply(
-                Apply(
+              mkApply(
                   q"getSchema.getFields.get",
-                  List(Select(Literal(Constant(i)), newTermName("schema")))),
+                  List(Select(mkLiteral(i), newTermName("schema"))),
               Nil)
             else 
-              Literal(Constant(null))
-          val id = Ident(newSym.paramss.head(1))
-          Apply(
-            TypeApply(
+              mkNullLiteral
+          val id = Ident(putMethod.symbol.paramss.head(1))
+          mkApply(
               Select(This(clazz), newTermName("convert")),
               List(
                 TypeTree(avroTpe),
-                  TypeTree(sym.tpe))),
-          List(schema, q"${id}.asInstanceOf[avroTpe]"))
+                  TypeTree(sym.tpe)),
+              List(schema, q"${id}.asInstanceOf[avroTpe]"))
         }
 
       val ths = This(clazz)
       val clazzThis: Tree = Select(ths, sym)
-      clazzThis.substituteThis(clazz, ths)
       CaseDef(Literal(Constant(i)),  Assign(clazzThis, rhs))
     }
 
-    // atOwner(clazz)(localTyper.typed {
-    val mtch = localTyper.typed {Match(localTyper.typed{Ident(newSym.paramss.head(0))}, 
-    cases ++ default)}
-    // mtch.setType(newSym.info)
-    DefDef(newSym, mtch)
-    // })
+    val mtch = mkMatch(mkIdent(putMethod.symbol.paramss.head(0)), cases ++ default)
+    putMethod.updateRHS(mtch)
   }
 
   private def generateGetSchemaMethod(clazzTree: ClassDef): Tree = {
+    val mthd = mkDefDef(OVERRIDE, newTermName("getSchema"), Nil, Nil,
+                            schemaClass.tpe, mkNullLiteral, clazzTree.symbol)
+    val newSym = mthd.symbol
     val clazz = clazzTree.symbol
-    val newSym = clazz.newMethod(newTermName("getSchema"), clazz.pos.focus)
-    newSym setFlag SYNTHETIC | OVERRIDE
-    newSym setInfo MethodType(newSym.newSyntheticValueParams(Nil), schemaClass.tpe)
-    clazz.info.decls enter newSym 
+
+
     val innerTree: Tree =  /** Not sure why compiler needs type information (Tree) here */
       if (clazz.owner.isClass) { /** Only when the owner of this class is another class can we perform
         *  the optimization of referencing the companion object */
@@ -185,41 +179,29 @@ import org.apache.avro.Schema
         debug("clazz.outerClass: " + clazz.outerClass)
         debug("clazz.enclClass: " + clazz.enclClass)
         if (clazz.enclosingTopLevelClass == clazz) {
-          val ths = This(companionModuleOf(clazzTree.symbol).moduleClass)
-          val slct = Select(ths, newTermName("schema"))
-          slct.substituteThis(clazz, ths)
-          slct
+          Select(This(companionModuleOf(clazzTree.symbol).moduleClass), 
+                  newTermName("schema"))
         } else {
-          val ths = This(clazz.outerClass)
-          val slct = Select(Select(ths, newTermName(clazz.name.toString)), newTermName("schema"))
-          slct.substituteThis(clazz, ths)
-          slct
+          Select(Select(This(clazz.outerClass), 
+            newTermName(clazz.name.toString)), newTermName("schema"))
         }
       } else { /** Fall back to the naive version in the other cases */
         // TODO: change getSchema to be a lazy val here instead (so we can
         // at least cache the invocations)
         warning("Unable to optimize getSchema method for class %s".format(clazz.fullName.toString))
-        Apply(q"org.apache.avro.Schema.parse", List(Literal(Constant(retrieveRecordSchema(clazz).get.toString))))
+        mkApply(q"org.apache.avro.Schema.parse", List(mkLiteral(retrieveRecordSchema(clazz).get.toString)))
       }
-    localTyper.typed {
-      DefDef(newSym, innerTree)
-    }
+    mthd.updateRHS(innerTree) 
   }
 
   private def generateGetUnionSchemaMethod(clazzTree: ClassDef, unionSchema: Schema): Tree = {
-    val clazz = clazzTree.symbol
-    val newSym = clazz.newMethod(newTermName("getSchema"), clazz.pos.focus)
-    newSym setFlag SYNTHETIC | OVERRIDE
-    newSym setInfo MethodType(newSym.newSyntheticValueParams(Nil), schemaClass.tpe)
-    clazz.info.decls enter newSym 
-
-    localTyper.typed {
-      DefDef(newSym, 
-        Apply(
+    val rhs = mkApply(
           q"org.apache.avro.Schema.parse",
-          List(Literal(Constant(unionSchema.toString)))))
-    }
-  }
+          List(mkLiteral(unionSchema.toString)))
+
+    mkDefDef(OVERRIDE, newTermName("getSchema"), Nil, Nil,
+                            schemaClass.tpe, rhs, clazzTree.symbol)
+}
 
 
   def transform(tree: Tree) : Tree = {
@@ -227,12 +209,10 @@ import org.apache.avro.Schema
       case cd @ ClassDef(mods, name, tparams, impl) if (cd.symbol.tpe.parents.contains(avroUnionTrait.tpe)) =>
       //println("FOUND UNION: " + cd.symbol)
       val schema = getOrCreateUnionSchema(cd.symbol, 
-      Schema.createUnion(JArrays.asList(retrieveUnionRecords(cd.symbol).map(s => retrieveRecordSchema(s).get).toArray:_*)))
+        Schema.createUnion(JArrays.asList(retrieveUnionRecords(cd.symbol).map(s => retrieveRecordSchema(s).get).toArray:_*)))
       //println("SCHEMA: " + schema)
       cd.symbol.resetFlag(INTERFACE) /** force compiler to generate backing $class class */
-      val newMethod = List(generateGetUnionSchemaMethod(cd, schema))
-      val newImpl = treeCopy.Template(impl, impl.parents, impl.self, newMethod ::: impl.body)
-      localTyper.typed {treeCopy.ClassDef(cd, mods, name, tparams, newImpl)}
+      cd.addMember(generateGetUnionSchemaMethod(cd, schema))
     case cd @ ClassDef(mods, name, tparams, impl) if (cd.symbol.tpe.parents.contains(avroRecordTrait.tpe)) =>
       debug(retrieveRecordSchema(cd.symbol))
       debug(cd.symbol.fullName + "'s enclClass: " + cd.symbol.enclClass)
@@ -240,16 +220,14 @@ import org.apache.avro.Schema
       debug("enclosingTopLevelClass: " + cd.symbol.enclosingTopLevelClass)
       debug("owner.enclosingTopLevelClass: " + cd.symbol.owner.enclosingTopLevelClass)
 
-      println(cd)
       val instanceVars = 
-        for (member <- impl.body if isValDef(member)) yield { member.symbol }
+        for (member <- impl.body if isVal(member) || isVar(member)) yield { member.symbol }
       val newMethods = List(
-        generateGetMethod(impl, cd.symbol, instanceVars),
-        generateSetMethod(impl, cd.symbol, instanceVars),
+        generateGetMethod(cd, cd.symbol, instanceVars),
+        generateSetMethod(cd, cd.symbol, instanceVars),
         generateGetSchemaMethod(cd))
 
-      val newImpl = treeCopy.Template(impl, impl.parents, impl.self, newMethods ::: impl.body)
-      localTyper.typed{treeCopy.ClassDef(cd, mods, name, tparams, newImpl)}
+        cd.updateBody(impl.body ++ newMethods)
       case _ => tree
     }
     super.transform(newTree)
