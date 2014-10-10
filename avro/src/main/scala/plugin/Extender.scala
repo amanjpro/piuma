@@ -1,163 +1,165 @@
 package com.googlecode.avro
 package plugin
 
-import scala.tools._
-import nsc.Global
-import nsc.Phase
-import nsc.plugins.Plugin
-import nsc.plugins.PluginComponent
-import nsc.transform.Transform
-import nsc.transform.InfoTransform
-import nsc.transform.TypingTransformers
-import nsc.symtab.Flags
-import nsc.symtab.Flags._
-import nsc.ast.TreeDSL
 import scala.language.postfixOps
+import ch.usi.inf.l3.lombrello.neve.NeveDSL._
+import scala.reflect.internal.Flags._
 
-trait Extender extends ScalaAvroPluginComponent
-               with    Transform 
-               with    InfoTransform
-               with    TypingTransformers
-               with    TreeDSL {
-  import global._
-  import global.definitions._
-  import CODE._
 
-  val runsAfter = List[String]("typer")
-  override val runsBefore = List[String]("superaccessors")
-  val phaseName = "extender"
+@info("extender") class Extender {
 
-  def newTransformer(unit: CompilationUnit) = new ExtenderTransformer(unit)
+  after(List("typer"))
+  before(List("superaccessors"))
+  plugin ScalaAvroPlugin
 
-  override def transformInfo(sym: Symbol, tpe: Type): Type = tpe match {
+
+  def transformInfo(sym: Symbol, tpe: Type): Type = tpe match {
     case ClassInfoType(parents, decls, clazz) if (!clazz.isPackageClass && clazz.tpe.parents.contains(avroRecordTrait.tpe)) =>
       // 1) warn if current parent is not java.lang.Object AND if it is not a
       // subtype of SpecificRecordBase
       val (car, cdr) = clazz.tpe.parents.splitAt(1)
-      if (car.head != ObjectClass.tpe && !(car.head <:< SpecificRecordBaseClass.tpe))
+      if (car.head != definitions.ObjectClass.tpe && !(car.head <:< SpecificRecordBaseClass.tpe))
         warn("Replacing inheritance of non specific record base type")
       ClassInfoType(List(SpecificRecordBaseClass.tpe, AvroConversions.tpe) ::: cdr, decls, clazz)
     case _ => tpe
   }
 
-  class ExtenderTransformer(unit: CompilationUnit) extends TypingTransformer(unit) {
-    import CODE._
+  // class ExtenderTransformer(unit: CompilationUnit) extends TypingTransformer(unit) {
+  // import CODE._
 
-    private val DefaultValues = Map(
-      IntClass     -> LIT(0),
-      LongClass    -> LIT(0L),
-      FloatClass   -> Literal(Constant(0.0F)),
-      DoubleClass  -> LIT(0.0),
-      BooleanClass -> FALSE,
-      ShortClass   -> LIT(0),
-      ByteClass    -> LIT(0),
-      CharClass    -> LIT(0))
+  private val DefaultValues = Map(
+    definitions.IntClass     -> mkLiteral(0),
+    definitions.LongClass    -> mkLiteral(0L),
+    definitions.FloatClass   -> mkLiteral(0.0F),
+    definitions.DoubleClass  -> mkLiteral(0.0),
+    definitions.BooleanClass -> mkLiteral(false),
+    definitions.ShortClass   -> mkLiteral(0),
+    definitions.ByteClass    -> mkLiteral(0),
+    definitions.CharClass    -> mkLiteral(0))
 
-    private def preTransform(tree: Tree): Tree = tree match {
-      case cd @ ClassDef(mods, name, tparams, impl) 
-        if (cd.symbol.tpe.parents.contains(avroRecordTrait.tpe)) =>
+  private def isCtor(tree: Tree): Boolean = {
+    (tree.symbol ne null) && tree.symbol.name == nme.CONSTRUCTOR
+  }
 
-        // check that this annotation is a case class
-        if (!cd.symbol.hasFlag(Flags.CASE))
-          throw new NonCaseClassException(name.toString)
+  private def mapToDefaults(params: List[Symbol]) =
+    params.map(v => DefaultValues.get(v.tpe.typeSymbol.asClass).getOrElse(Literal(Constant(null))))
 
-        // todo: for case objects, throw exception
 
-        debug("Extending class: " + name.toString)
+  private def preTransform(tree: Tree): Tree = tree match {
+    case cd @ ClassDef(mods, name, tparams, impl) 
+              if (cd.symbol.tpe.parents.contains(avroRecordTrait.tpe)) =>
 
-        def isCtor(tree: Tree): Boolean = {
-          (tree.symbol ne null) && tree.symbol.name == nme.CONSTRUCTOR
-        }
-        val ctors = for (member <- impl.body if isCtor(member)) yield { member.symbol }
-        assert (!ctors.isEmpty)
+      // check that this annotation is a case class
+      if (!cd.symbol.hasFlag(CASE))
+        throw new NonCaseClassException(name.toString)
 
-        val containsDefaultCtor = !ctors.map(_.info).filter {
-          case MethodType(Nil, MethodType(_, _)) =>
-            /** case class Foo()(...) */
-            false
-          case MethodType(Nil, _) => 
-            /** case class Foo() */
-            true
-          case _ => false
-        }.isEmpty
+      // todo: for case objects, throw exception
 
-        val ctor = 
-          if (containsDefaultCtor) {
-            None
-          } else {
-            // TODO: not sure if this pos stuff is really how we're supposed
-            // to be manipulating
-            val pos = ctors.last.pos
+      debug("Extending class: " + name.toString)
 
-            // make new default ctor symbmol
-            val ctorSym = cd.symbol.newConstructor(pos.withPoint(pos.point + 1))
-            ctorSym setFlag METHOD
-            ctorSym setInfo MethodType(ctorSym.newSyntheticValueParams(List()), cd.symbol.tpe)
-            cd.symbol.info.decls enter ctorSym
+      val ctors = for (member <- impl.body if isCtor(member)) yield { member.symbol }
 
-            val innerCtorTpe = cd.symbol.primaryConstructor.tpe
+      assert (!ctors.isEmpty)
 
-            debug("clazz.caseFieldAccessors: " + cd.symbol.caseFieldAccessors)
-            debug("clazz.primaryConstructor.tpe.paramTypes: " + cd.symbol.primaryConstructor.tpe.paramTypes)
-            debug("clazz.primaryConstructor.tpe.resultType: " + cd.symbol.primaryConstructor.tpe.resultType)
-            debug("clazz.primaryConstructor.tpe.finalResultType: " + cd.symbol.primaryConstructor.tpe.finalResultType)
-            debug("clazz.primaryConstructor.tpe.boundSyms: " + cd.symbol.primaryConstructor.tpe.boundSyms)
+      val containsDefaultCtor = !ctors.map(_.info).filter {
+        case MethodType(Nil, MethodType(_, _)) =>
+          /** case class Foo()(...) */
+           false
+        case MethodType(Nil, _) => 
+          /** case class Foo() */
+           true
+        case _ => false
+      }.isEmpty
 
-            def mapToDefaults(params: List[Symbol]) =
-              params.map(v => DefaultValues.get(v.tpe.typeSymbol.asClass).getOrElse(LIT(null)))
+      val ctor = if (containsDefaultCtor) {
+        None
+      } else {
+        // TODO: not sure if this pos stuff is really how we're supposed
+        // to be manipulating
 
-            val innerParamDefaults = mapToDefaults(innerCtorTpe.params)
-            val apply0 = Apply(This(cd.symbol) DOT nme.CONSTRUCTOR, innerParamDefaults)
-            val apply = innerCtorTpe.resultType match {
-              case MethodType(outerParams, _) =>
-                /** primaryCtor is curried */
-                Apply(apply0, mapToDefaults(outerParams))
-              case _ =>
-                /** primaryCtor is not curried */
-                apply0
-            }
+        val constructor = mkConstructor(cd, Nil)
 
-            Some(localTyper typed {
-              DefDef(ctorSym, Block(List(apply), Literal(Constant(()))))
-            })
-          }
+        // val pos = ctors.last.pos
 
-        def toTypedSelectTree(s: String): Tree = {
-          if ((s eq null) || s.isEmpty)
-            throw new IllegalArgumentException("Bad FQDN")
-          val (car, cdr) = s.split("\\.").toList.splitAt(1)
-          if (cdr isEmpty)
-            throw new IllegalArgumentException("Nothing to select: " + s)
-          else {
-            val sym = rootMirror.getModuleByName(newTermName(car.head))
-            val first = (car.head, Ident(newTermName(car.head)) setSymbol sym setType sym.tpe)
-            cdr.zipWithIndex.foldLeft[(String,Tree)](first)((tuple1, tuple2) => {
-              val (name, tree) = tuple1
-              val (sel, idx) = tuple2
-              val newName = name + "." + sel
-              val sym = 
-                if (idx == cdr.length - 1)
-                  rootMirror.getClassByName(newTypeName(newName))
-                else 
-                  rootMirror.getModuleByName(newTermName(newName))
-              (newName, Select(tree, if (idx == cdr.length - 1) newTypeName(sel) else newTermName(sel)) setSymbol sym setType sym.tpe)
-            })._2
-          }
+        // // make new default ctor symbmol
+        // val ctorSym = cd.symbol.newConstructor(pos.withPoint(pos.point + 1))
+        // ctorSym setFlag METHOD
+        // ctorSym setInfo MethodType(ctorSym.newSyntheticValueParams(List()), cd.symbol.tpe)
+        // cd.symbol.info.decls enter ctorSym
+
+
+        debug("clazz.caseFieldAccessors: " + cd.symbol.caseFieldAccessors)
+        debug("clazz.primaryConstructor.tpe.paramTypes: " + cd.symbol.primaryConstructor.tpe.paramTypes)
+        debug("clazz.primaryConstructor.tpe.resultType: " + cd.symbol.primaryConstructor.tpe.resultType)
+        debug("clazz.primaryConstructor.tpe.finalResultType: " + cd.symbol.primaryConstructor.tpe.finalResultType)
+        debug("clazz.primaryConstructor.tpe.boundSyms: " + cd.symbol.primaryConstructor.tpe.boundSyms)
+
+
+        // TODO: Can I generalize this? -- Amanj
+        val innerCtorTpe = cd.symbol.primaryConstructor.tpe
+        val innerParamDefaults = mapToDefaults(innerCtorTpe.params)
+
+
+        val apply0 = mkApply(Select(This(cd.symbol), nme.CONSTRUCTOR), innerParamDefaults)
+
+        val apply = innerCtorTpe.resultType match {
+          case MethodType(outerParams, _) =>
+            /** primaryCtor is curried */
+            mkApply(apply0, mapToDefaults(outerParams))
+          case _ =>
+            /** primaryCtor is not curried */
+             apply0
         }
 
-        val specificRecordBase = toTypedSelectTree("org.apache.avro.specific.SpecificRecordBase")
+            
+        Some(constructor.updateRHS(Block(List(apply), mkUnitLiteral)))
+      }
 
-        val avroConversions = toTypedSelectTree("com.googlecode.avro.runtime.HasAvroConversions")
 
-        val (car, cdr) = impl.parents.splitAt(1)
-        val newImpl = treeCopy.Template(impl, List(specificRecordBase, avroConversions) ::: cdr, impl.self, impl.body ::: ctor.toList)
-        treeCopy.ClassDef(tree, mods, name, tparams, newImpl)
-      case _ => tree
+
+      val specificRecordBase = 
+        toTypedSelectTree("org.apache.avro.specific.SpecificRecordBase")
+
+      val avroConversions = 
+        toTypedSelectTree("com.googlecode.avro.runtime.HasAvroConversions")
+
+      val (car, cdr) = impl.parents.splitAt(1)
+      // val newImpl = treeCopy.Template(impl, List(specificRecordBase, avroConversions) ::: cdr, impl.self, impl.body ::: ctor.toList)
+      val newParents = List(specificRecordBase, avroConversions) ++ cdr
+      ctor match {
+        case Some(x) => cd.updateParents(newParents).addMember(x)
+        case _ => cd.updateParents(newParents)
+      }
+      // treeCopy.ClassDef(tree, mods, name, tparams, newImpl)
+    case _ => tree
+  }
+
+  private def toTypedSelectTree(s: String): Tree = {
+    if ((s eq null) || s.isEmpty)
+      throw new IllegalArgumentException("Bad FQDN")
+    val (car, cdr) = s.split("\\.").toList.splitAt(1)
+    if (cdr isEmpty)
+      throw new IllegalArgumentException("Nothing to select: " + s)
+    else {
+      val sym = rootMirror.getModuleByName(newTermName(car.head))
+      val first = (car.head, Ident(newTermName(car.head)) setSymbol sym setType sym.tpe)
+      cdr.zipWithIndex.foldLeft[(String,Tree)](first)((tuple1, tuple2) => {
+        val (name, tree) = tuple1
+        val (sel, idx) = tuple2
+        val newName = name + "." + sel
+        val sym = if (idx == cdr.length - 1)
+          rootMirror.getClassByName(newTypeName(newName))
+        else 
+          rootMirror.getModuleByName(newTermName(newName))
+        (newName, Select(tree, 
+          if (idx == cdr.length - 1) newTypeName(sel) 
+          else newTermName(sel)) setSymbol sym setType sym.tpe)
+      })._2
     }
+  }
 
-    override def transform(tree: Tree): Tree = {
-      val t = preTransform(tree)
-      super.transform(t)
-    }
+  def transform(tree: Tree): Tree = {
+    val t = preTransform(tree)
+    super.transform(t)
   }
 }
