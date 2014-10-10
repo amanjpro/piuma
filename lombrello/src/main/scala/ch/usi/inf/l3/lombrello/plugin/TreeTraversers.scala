@@ -42,6 +42,201 @@ trait TreeTraversersCake {
     def traverseIf(tree: Tree, f: Tree => Tree, p: Tree => Boolean): Tree = {
       typed {traverseIfAux(tree, f, p)}
     }
+
+
+
+    // TODO: Amanj implement this
+   // private def fold[A](tree: Tree, z: A, f: (A, Tree) => A): A = {
+   //    tree match {
+   //      case t @ Alternative(trees) =>
+   //        f(treeCopy.Alternative(t, trees.map(_.fold(z))))
+   //      case t @ Annotated(annot, arg) =>
+   //        f(treeCopy.Annotated(t, annot.traverseIfAux(f, p),
+   //                             arg.traverseIfAux(f, p)))
+   //      case t @ AppliedTypeTree(tpt, args) =>
+   //        f(treeCopy.AppliedTypeTree(t, tpt.traverseIfAux(f, p),
+   //                                  args.map(_.traverseIfAux(f, p))))
+   //      case t @ Apply(fun, args) =>
+   //        f(treeCopy.Apply(t, fun.traverseIfAux(f, p),
+   //                                  args.map(_.traverseIfAux(f, p))))
+   //      case t @ Assign(lhs, rhs) =>
+   //        f( 
+   //          treeCopy.Assign(t, lhs.traverseIfAux(f, p),
+   //                              rhs.traverseIfAux(f, p))
+   //        )
+   //      case t @ Bind(name, body) =>
+   //        f( 
+   //          treeCopy.Bind(t, name, 
+   //                              body.traverseIfAux(f, p))
+   //        ) 
+   //      case t @ Block(stats, expr) =>
+   //        f( 
+   //          treeCopy.Block(t, stats.map(_.traverseIfAux(f, p)),
+   //                                expr.traverseIfAux(f, p))
+   //        )
+   //      case t @ CaseDef(pat, guard, body) =>
+   //        f( 
+   //          treeCopy.CaseDef(t, pat.traverseIfAux(f, p),
+   //                              guard.traverseIfAux(f, p),
+   //                              body.traverseIfAux(f, p))
+   //        )
+   //      case t @ ClassDef(mods, name, tparams, impl) =>
+   //        f( 
+   //          treeCopy.ClassDef(t, mods, name,
+   //                    tparams.map(_.traverseIfAux(f, p).asInstanceOf[TypeDef]),
+   //                    impl.traverseIfAux(f, p).asInstanceOf[Template])
+   //        )
+   //      case t @ CompoundTypeTree(templ) =>
+   //        f( 
+   //          treeCopy.CompoundTypeTree(t, 
+   //              templ.traverseIfAux(f, p).asInstanceOf[Template])
+   //        )
+   //      case t @ DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
+   //        f( 
+   //          treeCopy.DefDef(t, mods, name,
+   //                tparams.map(_.traverseIfAux(f, p).asInstanceOf[TypeDef]),
+   //                vparamss.map((x) => {
+   //                  x.map(_.traverseIfAux(f, p).asInstanceOf[ValDef])
+   //                }),
+   //                tpt.traverseIfAux(f, p),
+   //                rhs.traverseIfAux(f, p))
+   //        )
+   //      case t @ ExistentialTypeTree(tpt, whereClause) =>
+   //        f( 
+   //          treeCopy.ExistentialTypeTree(t, 
+   //                tpt.traverseIfAux(f, p),
+   //                whereClause.map(_.traverseIfAux(f, p).asInstanceOf[MemberDef]))
+   //        )
+   //      case t @ Function(vparams, body) =>
+   //        f( 
+   //          treeCopy.Function(t, 
+   //                    vparams.map(_.traverseIfAux(f, p).asInstanceOf[ValDef]),
+   //                    body.traverseIfAux(f, p))
+   //        )
+   //      case t @ If(cond, thenp, elsep) =>
+   //        f( 
+   //          treeCopy.If(t, 
+   //                    cond.traverseIfAux(f, p),
+   //                    thenp.traverseIfAux(f, p),
+   //                    elsep.traverseIfAux(f, p))
+   //        )
+   //      case t @ Import(expr, selectors) =>
+   //        f( 
+   //          treeCopy.Import(t, 
+   //                    expr.traverseIfAux(f, p),
+   //                    selectors)
+   //        )
+   //      case t @ LabelDef(name, params, rhs) =>
+   //        f( 
+   //          treeCopy.LabelDef(t, name,
+   //                    params.map(_.traverseIfAux(f, p).asInstanceOf[Ident]),
+   //                    rhs.traverseIfAux(f, p))
+   //        )
+   //      case t @ Match(selector, cases) =>
+   //        f( 
+   //          treeCopy.Match(t,
+   //                    selector.traverseIfAux(f, p),
+   //                    cases.map(_.traverseIfAux(f, p).asInstanceOf[CaseDef]))
+   //        )
+   //      case t @ ModuleDef(mods, name, impl) =>
+   //        f( 
+   //          treeCopy.ModuleDef(t, mods, name,
+   //                    impl.traverseIfAux(f, p).asInstanceOf[Template])
+   //        )
+   //      case t @ New(tpt) =>
+   //        f( 
+   //          treeCopy.New(t, tpt.traverseIfAux(f, p))
+   //        )
+   //      case t @ PackageDef(pid, stats) =>
+   //        f( 
+   //          treeCopy.PackageDef(t, pid.traverseIfAux(f, p).asInstanceOf[RefTree],
+   //                                stats.map(_.traverseIfAux(f, p)))
+   //        )
+   //      case t @ RefTree(qual, name) =>
+   //        f( 
+   //          treeCopy.RefTree(t, qual.traverseIfAux(f, p),
+   //                                name)
+   //        )
+   //      case t @ ReferenceToBoxed(ident) =>
+   //        f( 
+   //          treeCopy.ReferenceToBoxed(t, 
+   //                ident.traverseIfAux(f, p).asInstanceOf[Ident])
+   //        )
+   //      case t @ Return(expr) =>
+   //        f( 
+   //          treeCopy.Return(t, expr.traverseIfAux(f, p))
+   //        )
+   //      case t @ Select(qual, name) =>
+   //        f( 
+   //          treeCopy.Select(t, qual.traverseIfAux(f, p), name)
+   //        )
+   //      case t @ SelectFromTypeTree(qualifier, name) =>
+   //        f(treeCopy.SelectFromTypeTree(t, 
+   //            qualifier.traverseIfAux(f, p), name))
+   //      case t @ SingletonTypeTree(ref) =>
+   //        f( 
+   //          treeCopy.SingletonTypeTree(t, ref.traverseIfAux(f, p))
+   //        )
+   //      case t @ Star(elem) =>
+   //        f( 
+   //          treeCopy.Star(t, elem.traverseIfAux(f, p))
+   //        )
+   //      case t @ Super(qual, mix) =>
+   //        f( 
+   //          treeCopy.Super(t, qual.traverseIfAux(f, p), mix)
+   //        )
+   //      case t @ Template(parents, slf, body) =>
+   //        f( 
+   //          treeCopy.Template(t, parents.map(_.traverseIfAux(f, p)),
+   //            slf.traverseIfAux(f, p).asInstanceOf[ValDef],
+   //            body.map(_.traverseIfAux(f, p)))
+   //        )
+   //      case t @ Throw(expr) =>
+   //        f( 
+   //          treeCopy.Throw(t, expr.traverseIfAux(f, p))
+   //        )
+   //      case t @ Try(block, catches, finalizer) =>
+   //        f( 
+   //          treeCopy.Try(t, block.traverseIfAux(f, p),
+   //            catches.map(_.traverseIfAux(f, p).asInstanceOf[CaseDef]),
+   //            finalizer.traverseIfAux(f, p))
+   //        )
+   //      case t @ TypeApply(fun, args) =>
+   //        f( 
+   //          treeCopy.TypeApply(t, fun.traverseIfAux(f, p),
+   //            args.map(_.traverseIfAux(f, p)))
+   //        )
+   //      case t @ TypeBoundsTree(lo, hi) =>
+   //        f( 
+   //          treeCopy.TypeBoundsTree(t, lo.traverseIfAux(f, p),
+   //            hi.traverseIfAux(f, p))
+   //        )
+   //      case t @ TypeDef(mods, name, tparams, rhs) =>
+   //        f( 
+   //          treeCopy.TypeDef(t, mods, name,
+   //            tparams.map(_.traverseIfAux(f, p).asInstanceOf[TypeDef]),
+   //            rhs.traverseIfAux(f, p))
+   //        )
+   //      case t @ Typed(expr, tpt) =>
+   //        f( 
+   //          treeCopy.Typed(t, expr.traverseIfAux(f, p),
+   //            tpt.traverseIfAux(f, p))
+   //        )
+   //      case t @ UnApply(fun, args) =>
+   //        f( 
+   //          treeCopy.UnApply(t, fun.traverseIfAux(f, p),
+   //            args.map(_.traverseIfAux(f, p)))
+   //        )
+   //      case t @ ValDef(mods, name, tpt, rhs) =>
+   //        f( 
+   //          treeCopy.ValDef(t, mods, name, 
+   //            tpt.traverseIfAux(f, p),
+   //            rhs.traverseIfAux(f, p))
+   //        )
+   //      case t => 
+   //        f(t)
+   //    } 
+   //  } 
     private def traverseIfAux(tree: Tree, f: Tree => Tree, p: Tree => Boolean): Tree = {
       if(p(tree)) {
         tree match {
