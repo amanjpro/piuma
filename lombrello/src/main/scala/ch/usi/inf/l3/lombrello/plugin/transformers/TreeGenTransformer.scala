@@ -633,6 +633,13 @@ trait TreeGenTransformerCake {
       }
     }
     
+    /**
+      * Creates the setter and getter of a field
+      *
+      * @param tree the tree that represents the field
+      *
+      * @return if successful, Some(getter, setter), otherwise None.
+      */
     def mkSetterAndGetter(tree: ValDef): Option[(DefDef, DefDef)] = {
       val vsym = tree.symbol
       val gtr = mkGetter(tree)
