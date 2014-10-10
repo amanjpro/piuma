@@ -33,6 +33,7 @@ def jarName(name: String): String = s"${name}_${scalaVersion}-${lombrelloVersion
 
 def targetName(name: String): String = s"${name}${sp}${targetPath}"
 
+val avroDependency = "test/lib/apache.jar:test/lib/json.jar:test/lib/node.jar"
 
 def dumb(o: OutputStream) = {}
 def read(in: InputStream) = {
@@ -87,7 +88,7 @@ def testPlugin(plgn: String) = {
   val tests = new File(s"test${sp}tests${sp}${plgn}").list
   s"mkdir test${sp}bin${sp}${plgn}".!
   tests.foreach((x: String) => if(x.endsWith(".scala")) {
-    (s"scalac -d test${sp}bin${sp}${plgn} -Xplugin:test${sp}${plgn}.jar -cp test${sp}${plgn}.jar " +
+    (s"scalac -d test${sp}bin${sp}${plgn} -Xplugin:test${sp}${plgn}.jar -cp test${sp}${plgn}.jar:${avroDependency} " +
       s"test${sp}tests${sp}${plgn}${sp}${x}").run(pio).exitValue
   })
   
