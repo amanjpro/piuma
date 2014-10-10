@@ -335,25 +335,33 @@ trait TreeGenTransformerCake {
       }
     }
 
-
+    /**
+      * Creates a parameter tree.
+      *
+      * @param tpe the type of the parameter.
+      * @param owner the symbol of the owner method of the parameter
+      *
+      * @return a well-typed parameter.
+      */
+    def mkParam(tpe: Type, 
+                  owner: Symbol): ValDef = {
+      val sym = owner.newSyntheticValueParam(tpe)
+      localTyper.typed {ValDef(sym, EmptyTree)}.asInstanceOf[ValDef]
+    }
 
     /**
       * Creates a parameter tree.
       *
       * @param name the name of the parameter.
-      * @param tpe the type tree of the parameter.
-      * @param rhs the default value of the parameter
+      * @param tpe the type of the parameter.
       * @param owner the symbol of the owner method of the parameter
       *
       * @return a well-typed parameter.
       */
-    def mkParam(name: String, tpe: TypeTree, 
-                  rhs: Tree, owner: Symbol): ValDef = {
-      // TODO: Implement this function
-      // owner.newSyntheticValueParam()
-      // ValDef(Modfiers(PARAM), TermName(name), tpe, rhs)
-      // localTyper.typed {Select(Ident(qual), name) }.asInstanceOf[Select]
-      ???
+    def mkParam(name: String, tpe: Type, 
+                  owner: Symbol): ValDef = {
+      val sym = owner.newSyntheticValueParam(tpe, newTermName(name))
+      localTyper.typed {ValDef(sym, EmptyTree)}.asInstanceOf[ValDef]
     }
 
     /**
