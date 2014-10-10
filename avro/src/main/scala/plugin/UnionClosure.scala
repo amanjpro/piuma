@@ -10,21 +10,9 @@ import org.apache.avro.Schema
 
 
 @checker("unionclosure") class UnionClosure {
-  // val classToSchema = ScalaAvroPlugin.this.classToSchema
-  // val unionToExtenders = ScalaAvroPlugin.this.unionToExtenders
-  // val unionToSchemas = ScalaAvroPlugin.this.unionToSchemas
-  // val unitMap = ScalaAvroPlugin.this.unitMap
-  // val companionModuleMap = ScalaAvroPlugin.this.companionModuleMap
-  // val companionClassMap = ScalaAvroPlugin.this.companionClassMap
-
-  // val runsAfter = List[String]("uniondiscover")
   rightAfter("uniondiscover")
   plugin ScalaAvroPlugin
-  // val phaseName = "unionclosure"
 
-  // def newPhase(prev: Phase): Phase = new TraverserPhase(prev)
-
-  // class TraverserPhase(prev: Phase) extends StdPhase(prev) {
   private var unit: CompilationUnit = _
   private def check(_unit: CompilationUnit) = {
     unit = _unit
@@ -48,6 +36,4 @@ import org.apache.avro.Schema
       debug("Skipped class: " + cd.symbol.fullName)
     case _ => ()
   }
-  // }
-
 }

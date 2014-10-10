@@ -1,9 +1,6 @@
 package com.googlecode.avro
 package plugin
 
-// import scala.tools.nsc._
-// import scala.tools.nsc.plugins.PluginComponent
-
 import scala.collection.mutable.HashSet
 import scala.reflect.internal.Flags._
 
@@ -15,26 +12,12 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
 
 
 @checker("uniondiscover") class UnionDiscover {
-  // val global : ScalaAvroPlugin.this.global.type = ScalaAvroPlugin.this.global
-  // val classToSchema = ScalaAvroPlugin.this.classToSchema
-  // val unionToExtenders = ScalaAvroPlugin.this.unionToExtenders
-  // val unionToSchemas = ScalaAvroPlugin.this.unionToSchemas
-  // val unitMap = ScalaAvroPlugin.this.unitMap
-  // val companionModuleMap = ScalaAvroPlugin.this.companionModuleMap
-  // val companionClassMap = ScalaAvroPlugin.this.companionClassMap
-// }
-// trait UnionDiscover extends ScalaAvroPluginComponent {
-//   import global._
   import global.definitions._
 
-  // after(List("ctorretype"))
   rightAfter("ctorretype")
   plugin ScalaAvroPlugin
-  // val phaseName = "uniondiscover"
 
-  // def newPhase(prev: Phase): Phase = new TraverserPhase(prev)
 
-  // class TraverserPhase(prev: Phase) extends StdPhase(prev) {
   private var unit: CompilationUnit = _
   private def check(_unit: CompilationUnit) = {
     unit = _unit
