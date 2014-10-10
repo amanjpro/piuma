@@ -53,16 +53,16 @@ import java.util.{Arrays => JArrays}
 
   private def createSchema(tpe: Type): Schema = {
     val values = for((x, y) <- primitiveClasses;
-    if x == tpe.typeSymbol) yield {
-      y
-    }
+      if x == tpe.typeSymbol) yield {
+        y
+      }
 
 
     if (values != Nil) {
       values.head
     } else if (tpe.typeSymbol == ArrayClass) {
       if (tpe.normalize.typeArgs.head != ByteClass.tpe)
-      throw new UnsupportedOperationException("Bad Array Found: " + tpe + ". Use scala collections for lists")
+        throw new UnsupportedOperationException("Bad Array Found: " + tpe + ". Use scala collections for lists")
       createSchema(byteBufferClass.tpe)
     } else if (tpe.typeSymbol.isSubClass(TraversableClass)) {
       tpe.typeArgs.size match {
@@ -104,10 +104,11 @@ import java.util.{Arrays => JArrays}
     val newTree = tree match {
       case cd @ ClassDef(mods, name, tparams, impl) if (cd.symbol.tpe.parents.contains(avroRecordTrait.tpe)) =>
 
-        val instanceVars = for (member <- impl.body if isValDef(member)) yield { member.symbol }
+        val instanceVars = for (member <- impl.body if isVar(member) || 
+                                        isVal(member)) yield { member.symbol }
 
         /** Check to see if any of the members are immutable */
-        val instanceVals = instanceVars.filter(v => !isVarSym(v))
+        val instanceVals = instanceVars.filter(v => !isVar(v))
         if (!instanceVals.isEmpty) {
           throw new ImmutableFieldException(instanceVals.mkString(", "))
         }
