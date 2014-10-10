@@ -1,30 +1,44 @@
 package com.googlecode.avro
 package plugin
 
-import scala.tools.nsc._
-import scala.tools.nsc.plugins.PluginComponent
-
+// import scala.tools.nsc._
+// import scala.tools.nsc.plugins.PluginComponent
+//
 import scala.collection.mutable.HashSet
 
+import scala.reflect.internal.Flags._
+import ch.usi.inf.l3.lombrello.neve.NeveDSL._
 import org.apache.avro.Schema
 
-trait SchemaCreate extends ScalaAvroPluginComponent {
-  import global._
 
-  val runsAfter = List[String]("unionclosure")
-  override val runsRightAfter = Some("unionclosure")
-  val phaseName = "schemacreate"
 
-  def newPhase(prev: Phase): Phase = new TraverserPhase(prev)
-  class TraverserPhase(prev: Phase) extends StdPhase(prev) {
-    def apply(unit: CompilationUnit) {
+@checker("schemacreate") class SchemaCreate {
+  // val global : ScalaAvroPlugin.this.global.type = ScalaAvroPlugin.this.global
+  // val classToSchema = ScalaAvroPlugin.this.classToSchema
+  // val unionToExtenders = ScalaAvroPlugin.this.unionToExtenders
+  // val unionToSchemas = ScalaAvroPlugin.this.unionToSchemas
+  // val unitMap = ScalaAvroPlugin.this.unitMap
+  // val companionModuleMap = ScalaAvroPlugin.this.companionModuleMap
+  // val companionClassMap = ScalaAvroPlugin.this.companionClassMap
+// }
+// trait SchemaCreate extends ScalaAvroPluginComponent {
+//   import global._
+//
+  // val runsAfter = List[String]("unionclosure")
+  rightAfter("unionclosure")
+  plugin ScalaAvroPlugin
+  // val phaseName = "schemacreate"
+
+  // def newPhase(prev: Phase): Phase = new TraverserPhase(prev)
+  // class TraverserPhase(prev: Phase) extends StdPhase(prev) {
+    def check(unit: CompilationUnit) = {
       newTraverser().traverse(unit.body)
     }   
-  }
+  // }
 
-  def newTraverser(): Traverser = new ForeachTreeTraverser(check)
+  private def newTraverser(): Traverser = new ForeachTreeTraverser(check1)
 
-  def check(tree: Tree): Unit = tree match {
+  private def check1(tree: Tree): Unit = tree match {
     case cd @ ClassDef(_, _, _, _) if (cd.symbol.tpe.parents.contains(avroRecordTrait.tpe)) =>
       val sym = cd.symbol
       val namespace = 
