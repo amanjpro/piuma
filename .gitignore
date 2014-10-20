@@ -2,6 +2,9 @@
 *.log
 
 
+# cuore specific
+test/plugins/*/classes
+
 # sbt specific
 dist/*
 target/
