@@ -37,7 +37,7 @@ trait SymbolsUtil { self: LombrelloPlugin =>
     *
     * @param tree the tree that might be owned by a class
     *
-    * @returns Some symbol of the class that owns the given tree, or None.
+    * @return Some symbol of the class that owns the given tree, or None.
     */
   def getOwnerClass(tree: Tree): Option[ClassSymbol] = {
     getOwnerClass(tree.symbol)
@@ -50,7 +50,7 @@ trait SymbolsUtil { self: LombrelloPlugin =>
     *
     * @param tree the tree that might be owned by a class
     *
-    * @returns Some symbol of the class that owns the given tree 
+    * @return Some symbol of the class that owns the given tree 
     *          directly, or None.
     */
   def getOwnerIfClass(tree: Tree): Option[ClassSymbol] = {
@@ -358,7 +358,7 @@ trait SymbolsUtil { self: LombrelloPlugin =>
     *
     * @param symbol the symbol that might be owned by a class
     *
-    * @returns Some symbol of the class that owns the given symbol, or None.
+    * @return Some symbol of the class that owns the given symbol, or None.
     */
   def getOwnerClass(symbol: Symbol): Option[ClassSymbol] = {
     if(goodSymbol(symbol)) { //TODO: Is this enough?
@@ -379,7 +379,7 @@ trait SymbolsUtil { self: LombrelloPlugin =>
     *
     * @param symbol the symbol that might be owned by a class
     *
-    * @returns Some symbol of the class that owns the given symbol 
+    * @return Some symbol of the class that owns the given symbol 
     *          directly, or None.
     */
   def getOwnerIfClass(symbol: Symbol): Option[ClassSymbol] = {

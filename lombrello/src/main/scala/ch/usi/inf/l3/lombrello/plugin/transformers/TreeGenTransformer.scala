@@ -839,8 +839,8 @@ trait TreeGenTransformerCake {
       * Converts a method to a function.
       *
       * @param defdef the method to be converted to function
-      * @owner the owner of the resulted function
-      * @apply a call to the method that needs to be converted
+      * @param owner the owner of the resulted function
+      * @param apply a call to the method that needs to be converted
       * 
       * @return returns a function that represented the given method
       */
