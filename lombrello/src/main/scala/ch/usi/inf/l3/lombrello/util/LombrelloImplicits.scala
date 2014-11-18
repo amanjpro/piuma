@@ -54,6 +54,9 @@ trait LombrelloImplicitsCake {
         self.updateParents(impl, parents)
       }
 
+      def addParent(parent: Tree): ImplDef = {
+        self.addParent(impl, parent)
+      }
     }
 
     implicit class AugmentedClassDef(clazz: ClassDef) {
@@ -84,6 +87,10 @@ trait LombrelloImplicitsCake {
         self.updateParents(clazz, parents)
       }
 
+      def addParent(parent: Tree): ClassDef = {
+        self.addParent(clazz, parent)
+      }
+
       def mkConstructor: DefDef = {
         self.mkConstructor(clazz)
       }
@@ -109,6 +116,9 @@ trait LombrelloImplicitsCake {
         self.duplicate(module, name).asInstanceOf[ModuleDef]
       }
 
+      def addParent(parent: Tree): ModuleDef = {
+        self.addParent(module, parent)
+      }
 
 
       def removeMember(m: Tree): ModuleDef = {
