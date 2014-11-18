@@ -62,4 +62,4 @@ class Test {
 trait B
 
 case class A(b: Int, c: Option[C] = None) extends B
-case class C extends B
+case object C extends B
