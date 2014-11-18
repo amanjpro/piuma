@@ -115,9 +115,11 @@ import scala.reflect.internal.Flags._
         toTypedSelectTree("com.googlecode.avro.runtime.HasAvroConversions")
 
       val (car, cdr) = impl.parents.splitAt(1)
-      val newParents = List(specificRecordBase, avroConversions) ++ cdr
+      val newParents = List(specificRecordBase.symbol.toType, 
+                        avroConversions.symbol.toType) ++ cdr.map(_.symbol.toType)
       ctor match {
-        case Some(x) => cd.updateParents(newParents).addMember(x)
+        case Some(x) => 
+          cd.updateParents(newParents).addMember(x)
         case _ => cd.updateParents(newParents)
       }
     case _ => tree
