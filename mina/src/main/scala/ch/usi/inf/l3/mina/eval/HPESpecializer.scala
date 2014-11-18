@@ -751,7 +751,8 @@ import scala.reflect.internal.ModifierFlags
               })
 
             val clazzL = 
-              duplicated.updateParents(List(Ident(clazz.tree.symbol))).asInstanceOf[ClassDef]
+              duplicated.updateParents(
+                List(clazz.tree.symbol.toType)).asInstanceOf[ClassDef]
 
 
             val const = clazzL.mkConstructor
