@@ -45,7 +45,7 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
       case x: ClassDef =>
 
         val newName = newTypeName("YESS")
-        val vtree = mkVar(x.symbol, TermName("xmass "), definitions.IntTpe)
+        val vtree = mkVar(x.symbol, TermName("xmass "), EmptyTree)
         val strgtr = mkSetterAndGetter(vtree).get
         val ntmplt = treeCopy.Template(x.impl, x.impl.parents, x.impl.self, vtree :: strgtr._1 :: strgtr._2 :: x.impl.body)
         val nclazz = treeCopy.ClassDef(x, x.mods, x.name, x.tparams, ntmplt)
