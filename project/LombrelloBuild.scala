@@ -35,7 +35,7 @@ object LombrelloBuild extends Build {
     settings = buildSettings ++ Seq(
       run <<= run in Compile in main in simple in 
                 kara in atomicScala in scalaDyno in
-                miniboxing in mina in avro,
+                mina in avro,
       run <<= run in Test in avro,
       scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits"),
       name := "root"
@@ -89,14 +89,6 @@ object LombrelloBuild extends Build {
     base = file("scalaDyno"),
     settings = buildSettings ++ Seq(
       name := "scalaDyno"
-    )
-  ) dependsOn (main)
-
-  lazy val miniboxing: Project = Project(
-    "miniboxing",
-    base = file("miniboxing"),
-    settings = buildSettings ++ Seq(
-      name := "miniboxing"
     )
   ) dependsOn (main)
 
