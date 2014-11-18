@@ -37,6 +37,7 @@ object LombrelloBuild extends Build {
                 kara in atomicScala in scalaDyno in
                 miniboxing in mina in avro,
       run <<= run in Test in avro,
+      scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits"),
       name := "root"
     )
    ) aggregate (main)
@@ -44,7 +45,19 @@ object LombrelloBuild extends Build {
   lazy val main: Project = Project(
     "lombrello",
     base = file("lombrello"),
-    settings = buildSettings ++ Seq(name := "lombrello")
+    settings = buildSettings ++ Seq(name := "lombrello",
+      // Create a virtual host on a server, and use it here
+      publishTo := Some(Resolver.sftp("Lombrello's Repo", 
+                                      "euler.inf.unisi.ch",
+                                      "public_html/repos/lombrello")),
+      publishMavenStyle := true,
+      // credentials, we load them from a file of the format:
+      // realm=Lombrello's Repo
+      // host=lombrello.amanj.me (or whatever)
+      // user=admin
+      // password=admin123
+      // credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
+    )
   )
 
   lazy val simple: Project = Project(
