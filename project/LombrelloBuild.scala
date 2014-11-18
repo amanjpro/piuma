@@ -50,7 +50,7 @@ object LombrelloBuild extends Build {
       publishTo := Some(Resolver.sftp("Lombrello's Repo", 
                                       "euler.inf.unisi.ch",
                                       "public_html/repos/lombrello")),
-      publishMavenStyle := true,
+      publishMavenStyle := true
       // credentials, we load them from a file of the format:
       // realm=Lombrello's Repo
       // host=lombrello.amanj.me (or whatever)
