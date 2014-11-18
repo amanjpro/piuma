@@ -182,6 +182,25 @@ trait SymbolsUtil { self: LombrelloPlugin =>
   def isParam(x: Tree): Boolean = isParam(x.symbol)
 
   /**
+    * Checks weather a tree has a symbol that represents an abstract member
+    *
+    * @param x the tree to be checked
+    *
+    * @return true if x represents an abstract member, and false otherwise
+    */
+  def isAbstract(x: Tree): Boolean = isAbstract(x.symbol)
+
+  /**
+    * Checks weather a tree has a symbol that represents a public member
+    *
+    * @param x the tree to be checked
+    *
+    * @return true if x represents a public member, and false otherwise
+    */
+  def isPublic(x: Tree): Boolean = isPublic(x.symbol)
+
+
+  /**
     * Checks weather a tree is pacakge
     *
     * @param x the tree to be checked
@@ -277,6 +296,24 @@ trait SymbolsUtil { self: LombrelloPlugin =>
     * @return true if x is parameter, and false otherwise
     */
   def isParam(x: Symbol): Boolean = goodSymbol(x) && x.isValueParameter
+
+  /**
+    * Checks weather a symbol represents an abstract member
+    *
+    * @param x the symbol to be checked
+    *
+    * @return true if x represents an abstract member, and false otherwise
+    */
+  def isAbstract(x: Symbol): Boolean = goodSymbol(x) && x.isDeferred
+
+  /**
+    * Checks weather a symbol represents a public member
+    *
+    * @param x the symbol to be checked
+    *
+    * @return true if x represents a public member, and false otherwise
+    */
+  def isPublic(x: Symbol): Boolean = goodSymbol(x) && x.isPublic
 
 
   /**
