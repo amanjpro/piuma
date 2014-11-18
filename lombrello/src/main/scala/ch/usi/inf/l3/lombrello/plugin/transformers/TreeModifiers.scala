@@ -32,7 +32,6 @@ trait TreeModifiersCake {
     def removeParams(method: DefDef, params: List[ValDef], 
             values: List[Tree]): DefDef = {
       require(params.size == values.size)
-      // TODO: Implement this
       (params zip values).foldLeft(method)((z, y) => {
         removeParam(z, y._1, y._2)
       })
@@ -49,7 +48,6 @@ trait TreeModifiersCake {
       * @return a new method with param removed
       */
     def removeParam(method: DefDef, param: ValDef, value: Tree): DefDef = {
-      // TODO: Implement this
       require(hasSymbol(param))
       require(
         method.vparamss.flatten.filter(
@@ -71,7 +69,6 @@ trait TreeModifiersCake {
           PolyType(tparams, MethodType(vparamSyms, 
                 method.symbol.info.resultType))
       }
-      // TODO: Test if this works
      val rhs = method.rhs.traverse((x) => {
         x match {
           case Assign(lhs, rhs) if lhs.symbol == removedParam.symbol =>
@@ -162,7 +159,7 @@ trait TreeModifiersCake {
     /**
       * Updates the body of a CaseDef to a rhs.
       *
-      * @param tree the CaseDef to be udpated
+      * @param tree the CaseDef to be updated
       * @param rhs the new right-hand-side (or value) of 
       *        the CaseDef
       *
@@ -179,7 +176,7 @@ trait TreeModifiersCake {
     /**
      * Updates the cases of a Match to a cases.
       *
-      * @param tree the Match to be udpated
+      * @param tree the Match to be updated
       * @param cases the new cases of a match
       *
       * @return a well-typed Match that is identical to tree,
@@ -194,7 +191,7 @@ trait TreeModifiersCake {
     /**
       * Updates the RHS of a ValDef to a rhs.
       *
-      * @param tree the ValDef to be udpated
+      * @param tree the ValDef to be updated
       * @param rhs the new right-hand-side (or value) of 
       *        the ValDef
       *
@@ -254,7 +251,7 @@ trait TreeModifiersCake {
     /**
       * Updates the RHS of a method to a rhs.
       *
-      * @param tree the method to be udpated
+      * @param tree the method to be updated
       * @param rhs the new right-hand-side (or value) of 
       *        the method
       *
@@ -274,7 +271,7 @@ trait TreeModifiersCake {
     /**
       * Updates the body of a class to the newBody.
       *
-      * @param tree the class to be udpated
+      * @param tree the class to be updated
       * @param newBody the new body of the class
       *
       * @return a well-typed ClassDef that is identical to tree,
@@ -294,7 +291,7 @@ trait TreeModifiersCake {
     /**
       * Updates the body of a module to the newBody.
       *
-      * @param tree the module to be udpated
+      * @param tree the module to be updated
       * @param newBody the new body of the module
       *
       * @return a well-typed ModuleDef that is identical to tree,
@@ -314,7 +311,7 @@ trait TreeModifiersCake {
     /**
       * Updates the body of a module/class to the newBody.
       *
-      * @param tree the module/class to be udpated
+      * @param tree the module/class to be updated
       * @param newBody the new body of the module/class
       *
       * @return a well-typed ModuleDef/ClassDef that is identical to tree,
@@ -332,7 +329,7 @@ trait TreeModifiersCake {
     /**
       * Updates the stats of a package to the newStats.
       *
-      * @param tree the package to be udpated
+      * @param tree the package to be updated
       * @param newStats the new stats of the package
       *
       * @return a well-typed PackageDef that is identical to tree,
@@ -348,7 +345,7 @@ trait TreeModifiersCake {
     /**
       * Adds a member to a class
       *
-      * @param tree the class to be udpated
+      * @param tree the class to be updated
       * @param member the member to be added to the class
       *
       * @return a well-typed ClassDef that is identical to tree,
@@ -361,7 +358,7 @@ trait TreeModifiersCake {
     /**
       * Adds a member to a module
       *
-      * @param tree the module to be udpated
+      * @param tree the module to be updated
       * @param member the member to be added to the module
       *
       * @return a well-typed ModuleDef that is identical to tree,
@@ -374,7 +371,7 @@ trait TreeModifiersCake {
     /**
       * Adds a member to a module/class
       *
-      * @param tree the module/class to be udpated
+      * @param tree the module/class to be updated
       * @param member the member to be added to the module/class
       *
       * @return a well-typed ModuleDef/ClassDef that is identical to tree, 
@@ -390,7 +387,7 @@ trait TreeModifiersCake {
     /**
       * Adds a member to a package
       *
-      * @param tree the package to be udpated
+      * @param tree the package to be updated
       * @param member the member to be added to the package
       *
       * @return a well-typed PackageDef that is identical to tree,
@@ -404,7 +401,7 @@ trait TreeModifiersCake {
     /**
       * Removes a member from a class
       *
-      * @param tree the class to be udpated
+      * @param tree the class to be updated
       * @param p a predicate for removing members
       *
       * @return a well-typed ClassDef that is identical to tree,
@@ -417,7 +414,7 @@ trait TreeModifiersCake {
     /**
       * Removes a member from a module
       *
-      * @param tree the module to be udpated
+      * @param tree the module to be updated
       * @param p a predicate for removing members
       *
       * @return a well-typed ModuleDef that is identical to tree,
@@ -430,7 +427,7 @@ trait TreeModifiersCake {
     /**
       * Removes a member from a module/class
       *
-      * @param tree the module/class to be udpated
+      * @param tree the module/class to be updated
       * @param p a predicate for removing members
       *
       * @return a well-typed ModuleDef/ClassDef that is identical to tree, 
@@ -446,7 +443,7 @@ trait TreeModifiersCake {
     /**
       * Removes a member from a package
       *
-      * @param tree the package to be udpated
+      * @param tree the package to be updated
       * @param p a predicate for removing members
       *
       * @return a well-typed PackageDef that is identical to tree,
@@ -459,7 +456,7 @@ trait TreeModifiersCake {
     /**
       * Removes a member from a class
       *
-      * @param tree the class to be udpated
+      * @param tree the class to be updated
       * @param member the member to be deleted from the class
       *
       * @return a well-typed ClassDef that is identical to tree,
@@ -472,7 +469,7 @@ trait TreeModifiersCake {
     /**
       * Removes a member from a module
       *
-      * @param tree the module to be udpated
+      * @param tree the module to be updated
       * @param member the member to be removed from the module
       *
       * @return a well-typed ModuleDef that is identical to tree,
@@ -485,7 +482,7 @@ trait TreeModifiersCake {
     /**
       * Removes a member from a module/class
       *
-      * @param tree the module/class to be udpated
+      * @param tree the module/class to be updated
       * @param member the member to be removed from the module/class
       *
       * @return a well-typed ModuleDef/ClassDef that is identical to tree, 
@@ -501,7 +498,7 @@ trait TreeModifiersCake {
     /**
       * Removes a member from a package
       *
-      * @param tree the package to be udpated
+      * @param tree the package to be updated
       * @param member the member to be removed from the package
       *
       * @return a well-typed PackageDef that is identical to tree,
@@ -515,7 +512,7 @@ trait TreeModifiersCake {
     /**
       * Modifies the list of parents of a class
       *
-      * @param tree the class to be udpated
+      * @param tree the class to be updated
       * @param parents the list to be set as the parents of the class
       *
       * @return a well-typed ClassDef that is identical to tree,
@@ -535,20 +532,20 @@ trait TreeModifiersCake {
     /**
       * Modifies the list of parents of a module
       *
-      * @param tree the module to be udpated
+      * @param tree the module to be updated
       * @param parents the list to be set as the parents of the module
       *
       * @return a well-typed ModuleDef that is identical to tree,
       *         except that it has ``parents'' as its parents
       */
     def updateParents(tree: ModuleDef, parents: List[Tree]): ModuleDef = {
-      // TODO: Fix this
-      val ntpe = ClassInfoType(parents.map(_.symbol.tpe), newScope, tree.symbol)
-      tree.symbol.updateInfo(ntpe)
+      val symbol = tree.symbol.moduleClass
+      val ntpe = ClassInfoType(parents.map(_.symbol.tpe), symbol.info.decls, symbol)
+      symbol.setInfo(ntpe)
       typed {
         treeCopy.ModuleDef(tree, tree.mods, tree.name, 
-            treeCopy.Template(tree.impl, parents, tree.impl.self,
-                              tree.impl.body))
+          treeCopy.Template(tree.impl, parents, tree.impl.self,
+            tree.impl.body))
       }.asInstanceOf[ModuleDef]
     }
 
@@ -556,7 +553,7 @@ trait TreeModifiersCake {
     /**
       * Modifies the list of parents of a class/module
       *
-      * @param tree the class/module to be udpated
+      * @param tree the class/module to be updated
       * @param parents the list to be set as the parents of the class/module
       *
       * @return a well-typed ClassDef/ModuleDef that is identical to tree,
@@ -566,6 +563,54 @@ trait TreeModifiersCake {
       tree match {
         case x: ModuleDef => updateParents(x, parents)
         case x: ClassDef => updateParents(x, parents)
+      }
+    }
+
+
+
+    /**
+      * Adds a parent to the list of parents of a class
+      *
+      * @param tree the class to be updated
+      * @param parent the to be added to the class
+      *
+      * @return a well-typed ClassDef that is identical to tree,
+      *         except that it has ``parent'' in its parents
+      */
+    def addParent(tree: ClassDef, parent: Tree): ClassDef = {
+      updateParents(tree, tree.impl.parents ++ List(parent))
+    }
+
+
+    /**
+      * Adds a parent to the list of parents of a module
+      *
+      * @param tree the module to be updated
+      * @param parent the to be added to the module
+      *
+      * @return a well-typed ModuleDef that is identical to tree,
+      *         except that it has ``parent'' in its parents
+      */
+    def addParent(tree: ModuleDef, parent: Tree): ModuleDef = {
+      updateParents(tree, tree.impl.parents ++ List(parent))
+    }
+
+
+    /**
+      * Adds a parent to the list of parents of a class/module
+      *
+      * @param tree the class/module to be updated
+      * @param parent the to be added to the class/module
+      *
+      * @return a well-typed ClassDef/ModuleDef that is identical to tree,
+      *         except that it has ``parent'' in its parents
+      */
+    def addParent(tree: ImplDef, parent: Tree): ImplDef = {
+      tree match {
+        case x: ModuleDef => 
+          updateParents(tree, x.impl.parents ++ List(parent))
+        case x: ClassDef => 
+          updateParents(tree, x.impl.parents ++ List(parent))
       }
     }
   }
