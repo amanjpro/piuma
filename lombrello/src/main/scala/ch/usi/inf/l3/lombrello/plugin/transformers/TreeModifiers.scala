@@ -518,12 +518,13 @@ trait TreeModifiersCake {
       * @return a well-typed ClassDef that is identical to tree,
       *         except that it has ``parents'' as its parents
       */
-    def updateParents(tree: ClassDef, parents: List[Tree]): ClassDef = {
-      val ntpe = ClassInfoType(parents.map(_.symbol.tpe), newScope, tree.symbol)
+    def updateParents(tree: ClassDef, parents: List[Type]): ClassDef = {
+      val parentsTree = parents.map((x) => typed {TypeTree(x)})
+      val ntpe = ClassInfoType(parents, tree.symbol.info.decls, tree.symbol)
       tree.symbol.updateInfo(ntpe)
       typed {
         treeCopy.ClassDef(tree, tree.mods, tree.name, tree.tparams, 
-            treeCopy.Template(tree.impl, parents, tree.impl.self,
+            treeCopy.Template(tree.impl, parentsTree, tree.impl.self,
                               tree.impl.body))
       }.asInstanceOf[ClassDef]
     }
@@ -538,13 +539,14 @@ trait TreeModifiersCake {
       * @return a well-typed ModuleDef that is identical to tree,
       *         except that it has ``parents'' as its parents
       */
-    def updateParents(tree: ModuleDef, parents: List[Tree]): ModuleDef = {
+    def updateParents(tree: ModuleDef, parents: List[Type]): ModuleDef = {
       val symbol = tree.symbol.moduleClass
-      val ntpe = ClassInfoType(parents.map(_.symbol.tpe), symbol.info.decls, symbol)
+      val parentsTree = parents.map((x) => typed {TypeTree(x)})
+      val ntpe = ClassInfoType(parents, symbol.info.decls, symbol)
       symbol.setInfo(ntpe)
       typed {
         treeCopy.ModuleDef(tree, tree.mods, tree.name, 
-          treeCopy.Template(tree.impl, parents, tree.impl.self,
+          treeCopy.Template(tree.impl, parentsTree, tree.impl.self,
             tree.impl.body))
       }.asInstanceOf[ModuleDef]
     }
@@ -559,7 +561,7 @@ trait TreeModifiersCake {
       * @return a well-typed ClassDef/ModuleDef that is identical to tree,
       *         except that it has ``parents'' as its parents
       */
-    def updateParents(tree: ImplDef, parents: List[Tree]): ImplDef = {
+    def updateParents(tree: ImplDef, parents: List[Type]): ImplDef = {
       tree match {
         case x: ModuleDef => updateParents(x, parents)
         case x: ClassDef => updateParents(x, parents)
@@ -572,13 +574,13 @@ trait TreeModifiersCake {
       * Adds a parent to the list of parents of a class
       *
       * @param tree the class to be updated
-      * @param parent the to be added to the class
+      * @param parent the parent to be added to the class
       *
       * @return a well-typed ClassDef that is identical to tree,
       *         except that it has ``parent'' in its parents
       */
-    def addParent(tree: ClassDef, parent: Tree): ClassDef = {
-      updateParents(tree, tree.impl.parents ++ List(parent))
+    def addParent(tree: ClassDef, parent: Type): ClassDef = {
+      updateParents(tree, tree.symbol.info.parents ++ List(parent))
     }
 
 
@@ -586,13 +588,13 @@ trait TreeModifiersCake {
       * Adds a parent to the list of parents of a module
       *
       * @param tree the module to be updated
-      * @param parent the to be added to the module
+      * @param parent the parent to be added to the module
       *
       * @return a well-typed ModuleDef that is identical to tree,
       *         except that it has ``parent'' in its parents
       */
-    def addParent(tree: ModuleDef, parent: Tree): ModuleDef = {
-      updateParents(tree, tree.impl.parents ++ List(parent))
+    def addParent(tree: ModuleDef, parent: Type): ModuleDef = {
+      updateParents(tree, tree.symbol.info.parents ++ List(parent))
     }
 
 
@@ -600,17 +602,17 @@ trait TreeModifiersCake {
       * Adds a parent to the list of parents of a class/module
       *
       * @param tree the class/module to be updated
-      * @param parent the to be added to the class/module
+      * @param parent the parent to be added to the class/module
       *
       * @return a well-typed ClassDef/ModuleDef that is identical to tree,
       *         except that it has ``parent'' in its parents
       */
-    def addParent(tree: ImplDef, parent: Tree): ImplDef = {
+    def addParent(tree: ImplDef, parent: Type): ImplDef = {
       tree match {
         case x: ModuleDef => 
-          updateParents(tree, x.impl.parents ++ List(parent))
+          updateParents(tree, x.symbol.info.parents ++ List(parent))
         case x: ClassDef => 
-          updateParents(tree, x.impl.parents ++ List(parent))
+          updateParents(tree, x.symbol.info.parents ++ List(parent))
       }
     }
   }

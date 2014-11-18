@@ -50,11 +50,11 @@ trait LombrelloImplicitsCake {
         self.removeMember(impl, p)
       }
 
-      def updateParents(parents: List[Tree]): ImplDef = {
+      def updateParents(parents: List[Type]): ImplDef = {
         self.updateParents(impl, parents)
       }
 
-      def addParent(parent: Tree): ImplDef = {
+      def addParent(parent: Type): ImplDef = {
         self.addParent(impl, parent)
       }
     }
@@ -83,11 +83,11 @@ trait LombrelloImplicitsCake {
         self.removeMember(clazz, p)
       }
 
-      def updateParents(parents: List[Tree]): ClassDef = {
+      def updateParents(parents: List[Type]): ClassDef = {
         self.updateParents(clazz, parents)
       }
 
-      def addParent(parent: Tree): ClassDef = {
+      def addParent(parent: Type): ClassDef = {
         self.addParent(clazz, parent)
       }
 
@@ -116,7 +116,7 @@ trait LombrelloImplicitsCake {
         self.duplicate(module, name).asInstanceOf[ModuleDef]
       }
 
-      def addParent(parent: Tree): ModuleDef = {
+      def addParent(parent: Type): ModuleDef = {
         self.addParent(module, parent)
       }
 
@@ -129,7 +129,7 @@ trait LombrelloImplicitsCake {
         self.removeMember(module, p)
       }
 
-      def updateParents(parents: List[Tree]): ModuleDef = {
+      def updateParents(parents: List[Type]): ModuleDef = {
         self.updateParents(module, parents)
       }
     }
