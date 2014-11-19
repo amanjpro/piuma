@@ -385,6 +385,18 @@ trait SymbolsUtil { self: LombrelloPlugin =>
   def getClassByName(name: String): Symbol = 
     rootMirror.getClassByName(newTypeName(name))
 
+  /**
+    * Checks weather a type is type parameter
+    *
+    * @param x the type to be checked
+    *
+    * @return true if x is a type parameter, and false otherwise
+    */
+  def isTypeParameter(x: Type): Boolean = {
+    goodSymbol(x.typeSymbol) && (x.typeSymbol.isTypeParameter) 
+  }
+
+
 
   /**
     * Returns the symbol of the class that owns a symbol. If the symbol is not 
