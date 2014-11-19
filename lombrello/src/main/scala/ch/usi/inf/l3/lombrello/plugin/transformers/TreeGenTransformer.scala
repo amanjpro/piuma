@@ -312,7 +312,7 @@ trait TreeGenTransformerCake {
                           isField: Boolean): ValDef = {
       val consSym = constructor.symbol
       goodSymbol(consSym) match {
-        case true if isField =>
+        case true if !isField =>
           val psym = consSym.newValueParameter(
             TermName(name), consSym.pos.focus)
           psym setInfo info
