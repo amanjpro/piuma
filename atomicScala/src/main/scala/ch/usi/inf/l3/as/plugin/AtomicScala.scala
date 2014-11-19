@@ -298,7 +298,7 @@ import scala.reflect.internal.Flags._
     // important is to create the ValDef using the class symbol
     // but will need to check that more.
     val lockParam = mkConstructorParam(old_construtcor, as_lock, 
-                        lockType, hasLocksInSupers) 
+                        lockType, !hasLocksInSupers) 
     addParam(lockParam, old_construtcor)
   }
 
@@ -307,7 +307,7 @@ import scala.reflect.internal.Flags._
       case constructor: DefDef if isConstructor(constructor) &&
                   classSetsMap.contains(constructor.symbol.owner) =>
         val newConstructor =
-          getNewConstructor(constructor, getClassByName(lockClass).tpe)
+          getNewConstructor(constructor, getClassByName(lockClass).toType)
         super.transform(newConstructor)
       case _ => super.transform(tree)
     }
@@ -368,8 +368,14 @@ import scala.reflect.internal.Flags._
             // TODO this should move to a special typechecking phase.
             if (!goodSymbol(lock_f))
               throw new Exception("Enclosing class does not have atomic sets")
+
+            val newArg = Select(This(ownerClass), newTermName(as_lock))
             
-            val newArg = mkSelect(This(ownerClass), newTermName(as_lock))
+            val ths = This(ownerClass)
+            ths.setType(ownerClass.tpe)
+            newArg.substituteThis(ownerClass, ths)
+
+
             val newArgs = newArg :: args
             val newRHS = mkConstructorCall(ntpt, newArgs)
             val newvalDef = updateRHS(valNewRHS, newRHS)
@@ -549,15 +555,25 @@ import scala.reflect.internal.Flags._
      * using its type to construct a type tree an the enclosing tree.
      * It does not work to type the overall tree later.
      * */
-    val classLockField = mkSelect(This(mthdEncClass), as_lock)
+    val classLockField = typed {
+      val tmp = Select(This(mthdEncClass), TermName(as_lock))
     
+      // TODO: This should go to Lombrello
+      val ths = This(mthdEncClass)
+      ths.setType(mthdEncClass.tpe)
+      tmp.substituteThis(mthdEncClass, ths)
+      tmp
+    }
+
     val mthdParams = mParams.flatten.map(_.symbol)
     val mthdParamsIdent = mthdParams.map(x => Ident(x))
       
     // TODO: What about easier use of definitions?
-    val paramListRHS = mkApply(mkSelect(definitions.ListModule, "apply"),
-                                List(TypeTree(definitions.AnyTpe)),
+    val paramListRHS = mkApply(Select(Ident(definitions.ListModule), 
+                                    TermName("apply")),
+                                List(TypeTree(definitions.AnyClass.toType)),
                                 mthdParamsIdent)
+
 
     val paramList = mkVal(msymbol, "__m_params", paramListRHS)
       
@@ -567,12 +583,13 @@ import scala.reflect.internal.Flags._
     val p_locks = paramLocks(mthdParams)
     val all_locks = classLockField :: p_locks
     // The call to Apply method of a List used to create a new list
-    val lockList = mkApply(mkSelect(definitions.ListModule, "apply"),
+    val lockList = mkApply(Select(Ident(definitions.ListModule), 
+                                      TermName("apply")),
               List(TypeTree(classLockField.tpe)), all_locks) 
     
     /* the compiler is smarter than I thought. It found the method and the
      * local typer bound it correctly! */
-    val sortedLockList = mkSelect(lockList, "sorted")
+    val sortedLockList = Select(lockList, TermName("sorted"))
     
     val locksList = mkVal(msymbol, "locks", sortedLockList)
     

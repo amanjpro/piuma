@@ -759,7 +759,8 @@ import scala.reflect.internal.ModifierFlags
 
 
             val nConst = clazzArgs.foldLeft(const)((z, y) => {
-                addConstructorParam(y.symbol.name.toString, y.symbol.info, z)
+                addConstructorParam(y.symbol.name.toString, 
+                                    y.symbol.info, z, false)
             })
 
             val nimpl = clazzL.addMember(nConst.addSuperConstructorCall)
