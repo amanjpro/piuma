@@ -64,3 +64,14 @@ Thumbs.db
 *~
 *.swp
 *.swo
+
+
+# TeX generated fiels #
+#######################
+
+*.aux
+*.fdb_latexmk
+*/fls
+*.pdf
+!doc/main.pdf
+
