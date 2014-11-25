@@ -103,6 +103,27 @@ trait TreeModifiersCake {
     }
 
     /**
+      * Adds a type parameter as the first parameter of the list of
+      * type parameters of a class or trait
+      *
+      * @param tparam the type parameter to be added, the owner of the
+      *               type parameter should be {{{clazz}}}
+      * @param clazz the class that we want to add the type parameter to
+      *
+      * @return a well-typed class/trait augmented with the type parameter.
+      */
+    def addTypeParam(tparam: TypeDef, clazz: ClassDef): ClassDef = {
+      require(tparam.symbol.owner == clazz.symbol, 
+        s"${tparam}'s owner is not ${clazz.symbol}")
+      typed {
+        ClassDef(clazz.mods, 
+          clazz.name, 
+          tparam :: clazz.tparams, 
+          clazz.impl).setSymbol(clazz.symbol)
+      }.asInstanceOf[ClassDef]
+    }
+
+    /**
       * Adds a parameter as the first parameter of the list of 
       * parameters of a constructor.
       *
@@ -520,7 +541,13 @@ trait TreeModifiersCake {
       */
     def updateParents(tree: ClassDef, parents: List[Type]): ClassDef = {
       val parentsTree = parents.map((x) => typed {TypeTree(x)})
-      val ntpe = ClassInfoType(parents, tree.symbol.info.decls, tree.symbol)
+      val ntpe = tree.symbol.info match {
+        case pt @ PolyType(tparams, tpe) =>
+          PolyType(tparams, ClassInfoType(parents, pt.decls, tree.symbol))
+        case tpe =>
+          ClassInfoType(parents, tpe.decls, tree.symbol)
+      }
+
       tree.symbol.updateInfo(ntpe)
       typed {
         treeCopy.ClassDef(tree, tree.mods, tree.name, tree.tparams, 
