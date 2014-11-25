@@ -27,6 +27,24 @@ trait SymbolsUtil { self: LombrelloPlugin =>
     getAnnotationArguments(annoInfo)
   }
 
+  /**
+    * Checks weather a tree represents a trait
+    *
+    * @param x the tree to be checked
+    *
+    * @return true if x is a trait, and false otherwise
+    */
+  def isTrait(x: Tree): Boolean = isTrait(x.symbol)
+
+  /**
+    * Checks weather a tree represents a class
+    *
+    * @param x the tree to be checked
+    *
+    * @return true if x is a class, and false otherwise
+    */
+  def isClass(x: Tree): Boolean = isClass(x.symbol)
+
 
   /**
     * Returns the symbol of the class that owns a tree. If the tree is not 
@@ -395,6 +413,25 @@ trait SymbolsUtil { self: LombrelloPlugin =>
   def isTypeParameter(x: Type): Boolean = {
     goodSymbol(x.typeSymbol) && (x.typeSymbol.isTypeParameter) 
   }
+
+  /**
+    * Checks weather a symbol represents a trait
+    *
+    * @param x the symbol to be checked
+    *
+    * @return true if x is a trait, and false otherwise
+    */
+  def isTrait(x: Symbol): Boolean = goodSymbol(x) && x.isTrait
+
+  /**
+    * Checks weather a symbol represents a class
+    *
+    * @param x the symbol to be checked
+    *
+    * @return true if x is a class, and false otherwise
+    */
+  def isClass(x: Symbol): Boolean = goodSymbol(x) && x.isClass
+
 
 
 

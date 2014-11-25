@@ -95,6 +95,11 @@ trait LombrelloImplicitsCake {
         self.mkConstructor(clazz)
       }
 
+
+      def addTypeParam(tparam: TypeDef): ClassDef = {
+        self.addTypeParam(tparam, clazz)
+      }
+
       def mkCompanionObject: ModuleDef = {
         self.mkCompanionObject(clazz.symbol.asClass)
       }
@@ -132,6 +137,8 @@ trait LombrelloImplicitsCake {
       def updateParents(parents: List[Type]): ModuleDef = {
         self.updateParents(module, parents)
       }
+
+
     }
   
     implicit class AugmentedDefDef(mthd: DefDef) {
