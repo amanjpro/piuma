@@ -22,8 +22,9 @@ object LombrelloBuildSettings {
         if(sversion.startsWith("2.10"))
           List("org.scalamacros" %% "quasiquotes" % paradiseVersion)
         else Nil),
-    addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-        )
+    addCompilerPlugin(
+      "org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
+  )
 }
 
 object LombrelloBuild extends Build {
