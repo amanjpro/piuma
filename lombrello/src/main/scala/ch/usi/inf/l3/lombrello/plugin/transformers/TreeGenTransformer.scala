@@ -257,6 +257,60 @@ trait TreeGenTransformerCake {
       mkConstructor(clazz.symbol.asClass, tparams)
     }
 
+    
+    /**
+      * Creates a type parameter definition
+      *
+      * @param owner the owner of the type parameter
+      * @param name The name of the TypeDef
+      * @param tpe The type bounds of the type parameter, defaults to empty
+      * @param hks in case it is higher-kinded, the type params of this
+      *             type param, defaults to Nil.
+      *
+      * @return a TypeDef that represents a type parameter node, and its
+      *         type skolem. Type skolem is the type of the type
+      *         parameter when looked from inside, for example:
+      *         {{{
+      *           class C[T] {
+      *             def b: C = ...
+      *           } 
+      *         }}}
+      *         method b in the above example sees the type skolem,
+      *         while everybody else outside C see the type parameter.
+      */
+    def mkTypeParam(owner: Symbol, 
+      name: String,
+      tpe: TypeBounds = TypeBounds.empty, 
+      hks: List[TypeDef] = Nil): (TypeDef, TypeSkolem) = {
+      
+      val tsym = owner.newSyntheticTypeParam(name, 0)
+      tsym.setInfoAndEnter(tpe)
+
+
+      // Skolem types are the type params when looked inside the body!
+      val tskolem = tsym.newTypeSkolem
+      tskolem.setInfo(tpe)
+
+
+      // A class or trait with type params should have a PolyType type
+      val ctpe = owner.info match {
+        case t @ PolyType(ts, a) =>
+          PolyType(tsym :: ts, a)
+        case t => 
+          PolyType(List(tsym), t)
+      }
+
+      owner.setInfo(ctpe)
+
+
+      val tdef = typed {
+        TypeDef(Modifiers(tsym.flags),
+          TypeName(name), hks,
+          TypeBoundsTree(TypeTree(tpe.lo),
+          TypeTree(tpe.hi))).setSymbol(tsym)
+      }.asInstanceOf[TypeDef]
+      (tdef, tskolem)
+    }
     /**
       * Creates a constructor tree
       *
@@ -401,7 +455,10 @@ trait TreeGenTransformerCake {
       * @return a tree of the function/method appliation
       */
     def mkApply(fun: Tree, args: List[Tree]): Apply = {
-      localTyper.typed { Apply(fun, args) }.asInstanceOf[Apply]
+      localTyper.typed { 
+        Apply(fun, args)
+      }.asInstanceOf[Apply]
+
     }
 
     /**
@@ -498,7 +555,9 @@ trait TreeGenTransformerCake {
           sym setInfo tpe
       } 
       
-      val vtree = localTyper.typed {ValDef(sym, rhs)}
+      val vtree = localTyper.typed {
+        ValDef(sym, rhs)
+      }
       vtree.asInstanceOf[ValDef]
     }
     
@@ -666,6 +725,23 @@ trait TreeGenTransformerCake {
         None
     }
     
+    /**
+      * Creates a node tree that represents this pattern:
+      * {{{ClassName.this.member}}}
+      *
+      * @param symbol the symbol of the enclosing class 
+      * @param name the name of the member to be selected
+      *
+      * @return a tree that represents a select node.
+      */
+    def mkThisSelect(symbol: Symbol, name: Name): Select = {
+      val select = Select(This(symbol), name)
+
+      val ths = This(symbol)
+      ths.setType(symbol.tpe)
+      select.substituteThis(symbol, ths)
+      select
+    }
     
     def mkGetter(tree: ValDef): DefDef = {
       val vsym = tree.symbol
@@ -719,7 +795,41 @@ trait TreeGenTransformerCake {
 
 
     }
- 
+    /**
+      * Returns a well-typed abstract field
+      *
+      * @param owner the owner of the field
+      * @param name the name of the field
+      * @param tpe the type of the field
+      *
+      * @return a well typed abstract field
+      */
+    def mkAbstractField(owner: Symbol, name: String, tpe: Type): DefDef = {
+      mkAbstractField(owner, TermName(name), tpe)
+    }
+
+   /**
+      * Returns a well-typed abstract field
+      *
+      * @param owner the owner of the field
+      * @param name the name of the field
+      * @param tpe the type of the field
+      *
+      * @return a well typed abstract field
+      */
+    def mkAbstractField(owner: Symbol, name: TermName, tpe: Type): DefDef = {
+      val mtpe = NullaryMethodType(tpe)
+      val field = 
+        owner.newMethod(name, owner.pos.focus, Flag.SYNTHETIC | Flag.DEFERRED)
+      try {
+        field.setInfoAndEnter(mtpe)
+      } catch {
+        case ex: Exception => field.setInfo(mtpe)
+      }
+      localTyper.typed { 
+        DefDef(field, EmptyTree)
+      }.asInstanceOf[DefDef]
+    }
 
 
     /**
