@@ -16,7 +16,7 @@ import org.apache.avro.Schema.{Type => AvroType}
 import java.util.{Arrays => JArrays}
 
 /** TODO: This phase isn't a transformer, refactor into a traverser */
-@phase("schemagen") class SchemaGen {
+@treeTransformer("schemagen") class SchemaGen {
 
   import definitions._
   rightAfter("schemacreate")

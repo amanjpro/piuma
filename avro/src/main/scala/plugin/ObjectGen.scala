@@ -8,7 +8,7 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
 import scala.collection.JavaConversions._
 import scala.reflect.internal.Flags._
 
-@phase("objectgen") class ObjectGen {
+@treeTransformer("objectgen") class ObjectGen {
   import definitions._
 
   rightAfter("schemagen")

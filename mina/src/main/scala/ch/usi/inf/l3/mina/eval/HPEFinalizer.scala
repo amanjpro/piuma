@@ -8,7 +8,7 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
 import scala.language.implicitConversions
 import ch.usi.inf.l3.mina._
 
-@phase("mina-finalizer") class HPEFinalizer {
+@treeTransformer("mina-finalizer") class HPEFinalizer {
 
   plugin HPE
 

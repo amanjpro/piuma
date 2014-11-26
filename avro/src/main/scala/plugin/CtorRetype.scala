@@ -7,7 +7,7 @@ import scala.annotation.tailrec
 import scala.reflect.internal.Flags._
 import scala.collection.JavaConversions._
 
-@phase("ctorretype") class CtorRetype {
+@treeTransformer("ctorretype") class CtorRetype {
 
   rightAfter("extender")
 

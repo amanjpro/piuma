@@ -251,7 +251,7 @@ import scala.reflect.internal.Flags._
  * Creates lock objects that correspond to each atomic set declaration in
  * a class. Uses information collected during the previous phase.
  */
-@phase("add-lock-fields") class AddLockFields {
+@treeTransformer("add-lock-fields") class AddLockFields {
 
   rightAfter("class-ancestor-sets-mapping")
 
@@ -321,7 +321,7 @@ import scala.reflect.internal.Flags._
  * constructor calls to include the new lock argument, and this is what we
  * do here. We also update 'super' calls here. 
  */
-@phase("modify-new-stmts") class ModifyNewStmts {
+@treeTransformer("modify-new-stmts") class ModifyNewStmts {
 
   rightAfter("add-lock-fields")
 
@@ -434,7 +434,7 @@ import scala.reflect.internal.Flags._
  *
  * TODO currently no lock ordering or support for more than one atomic set.
  */
-@phase("add-sync") class AddSync {
+@treeTransformer("add-sync") class AddSync {
 
   rightAfter("modify-new-stmts")
 

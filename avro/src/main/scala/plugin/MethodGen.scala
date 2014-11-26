@@ -14,7 +14,7 @@ import org.apache.avro.Schema
 
 
 
-@phase("methodgen") class MethodGen {
+@treeTransformer("methodgen") class MethodGen {
   import definitions._
 
   rightAfter("objectgen")

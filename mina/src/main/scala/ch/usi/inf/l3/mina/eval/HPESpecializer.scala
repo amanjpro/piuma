@@ -15,7 +15,7 @@ import scala.reflect.internal.ModifierFlags
   
 
 
-@phase("mina-specializer") class HPESpecializer {
+@treeTransformer("mina-specializer") class HPESpecializer {
 
   plugin HPE
 

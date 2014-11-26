@@ -24,7 +24,7 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
 
 // class TestPluginComponent(plgn: TestPlugin) extends TransformerPluginComponent(plgn) {
 
-@phase("test") class TestPluginComponent {
+@treeTransformer("test") class TestPluginComponent {
   // override val runsRightAfter = Some(plgn.utilities.PHASE_SUPERACCESSORS)
   // val runsAfter = List[String](plgn.utilities.PHASE_FLATTEN, plgn.utilities.PHASE_PATMAT, plgn.utilities.PHASE_TYPER)
   // override val runsBefore = List[String](plgn.utilities.PHASE_ICODE)
@@ -83,7 +83,7 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
 
 // class TestPluginComponent2(plgn: TestPlugin) extends TransformerPluginComponent(plgn) {
 
-@phase("test2") class TestPluginComponent2 {
+@treeTransformer("test2") class TestPluginComponent2 {
   // override val runsRightAfter = Some(plgn.utilities.PHASE_INLINER)
   // override val runsAfter = List[String](plgn.utilities.PHASE_INLINER)
 

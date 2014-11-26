@@ -18,12 +18,12 @@ object NeveDSL {
 
     
   // phase macro
-  class phase extends StaticAnnotation {
+  class treeTransformer extends StaticAnnotation {
     def macroTransform(annottees: Any*): Any = macro Macros.phaseImpl
   }
 
   // plugin macro
-  class plugin(n: Any*) extends StaticAnnotation {
+  class plugin extends StaticAnnotation {
     def macroTransform(annottees: Any*): Any = macro Macros.pluginImpl
   }
 
@@ -33,7 +33,7 @@ object NeveDSL {
   }
 
   // info macro
-  class info extends StaticAnnotation {
+  class infoTransformer extends StaticAnnotation {
     def macroTransform(annottees: Any*): Any = macro Macros.infoImpl
   }
   

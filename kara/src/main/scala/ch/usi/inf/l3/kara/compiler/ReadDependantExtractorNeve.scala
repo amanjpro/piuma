@@ -11,7 +11,7 @@ import scala.reflect.internal.Flags._
 import scala.Option.option2Iterable
 import ch.usi.inf.l3.kara.KaraPlugin
 
-@phase("kara-mover") class ReadDependantExtractorNeve {
+@treeTransformer("kara-mover") class ReadDependantExtractorNeve {
   //  override val runsRightAfter = Some("kara-typer")
   //  val runsAfter = List[String]("kara-typer")
   //  override val runsRightAfter = Some("classFinder")

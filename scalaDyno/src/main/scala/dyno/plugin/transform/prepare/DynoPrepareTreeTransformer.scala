@@ -8,7 +8,7 @@ import collection.mutable.Map
 import ch.usi.inf.l3.lombrello.neve.NeveDSL._
 
 
-@info("-prepare") class DynoPrepareTreeTransformer {
+@infoTransformer("-prepare") class DynoPrepareTreeTransformer {
   // this: DynoPreparePhase =>
 
   // import helper._

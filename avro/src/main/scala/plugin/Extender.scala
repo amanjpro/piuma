@@ -6,7 +6,7 @@ import ch.usi.inf.l3.lombrello.neve.NeveDSL._
 import scala.reflect.internal.Flags._
 
 
-@info("extender") class Extender {
+@infoTransformer("extender") class Extender {
 
   after(List("typer"))
   before(List("superaccessors"))
