@@ -8,7 +8,7 @@ import scala.reflect.internal.Flags._
 
 import scala.collection.mutable.{HashSet,ListBuffer}
 
-import ch.usi.inf.l3.lombrello.neve.NeveDSL._
+import ch.usi.inf.l3.piuma.neve.NeveDSL._
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Field
 import org.apache.avro.Schema.{Type => AvroType}

@@ -4,7 +4,7 @@
  * */
 package ch.usi.inf.l3.mina.eval
 
-import ch.usi.inf.l3.lombrello.neve.NeveDSL._
+import ch.usi.inf.l3.piuma.neve.NeveDSL._
 import scala.language.implicitConversions
 import ch.usi.inf.l3.mina._
 import store._

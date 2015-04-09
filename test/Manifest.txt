@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Class-Path: lib/macro-paradise.jar 
- lib/lombrello.jar 
+ lib/piuma.jar 
  lib/apache.jar lib/json.jar 
  lib/node.jar 
 Created-By: 1.7.0_09 (Oracle Corporation)

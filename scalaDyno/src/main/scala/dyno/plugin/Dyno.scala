@@ -1,6 +1,6 @@
 package dyno.plugin
 
-import ch.usi.inf.l3.lombrello.neve.NeveDSL._
+import ch.usi.inf.l3.piuma.neve.NeveDSL._
 // import scala.tools.nsc.Global
 // import scala.tools.nsc.plugins.Plugin
 // import scala.tools.nsc.plugins.PluginComponent

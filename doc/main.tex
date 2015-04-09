@@ -69,7 +69,7 @@
 \setlength{\pdfpagewidth}{\paperwidth}
 
 \title{
- Lombrello's Manual\\
+ Piuma's Manual\\
  \small{A refactoring library for Scala compiler extension}
 }
   
@@ -93,7 +93,7 @@ incorrect code. Moreover, Scala's compiler assumes many complex, sometimes
 undocumented invariants, requiring plugin developers to acquire intimate
 knowledge of the design and implementation of the compiler.  
 
-To address these issues we introduce Lombrello. Lombrello is a library that
+To address these issues we introduce Piuma. Piuma is a library that
 provides, first, an API to perform many common refactoring tasks needed by
 plugin writers, and, second, a DSL to eliminate much of the boilerplate code
 required for plugin development. 
@@ -131,12 +131,12 @@ field. If the plugin did this after the Scala type-checker runs, the error
 would not be detected and the bytecode would contain a duplicate field.
 
 
-Lombrello is a refactoring library for the Scala compiler for more easily
+Piuma is a refactoring library for the Scala compiler for more easily
 implementing correct compiler plugins.  The library  provides a set of
 refactoring methods to, for instance, safely rename definitions, to add new
 class, trait, or object members, or to extract expressions into methods. The
 library also provides a DSL for generating the boilerplate code necessary for
-writing Scala compiler plugins. In the following section we show how Lombrello
+writing Scala compiler plugins. In the following section we show how Piuma
 is used.  
 
 
@@ -155,12 +155,12 @@ class Phase1 {
   def transform(tree: Tree): Tree = super.transform(tree)
 }
 \end{lstlisting}
-\caption{Using Lombrello DSL for creating a simple compiler extension}
+\caption{Using Piuma DSL for creating a simple compiler extension}
 \label{lst:neveMini} 
 \end{figure}
 
 
-\subsection{The Lombrello library}
+\subsection{The Piuma library}
 
 \begin{figure}[tp]
 \begin{lstlisting}
@@ -223,8 +223,8 @@ val module0 = clazz.mkCompanionObject
 val module = module0.addMember(mthd)
 \end{lstlisting}
 \caption{This listing shows how a new companion object is created for a class
-using the Lombrello DSL.}
-\label{lst:lombrello_introduceModule}
+using the Piuma DSL.}
+\label{lst:piuma_introduceModule}
 \end{figure}
 
 Every AST node in Scala has a \c{Symbol} attached to it, which includes type
@@ -237,40 +237,40 @@ introduces a default constructor that calls the constructor of the object's
 superclass, \c{AnyRef}, and appends the new constructor to the body of the
 module.  Finally, it types the module tree.  Failing to do any of these steps
 may lead to an exception during compilation, or worse, the compiler might
-silently generate malformed bytecode. With Lombrello we can introduce a
+silently generate malformed bytecode. With Piuma we can introduce a
 companion object in just a few lines of code, as shown in
-Figure~\ref{lst:lombrello_introduceModule}.  In
-Section~\ref{sec:lombrelloLibrary} we describe the design of the Lombrello 
+Figure~\ref{lst:piuma_introduceModule}.  In
+Section~\ref{sec:piumaLibrary} we describe the design of the Piuma 
 utilities.
 
 
-\section{Lombrello and SBT}
+\section{Piuma and SBT}
 SBT is an open source build tool for Scala, Java and more. It is similar to
 Java's Maven or Ant. It is mainly used for Scala, therefore we show how
-Lombrello is used with SBT. 
+Piuma is used with SBT. 
 
 
-\subsection{Lombrello as a dependency}
-To use Lombrello you need to first add it to the list of the \emph{resolvers}
+\subsection{Piuma as a dependency}
+To use Piuma you need to first add it to the list of the \emph{resolvers}
 as follows: 
 
 \begin{verbatim}
-  resolvers += "Lombrello's Repo" at 
-          "http://inf.usi.ch/phd/sherwany/repos/lombrello"
+  resolvers += "Piuma's Repo" at 
+          "http://inf.usi.ch/phd/sherwany/repos/piuma"
 \end{verbatim}
 
 
 \noindent
-Then, you need to add Lombrello in the project dependencies list:
+Then, you need to add Piuma in the project dependencies list:
 
 \begin{verbatim}
   libraryDependencies ++= 
-    Seq("ch.usi.inf.l3" %% "lombrello" % "0.1-SNAPSHOT"),
+    Seq("ch.usi.inf.l3" %% "piuma" % "0.1-SNAPSHOT"),
 \end{verbatim}
 
 
 \noindent
-Since Lombrello relies on Scala Macros, you need to add macros to the compiler
+Since Piuma relies on Scala Macros, you need to add macros to the compiler
 plugins list, please note that you need to run Scala 2.11 or above.
 
 \begin{verbatim}
@@ -307,8 +307,8 @@ lazy val plugin =  Project(
 ) settings (
   // general settings
   scalaVersion := "2.11.1",
-  resolvers += "Lombrello's Repo" at 
-        "http://inf.usi.ch/phd/sherwany/repos/lombrello",
+  resolvers += "Piuma's Repo" at 
+        "http://inf.usi.ch/phd/sherwany/repos/piuma",
   resolvers += Resolver.sonatypeRepo("snapshots"),
   resolvers += Resolver.sonatypeRepo("releases"),
 
@@ -323,7 +323,7 @@ lazy val plugin =  Project(
   resourceDirectory in Compile <<= baseDirectory(_ / "resources"),
 
   libraryDependencies ++= 
-    Seq("ch.usi.inf.l3" %% "lombrello" % "0.1-SNAPSHOT"),
+    Seq("ch.usi.inf.l3" %% "piuma" % "0.1-SNAPSHOT"),
 
   addCompilerPlugin("org.scalamacros" % "paradise" % 
     paradiseVersion cross CrossVersion.full)
@@ -348,8 +348,8 @@ lazy val someName = Project (
 )  settings (
   // general settings
   scalaVersion := "2.11.1",
-  resolvers += "Lombrello's Repo" at 
-        "http://inf.usi.ch/phd/sherwany/repos/lombrello",
+  resolvers += "Piuma's Repo" at 
+        "http://inf.usi.ch/phd/sherwany/repos/piuma",
   resolvers += Resolver.sonatypeRepo("snapshots"),
   resolvers += Resolver.sonatypeRepo("releases"),
 
@@ -360,11 +360,11 @@ lazy val someName = Project (
 ) 
 \end{verbatim}
 
-\section{The Lombrello DSL}
-\label{sec:lombrelloDSL}
+\section{The Piuma DSL}
+\label{sec:piumaDSL}
 
 
-The Lombrello DSL extends Scala with features that facilitate defining compiler
+The Piuma DSL extends Scala with features that facilitate defining compiler
 plugins and their components. In this section, we explain the design and use of
 this DSL in detail. We start by describing the general structure of a Scala
 compiler plugin and then describe the DSL constructs and the functionality they
@@ -426,11 +426,11 @@ class MyInfoTransformer {
 }
 
 \end{lstlisting}
-\caption{Syntax of the Lombrello DSL}
+\caption{Syntax of the Piuma DSL}
 \label{lst:dslSyntax}
 \end{figure}
 
-The Lombrello DSL extends Scala with four class annotations: \c{@plugin},
+The Piuma DSL extends Scala with four class annotations: \c{@plugin},
 \c{@checker}, \c{@treeTransformer}, and \c{@infoTransformer}.  The \c{@plugin}
 annotation generates boilerplate code for a compiler plugin itself.  The other
 annotations generate boilerplate code for different \c{PluginComponent}
@@ -442,10 +442,10 @@ annotations cannot appear on traits, abstract classes, or singleton object.
 Annotated classes can still implement other traits.  Figure~\ref{lst:dslSyntax}
 shows a sketch of the syntax of a compiler extension in the DSL.
 
-The Lombrello DSL is implemented using Scala's \emph{annotation macros}.  For
+The Piuma DSL is implemented using Scala's \emph{annotation macros}.  For
 each annotation, macro expansion modifies the annotated class to extend a
 corresponding class from the Scala compiler API. It then mixes-in appropriate
-Lombrello traits to facilitate access to the Lombrello library. 
+Piuma traits to facilitate access to the Piuma library. 
 
 \subsection{The \c{@plugin} annotation}
 
@@ -498,10 +498,10 @@ After expansion, an annotated class will extend \c{Plugin\-Component} \c{with}
 and invokes the provided \c{transform} and \c{transformInfo} methods for each
 node and symbol encountered.
 
-\section{The Lombrello library}
-\label{sec:lombrelloLibrary}
+\section{The Piuma library}
+\label{sec:piumaLibrary}
 
-Lombrello offers a rich set of utilities for generating and refactoring Scala
+Piuma offers a rich set of utilities for generating and refactoring Scala
 compiler ASTs. In general, these methods implement common refactoring and
 creation patterns when writing compiler plugins.  They are implemented using
 the AST generators of the Scala compiler API and Scala's
@@ -513,14 +513,14 @@ code if they need lower-level access to the compiler internals.
 In this section, we discuss the design of the refactoring library and
 demonstrate its use through use cases and code examples.  The library is
 divided into four main categories, as shown in Figure~\ref{fig:libraryFig}.
-The reader can refer to Lombrello's project
-page\footnote{\url{https://github.com/amanjpro/lombrello}} for documentation
+The reader can refer to Piuma's project
+page\footnote{\url{https://github.com/amanjpro/piuma}} for documentation
 and more examples.
 
 \begin{figure}[t!] \begin{center} \includegraphics[scale=0.45]{classDiagram}
   \end{center}
   \vspace{-2cm}
-  \caption{The high-level design of Lombrello's Library}
+  \caption{The high-level design of Piuma's Library}
   \label{fig:libraryFig}
 \end{figure}
 
@@ -556,9 +556,9 @@ body by adding parameters to the extracted method. That is, all  free variables
 in \texttt{suffix} become parameters of \c{bar}.  \c{extractMethod} also
 creates the AST of the new method and types it, and generates a call to the
 extracted method that can be substituted into the original method, as described
-in the next section.  Lombrello also creates a symbol for the new method,
+in the next section.  Piuma also creates a symbol for the new method,
 rebinding symbols of the extracted trees to their new owner, and placing them
-in the symbol table of the method owner. Without Lombrello, the programmer
+in the symbol table of the method owner. Without Piuma, the programmer
 would have to perform all these operations manually using the Scala compiler
 API.
 
@@ -624,19 +624,19 @@ def bar(a: Int, b: Int,
       \end{center}
     \end{minipage}
   \end{tabular}
-\caption{A short example of a Lombrello refactoring}
+\caption{A short example of a Piuma refactoring}
 \label{lst:extractExample}
 \label{lst:extractor} 
 \end{figure}
 
 
-Other useful Lombrello extractors allow member extraction. It is possible, for
+Other useful Piuma extractors allow member extraction. It is possible, for
 instance, to extract an inner class and make it an outer class (using
 \c{extractClass}), to convert a local variable to a field (using \c{extractVar}
 or \c{extractVal}), or to move fields or methods across classes.  
 
 
-Applying Lombrello's extractor functions can sometimes yield malformed trees.
+Applying Piuma's extractor functions can sometimes yield malformed trees.
 For example, if we add a block extracted from a method that contains a return
 statement to a class, the class will not type check. We rely on Scala's type
 checker to report such errors to the programmer. 
@@ -648,7 +648,7 @@ removing method parameters (\c{addParam} and \c{removeParam}, respectively),
 modifying a class or trait's body (\c{updateBody}, \c{addMember}, and
 \c{removeMember}) or its supertypes (\c{updateParents}).  The \c{rename} method
 is used to change the name of a class, method, or variable. When a field is
-renamed, Lombrello handles renaming its setters and getters as well.  The tree
+renamed, Piuma handles renaming its setters and getters as well.  The tree
 modifiers also support updating method bodies (\c{updateRHS}).  As an example,
 we can modify method \c{foo} from Figure~\ref{lst:extractor}(b) to call the
 extracted method, as shown in Figure~\ref{lst:extractor}(c).  We do this with
@@ -657,7 +657,7 @@ the call to \c{updateRHS}, as shown in Figure~\ref{lst:extractor}(a).
 
 \subsection{Tree duplicators}
 
-\emph{Tree duplicators} are mainly used to implement other Lombrello
+\emph{Tree duplicators} are mainly used to implement other Piuma
 functionality, but can also be useful when writing plugins. For example, if a
 programmer needs to specialize a method, they can duplicate it first, then
 remove the specialized parameter from the duplicated tree, and substitute it
@@ -674,7 +674,7 @@ val specialized = orig.duplicate("new_name").removeParam(p, v)
 \label{lst:duplicator} 
 \end{figure}
 
-Lombrello's \c{duplicate} method differs from the compiler API's \c{duplicate}
+Piuma's \c{duplicate} method differs from the compiler API's \c{duplicate}
 method in that it handles the creation of a new symbol for the new tree, and
 changes the binding of the node's children's symbols from their original owner
 to the duplicate.
@@ -686,34 +686,34 @@ new location in the AST.
 
 \subsection{Tree generators}
 
-Lombrello offers various AST generators that are simpler to use than the Scala
+Piuma offers various AST generators that are simpler to use than the Scala
 compiler API tree generators.  For instance, they handle setting the required
 flags that distinguish trees used to represent more than one syntactic
 construct (e.g., \c{var} and \c{val}, or class and trait trees). Symbol
 creation and binding is also handled for a generated AST, including all its
-descendant ASTs.  Lombrello generators facilitate other tasks that require
+descendant ASTs.  Piuma generators facilitate other tasks that require
 multiple setup steps, such as surrounding the body of a method with a
 synchronization block, creating constructor parameters and constructor calls,
 and others. 
 
 \section{Getting More Help}
-Lombrello's library is fully documented, you are encouraged to visit the
+Piuma's library is fully documented, you are encouraged to visit the
 project's repository and clone it, play with it and understand it.  The
 project's repository can be found at
-\url{https://github.com/amanjpro/lombrello}. You can generate the Scaladoc by
+\url{https://github.com/amanjpro/piuma}. You can generate the Scaladoc by
 running
 
 \begin{verbatim}
-sbt lombrello/api
+sbt piuma/api
 \end{verbatim}
 
-You can also take a look at the many plugins that use Lombrello and included in
+You can also take a look at the many plugins that use Piuma and included in
 the project, namely (Avro, Kara, Mina, Atomic Scala and ScalaDyno). You are
 welcome to report bugs, suggest improvements and/or contribute to the project.
 
 
 \section{Software Requirements}
-Lombrello should have no problem with Scala 2.11, and in theory it should work 
+Piuma should have no problem with Scala 2.11, and in theory it should work 
 with newer Scala versions.
 
 

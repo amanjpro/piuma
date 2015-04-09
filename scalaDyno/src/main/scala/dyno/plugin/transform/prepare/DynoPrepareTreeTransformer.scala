@@ -5,7 +5,7 @@ import scala.tools.nsc.transform.InfoTransform
 import scala.reflect.internal.Flags._
 import scala.reflect.internal.util.Position
 import collection.mutable.Map
-import ch.usi.inf.l3.lombrello.neve.NeveDSL._
+import ch.usi.inf.l3.piuma.neve.NeveDSL._
 
 
 @infoTransformer("-prepare") class DynoPrepareTreeTransformer {

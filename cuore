@@ -16,20 +16,20 @@ import scala.language.postfixOps
 
 val sp = File.separator
 val scalaVersion = "2.11"
-val lombrelloVersion = "0.1-SNAPSHOT"
+val piumaVersion = "0.1-SNAPSHOT"
 val targetPath = s"target${sp}scala-${scalaVersion}"
 
-val mainProject = "lombrello"
+val mainProject = "piuma"
 val plugins = List("kara", "atomicScala", 
                     "scalaDyno", "simple", "mina", "avro")
 val tasks = List("compile", "package", "clean", "test")
 
 
-val lombrelloName = jarName(mainProject)
-val lombrello = s"${mainProject}${sp}${targetPath}${sp}${lombrelloName}"
+val piumaName = jarName(mainProject)
+val piuma = s"${mainProject}${sp}${targetPath}${sp}${piumaName}"
 
 
-def jarName(name: String): String = s"${name}_${scalaVersion}-${lombrelloVersion}.jar"
+def jarName(name: String): String = s"${name}_${scalaVersion}-${piumaVersion}.jar"
 
 def targetName(name: String): String = s"${name}${sp}${targetPath}"
 
@@ -65,7 +65,7 @@ def docSBTProject(name: String) = {
 }
 
 def packagePlugin(plgn: String) = {
-  s"cp ${lombrello} test${sp}lib${sp}lombrello.jar".run(pio).exitValue
+  s"cp ${piuma} test${sp}lib${sp}piuma.jar".run(pio).exitValue
   
   val dest = s"test${sp}plugins${sp}${plgn}"
   val src = s"${targetName(plgn)}${sp}classes" 
@@ -110,7 +110,7 @@ def cleanPlugin(plgn: String) = {
 //   "rm -r project/target".run(pio).exitValue
 // }
 // def testClean = {
-//   "rm test/lib/lombrello.jar".run(pio).exitValue
+//   "rm test/lib/piuma.jar".run(pio).exitValue
 //   "rm test/test.jar".run(pio).exitValue
 //   "rm -r test/simplePlugin/tests".run(pio).exitValue
 //   val fs = new File("test/bin")

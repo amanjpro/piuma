@@ -6,7 +6,7 @@
 package ch.usi.inf.l3.kara.compiler
 
 
-import ch.usi.inf.l3.lombrello.neve.NeveDSL._
+import ch.usi.inf.l3.piuma.neve.NeveDSL._
 import scala.reflect.internal.Flags._
 import scala.Option.option2Iterable
 import ch.usi.inf.l3.kara.KaraPlugin

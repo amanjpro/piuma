@@ -5,7 +5,7 @@ import scala.language.implicitConversions
 
 import scala.collection.mutable.{Map,HashMap,HashSet,MutableList,ListBuffer}
 
-import ch.usi.inf.l3.lombrello.neve.NeveDSL._
+import ch.usi.inf.l3.piuma.neve.NeveDSL._
 import org.apache.avro.{specific, Schema}
 import Schema.Type
 import specific.SpecificRecord

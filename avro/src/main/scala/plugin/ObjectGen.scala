@@ -4,7 +4,7 @@ package plugin
 import scala.annotation.tailrec
 import scala.language.postfixOps
 
-import ch.usi.inf.l3.lombrello.neve.NeveDSL._
+import ch.usi.inf.l3.piuma.neve.NeveDSL._
 import scala.collection.JavaConversions._
 import scala.reflect.internal.Flags._
 

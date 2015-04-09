@@ -5,7 +5,7 @@
 
 package ch.usi.inf.l3.kara
 
-import ch.usi.inf.l3.lombrello.neve.NeveDSL._
+import ch.usi.inf.l3.piuma.neve.NeveDSL._
 // import ch.usi.inf.l3.kara.compiler.ReadDependantExtractor
 import ch.usi.inf.l3.kara.compiler.ReadDependantExtractorNeve
 

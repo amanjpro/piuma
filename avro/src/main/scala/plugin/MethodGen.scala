@@ -5,7 +5,7 @@ package plugin
 import scala.annotation.tailrec
 import scala.reflect.internal.Flags._
 
-import ch.usi.inf.l3.lombrello.neve.NeveDSL._
+import ch.usi.inf.l3.piuma.neve.NeveDSL._
 import java.util.{Arrays => JArrays}
 
 import scala.collection.JavaConversions._

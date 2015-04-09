@@ -5,7 +5,7 @@
 
 package tests.plugins
 
-import ch.usi.inf.l3.lombrello.neve.NeveDSL._
+import ch.usi.inf.l3.piuma.neve.NeveDSL._
 
 // @plugin class TestPlugin(override val global: TGlobal) extends TransformerPlugin(global) {
 

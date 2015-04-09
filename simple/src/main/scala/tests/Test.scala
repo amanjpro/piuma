@@ -4,7 +4,7 @@
 //import org.scalatest.FunSuite
 //import org.junit.runner.RunWith
 //import org.scalatest.junit.JUnitRunner
-//import ch.usi.inf.l3.lombrello.transform.dsl.ParseTransformerDSL
+//import ch.usi.inf.l3.piuma.transform.dsl.ParseTransformerDSL
 //
 //@RunWith(classOf[JUnitRunner])
 //class Test extends FunSuite {

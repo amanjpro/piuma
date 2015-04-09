@@ -3,7 +3,7 @@ package plugin
 
 // import scala.tools.nsc._
 
-import ch.usi.inf.l3.lombrello.neve.NeveDSL._
+import ch.usi.inf.l3.piuma.neve.NeveDSL._
 import scala.reflect.internal.Flags._
 import org.apache.avro.Schema
 

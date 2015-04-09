@@ -1,6 +1,6 @@
 package ch.usi.inf.l3.as.plugin
 
-import ch.usi.inf.l3.lombrello.neve.NeveDSL._
+import ch.usi.inf.l3.piuma.neve.NeveDSL._
 import scala.collection.mutable.Map
 import scala.reflect.internal.Flags._
 
@@ -360,7 +360,7 @@ import scala.reflect.internal.Flags._
           
         aliasA match {
           case Some(_) =>
-            // TODO Remove this to Lombrello
+            // TODO Remove this to Piuma
             val ownerClass = valNewRHS.symbol.enclClass
             val lock_f = 
               ownerClass.info.findMember(newTermName(as_lock), 0, 0, false)
@@ -558,7 +558,7 @@ import scala.reflect.internal.Flags._
     val classLockField = typed {
       val tmp = Select(This(mthdEncClass), TermName(as_lock))
     
-      // TODO: This should go to Lombrello
+      // TODO: This should go to Piuma
       val ths = This(mthdEncClass)
       ths.setType(mthdEncClass.tpe)
       tmp.substituteThis(mthdEncClass, ths)
