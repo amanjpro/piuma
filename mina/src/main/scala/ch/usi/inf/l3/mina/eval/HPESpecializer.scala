@@ -667,7 +667,7 @@ import scala.reflect.internal.ModifierFlags
         clazz.tree = temp
         (pevaledMethod, env.remove(cargs.map(_.symbol)))
 
-        // TODO: A good use-case for Lombrello, heavily refactorable
+        // TODO: A good use-case for Piuma, heavily refactorable
 
 
 
@@ -767,7 +767,7 @@ import scala.reflect.internal.ModifierFlags
 
 
 
-            // TODO: A good use-case for Lombrello, heavily refactorable
+            // TODO: A good use-case for Piuma, heavily refactorable
             // val otemp = clazz.tree.impl.duplicate
             // val omembers = otemp.body.filter(_.symbol.name != nme.CONSTRUCTOR)
             // val nparents = List(classSymb.tpe) 
@@ -951,7 +951,7 @@ import scala.reflect.internal.ModifierFlags
     digraph.getClassRepr(rcvrtpe) match {
       case Some(rcvclass) =>
 
-        // TODO: A good use-case for Lombrello, heavily refactorable
+        // TODO: A good use-case for Piuma, heavily refactorable
         val mtree = rcvclass.getMemberTree(m, apply.symbol.tpe).asInstanceOf[DefDef]
         val tmargs = mtree.vparamss.flatten
         val cargs = getCTArgs(tmargs, pvals)
@@ -1038,7 +1038,7 @@ import scala.reflect.internal.ModifierFlags
 
   private def getCompanionObject(rcvclass: ClassRepr): ClassRepr = {
 
-    // TODO: A good use-case for Lombrello, heavily refactorable
+    // TODO: A good use-case for Piuma, heavily refactorable
     digraph.findCompanionModule(rcvclass.tree.symbol) match {
       case None =>
         val clazz = rcvclass.tree.asInstanceOf[ClassDef]

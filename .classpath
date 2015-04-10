@@ -9,6 +9,6 @@
 	<classpathentry kind="lib" path="/Users/amanj/.ivy2/cache/org.scala-lang/scala-compiler/jars/scala-compiler-2.10.2.jar" sourcepath="/Users/amanj/.ivy2/cache/org.scala-lang/scala-compiler/jars/scala-compiler-2.10.3-RC1.jar"/>
 	<classpathentry kind="lib" path="/Users/amanj/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.10.2.jar"/>
 	<classpathentry kind="lib" path="/Users/amanj/.ivy2/cache/org.scala-lang/jline/jars/jline-2.10.2.jar"/>
-	<classpathentry kind="src" path="lombrello/src/main/scala"/>
+	<classpathentry kind="src" path="piuma/src/main/scala"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
