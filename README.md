@@ -1,6 +1,6 @@
 Piuma
 ============================================
 
-A Scala compiler framework for writing Scala compiler plugins
+A refactoring library for Scala compiler plugins.
 
 For more information, please consult the manual: doc/main.pdf
