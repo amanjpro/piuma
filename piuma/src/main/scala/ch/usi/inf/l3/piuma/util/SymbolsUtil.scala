@@ -278,6 +278,20 @@ trait SymbolsUtil { self: PiumaPlugin =>
     */
   def hasSymbol(x: Tree): Boolean = goodSymbol(x.symbol)
   
+  
+  /**
+    * Get the symbol of a tree wrapped in Option. So you can flatmap and such.
+    * 
+    * @param x the tree to be checked.
+    *
+    * @return Some(x.symbol) if x has a good symbol, None otherwise.
+    *
+    * @see goodSymbol(Symbol): Boolean
+    */
+  def getSymbol(x: Tree): Option[Symbol] = {
+    if(hasSymbol(x)) Some(x.symbol) else None 
+  }
+  
   /**
     * Checks weather a ValDef is var
     *
