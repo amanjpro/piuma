@@ -13,7 +13,7 @@ trait SymbolsUtil { self: PiumaPlugin =>
   // TODO: CHECK AGAINST SYMBOL NULL or NOSYMBOL throughout this class
 
   //TODO: You should re-locate this method, it has nothing to do 
-  // with Symbol
+  // with Symbol.
   /**
     * Returns a list of applied arguments of an annotation.
     *
